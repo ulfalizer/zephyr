@@ -33,42 +33,60 @@ def main():
 
     edt = edtlib.EDT(args.dts, args.yaml[0])
 
-    with open(args.keyvalue + "-new", "w") as f:
-        # Write register addresses
+    with open(args.keyvalue + "-new", "w") as out:
         for dev in edt.devices.values():
-            if not dev.enabled:
-                continue
+            if dev.enabled:
+                write_regs(dev, out)
+                write_aliases(dev, out)
 
-            for reg_i, reg in enumerate(dev.regs):
-                post = "BASE_ADDRESS"
-                if len(dev.regs) > 1:
-                    post += "_" + str(reg_i)
 
-                # Identifier
-                ident = "DT"
+def write_regs(dev, out):
+    for reg in dev.regs:
+        print("#define {}\t0x{:x}".format(reg_ident(reg), reg.addr), file=out)
 
-                if dev.bus in {"i2c", "spi"}:
-                    ident += "_{}_{:X}".format(
-                        str2ident(dev.parent.matching_compat),
-                        dev.parent.regs[0].addr)
 
-                ident += "_{}_{:X}_BASE_ADDRESS".format(
-                    str2ident(dev.matching_compat), reg.addr)
+def write_aliases(dev, out):
+    for reg in dev.regs:
+        print("#define {}\t{}".format(alias_ident(reg), reg_ident(reg)),
+              file=out)
 
-                # TODO: Could the index always be added later, even if there's
-                # just a single register? Might streamline things.
-                if len(dev.regs) > 1:
-                    ident += "_" + str(reg_i)
 
-                print("#define {}\t0x{:x}".format(ident, reg.addr), file=f)
-                # Write instance aliases
-                print("#define DT_{}_{}_{}\t{}".format(
-                          str2ident(dev.matching_compat), dev.instance_no, post,
-                          ident), file=f)
+def reg_ident(reg):
+    # Returns the identifier (e.g., macro name) to be used for 'reg' in the
+    # output
 
-    with open(args.include + "-new", "w") as f:
-        for dev in edt.devices.values():
-            print("#define {} 1".format(dev.name), file=f)
+    dev = reg.dev
+
+    ident = "DT"
+
+    if dev.bus in {"i2c", "spi"}:
+        ident += "_{}_{:X}".format(str2ident(dev.parent.matching_compat),
+                                   dev.parent.regs[0].addr)
+
+    ident += "_{}_{:X}_BASE_ADDRESS".format(
+        str2ident(dev.matching_compat), reg.addr)
+
+    # TODO: Could the index always be added later, even if there's
+    # just a single register? Might streamline things.
+    if len(dev.regs) > 1:
+        ident += "_" + str(dev.regs.index(reg))
+
+    return ident
+
+
+def alias_ident(reg):
+    # Returns the identifier (e.g., macro name) to be used for the alias of
+    # 'reg' in the output
+
+    dev = reg.dev
+
+    ident = "DT_{}_{}_BASE_ADDRESS".format(
+        str2ident(dev.matching_compat), dev.instance_no)
+
+    if len(dev.regs) > 1:
+        ident += "_" + str(dev.regs.index(reg))
+
+    return ident
 
 
 if __name__ == "__main__":
