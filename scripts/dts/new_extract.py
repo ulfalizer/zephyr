@@ -37,7 +37,8 @@ def main():
         # Write register addresses
         for dev in edt.devices.values():
             if not dev.enabled:
-                contiue:
+                continue
+
             for reg_i, reg in enumerate(dev.regs):
                 post = "BASE_ADDRESS"
                 if len(dev.regs) > 1:
