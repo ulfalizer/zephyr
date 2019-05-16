@@ -62,20 +62,8 @@ class EDT:
         # Creates and registers a Device for 'node', which was matched to a
         # binding via the 'compatible' string 'matching_compat'
 
-        dev = Device()
-        dev.edt = self
-        dev.matching_compat = matching_compat
-        dev._node = node
-
-        dev.instance_no = 0
-        for other_dev in self.devices.values():
-            if other_dev.matching_compat == matching_compat and \
-                other_dev.enabled:
-
-                dev.instance_no += 1
-
+        dev = Device(self, matching_compat, node)
         self.devices[dev.name] = dev
-
         self._node2dev[node] = dev
 
     def __repr__(self):
@@ -115,10 +103,6 @@ class Device:
         return self._node.name
 
     @property
-    def regs(self):
-        return _regs(self._node)
-
-    @property
     def bus(self):
         # Complete hack to get the bus, this really should come from YAML
         possible_bus = self._node.parent.name.split("@")[0]
@@ -139,12 +123,72 @@ class Device:
         return "<Device {}, {} regs>".format(
             self.name, len(self.regs))
 
+    def __init__(self, edt, matching_compat, node):
+        "Private constructor. Not meant to be called by clients."
+
+        self.edt = edt
+        self.matching_compat = matching_compat
+        self._node = node
+
+        self._create_regs()
+        self._set_instance_no()
+
+    def _create_regs(self):
+        # Initializes self.regs with a list of Register instances
+
+        node = self._node
+
+        self.regs = []
+
+        if "reg" not in node.props:
+            return
+
+        address_cells = _address_cells(node)
+        size_cells = _size_cells(node)
+
+        for raw_reg in _slice(node, "reg", 4*(address_cells + size_cells)):
+            reg = Register()
+            reg.dev = self
+            reg.addr = _translate(to_num(raw_reg[:4*address_cells]), node)
+            if size_cells != 0:
+                reg.size = to_num(raw_reg[4*address_cells:])
+            else:
+                reg.size = None
+
+            self.regs.append(reg)
+
+        if "reg-names" in node.props:
+            reg_names = node.props["reg-names"].to_strings()
+            if len(reg_names) != len(regs):
+                raise EDTError(
+                    "'reg-names' property in {} has {} strings, but there are "
+                    "{} registers".format(node.name, len(reg_names), len(regs)))
+
+            for reg, name in zip(self.regs, reg_names):
+                reg.name = name
+        else:
+            for reg in self.regs:
+                reg.name = None
+
+    def _set_instance_no(self):
+        # Initializes self.instance_no
+
+        self.instance_no = 0
+        for other_dev in self.edt.devices.values():
+            if other_dev.matching_compat == self.matching_compat and \
+                other_dev.enabled:
+
+                self.instance_no += 1
+
 
 class Register:
     """
     Represents a register on a device.
 
     These attributes are available on Register instances:
+
+    dev:
+      The Device instance this register is from.
 
     name:
       The name of the register as given in the 'reg-names' property, or None if
@@ -173,42 +217,6 @@ class Register:
 
 class EDTError(Exception):
     "Exception raised for Extended Device Tree-related errors"
-
-
-def _regs(node):
-    # Returns a list of Register instances for 'node'
-
-    if "reg" not in node.props:
-        return []
-
-    address_cells = _address_cells(node)
-    size_cells = _size_cells(node)
-
-    regs = []
-    for raw_reg in _slice(node, "reg", 4*(address_cells + size_cells)):
-        reg = Register()
-        reg.addr = _translate(to_num(raw_reg[:4*address_cells]), node)
-        if size_cells != 0:
-            reg.size = to_num(raw_reg[4*address_cells:])
-        else:
-            reg.size = None
-
-        regs.append(reg)
-
-    if "reg-names" in node.props:
-        reg_names = node.props["reg-names"].to_strings()
-        if len(reg_names) != len(regs):
-            raise EDTError(
-                "'reg-names' property in {} has {} strings, but there are "
-                "{} registers".format(node.name, len(reg_names), len(regs)))
-
-        for reg, name in zip(regs, reg_names):
-            reg.name = name
-    else:
-        for reg in regs:
-            reg.name = None
-
-    return regs
 
 
 def _translate(addr, node):
