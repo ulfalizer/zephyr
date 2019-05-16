@@ -121,7 +121,7 @@ class Device:
     @property
     def bus(self):
         # Complete hack to get the bus, this really should come from YAML
-        possible_bus = self._node.name.split("@")[0]
+        possible_bus = self._node.parent.name.split("@")[0]
         if possible_bus in {"i2c", "spi"}:
             return possible_bus
         return None
