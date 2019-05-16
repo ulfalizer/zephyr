@@ -37,6 +37,10 @@ def main():
         # Write register addresses
         for dev in edt.devices.values():
             for reg_i, reg in enumerate(dev.regs):
+                post = "BASE_ADDRESS"
+                if len(dev.regs) > 1:
+                    post += "_" + str(reg_i)
+
                 # Identifier
                 if dev.bus == "i2c" or dev.bus == "spi":
                     ident = "DT_{}_{:X}_{}_{:X}_BASE_ADDRESS".format(
@@ -50,18 +54,10 @@ def main():
                     ident += "_" + str(reg_i)
 
                 print("#define {}\t0x{:x}".format(ident, reg.addr), file=f)
-
-        # Write aliases
-        for dev in edt.devices.values():
-            for reg_i, reg in enumerate(dev.regs):
-                post = "BASE_ADDRESS"
-                if len(dev.regs) > 1:
-                    post += "_" + str(reg_i)
-
-                print("#define DT_{}_{}_{}\tDT_{}_{:X}_{}".format(
+                # Write instance aliases
+                print("#define DT_{}_{}_{}\t{}".format(
                           str2ident(dev.matching_compat), dev.instance_no, post,
-                          str2ident(dev.matching_compat), reg.addr, post),
-                      file=f)
+                          ident), file=f)
 
     with open(args.include + "-new", "w") as f:
         for dev in edt.devices.values():
