@@ -45,14 +45,18 @@ def main():
                     post += "_" + str(reg_i)
 
                 # Identifier
-                if dev.bus == "i2c" or dev.bus == "spi":
-                    ident = "DT_{}_{:X}_{}_{:X}_BASE_ADDRESS".format(
+                ident = "DT"
+
+                if dev.bus in {"i2c", "spi"}:
+                    ident += "_{}_{:X}".format(
                         str2ident(dev.parent.matching_compat),
-                        dev.parent.regs[0].addr,
-                        str2ident(dev.matching_compat), reg.addr)
-                else:
-                    ident = "DT_{}_{:X}_BASE_ADDRESS".format(
-                        str2ident(dev.matching_compat), reg.addr)
+                        dev.parent.regs[0].addr)
+
+                ident += "_{}_{:X}_BASE_ADDRESS".format(
+                    str2ident(dev.matching_compat), reg.addr)
+
+                # TODO: Could the index always be added later, even if there's
+                # just a single register? Might streamline things.
                 if len(dev.regs) > 1:
                     ident += "_" + str(reg_i)
 
