@@ -38,8 +38,14 @@ def main():
         for dev in edt.devices.values():
             for reg_i, reg in enumerate(dev.regs):
                 # Identifier
-                ident = "DT_{}_{:X}_BASE_ADDRESS".format(
-                    str2ident(dev.matching_compat), reg.addr)
+                if dev.bus == "i2c" or dev.bus == "spi":
+                    ident = "DT_{}_{:X}_{}_{:X}_BASE_ADDRESS".format(
+                        str2ident(dev.parent.matching_compat),
+                        dev.parent.regs[0].addr,
+                        str2ident(dev.matching_compat), reg.addr)
+                else:
+                    ident = "DT_{}_{:X}_BASE_ADDRESS".format(
+                        str2ident(dev.matching_compat), reg.addr)
                 if len(dev.regs) > 1:
                     ident += "_" + str(reg_i)
 
