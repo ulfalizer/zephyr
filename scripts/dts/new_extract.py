@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# Copyright (c) 2019 Nordic Semiconductor ASA
+# SPDX-License-Identifier: Apache-2.0
+
 import argparse
 import os
 import sys

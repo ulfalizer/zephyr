@@ -1,3 +1,6 @@
+# Copyright (c) 2019, Nordic Semiconductor ASA and Ulf Magnusson
+# SPDX-License-Identifier: ISC
+
 """
 A library for extracting information from .dts (Device Tree) files. See the
 documentation for the DT and Node classes for more information.
