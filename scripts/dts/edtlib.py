@@ -1,3 +1,6 @@
+# Copyright (c) 2019 Nordic Semiconductor ASA
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Helper library for working with .dts files at a higher level compared to dtlib.
 Deals with devices, registers, bindings, etc.
