@@ -50,6 +50,9 @@ def write_regs(dev, out):
 
 def write_aliases(dev, out):
     for reg in dev.regs:
+        for alias in dev.aliases:
+            print("#define {}\t{}".format(alias_path_ident(reg, alias),
+                  reg_ident(reg)), file=out)
         print("#define {}\t{}".format(alias_inst_ident(reg), reg_ident(reg)),
               file=out)
 
@@ -71,6 +74,20 @@ def reg_ident(reg):
 
     # TODO: Could the index always be added later, even if there's
     # just a single register? Might streamline things.
+    if len(dev.regs) > 1:
+        ident += "_" + str(dev.regs.index(reg))
+
+    return ident
+
+def alias_path_ident(reg, alias):
+    # Returns the identifier (e.g., macro name) to be used for the alias of
+    # 'reg' in the output - based on path alias
+
+    dev = reg.dev
+
+    ident = "DT_{}_{}_BASE_ADDRESS".format(
+        str2ident(dev.matching_compat), str2ident(alias))
+
     if len(dev.regs) > 1:
         ident += "_" + str(dev.regs.index(reg))
 
