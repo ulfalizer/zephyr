@@ -230,10 +230,11 @@ class Device:
 
         if "reg-names" in node.props:
             reg_names = node.props["reg-names"].to_strings()
-            if len(reg_names) != len(regs):
+            if len(reg_names) != len(self.regs):
                 raise EDTError(
                     "'reg-names' property in {} has {} strings, but there are "
-                    "{} registers".format(node.name, len(reg_names), len(regs)))
+                    "{} registers".format(node.name, len(reg_names),
+                                          len(self.regs)))
 
             for reg, name in zip(self.regs, reg_names):
                 reg.name = name
