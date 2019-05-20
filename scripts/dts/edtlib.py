@@ -316,8 +316,7 @@ def _merge_binding(yaml_top):
     # binding. !include's have already been processed at this point, and leave
     # the data for the !include'd file(s) in the 'inherits:' section.
 
-    # TODO
-    # check_binding_properties(yaml_top)
+    _check_binding(yaml_top)
 
     if 'inherits' in yaml_top:
         for inherited in yaml_top.pop('inherits'):
@@ -326,6 +325,15 @@ def _merge_binding(yaml_top):
             yaml_top = inherited
 
     return yaml_top
+
+
+def _check_binding(yaml_top):
+    # Checks that the top-level YAML node 'node' has the expected properties.
+    # Prints warnings and substitutes defaults otherwise.
+
+    for prop in "title", "version", "description":
+        if prop not in yaml_top:
+            _warn("binding lacks '{}' property: {}".format(prop, node))
 
 
 def _merge_props(to_dict, from_dict):
@@ -404,3 +412,7 @@ def _slice(node, prop_name, size):
             "by {}".format(prop_name, len(raw), size))
 
     return [raw[i:i + size] for i in range(0, len(raw), size)]
+
+
+def _warn(msg):
+    print("warning: " + msg, file=sys.stderr)
