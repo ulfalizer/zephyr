@@ -308,44 +308,75 @@ def _load_binding(path):
 
     with open(path, encoding="utf-8") as f:
         # TODO: Nicer way to deal with this?
-        return _merge_binding(yaml.load(f, Loader=yaml.Loader))
+        return _merge_binding(path, yaml.load(f, Loader=yaml.Loader))
 
 
-def _merge_binding(yaml_top):
-    # Recursively merges in bindings from from the 'inherits:' section of the
-    # binding. !include's have already been processed at this point, and leave
-    # the data for the !include'd file(s) in the 'inherits:' section.
+def _merge_binding(binding_path, yaml_top):
+    # Recursively merges yaml_top into the bindings in the 'inherits:' section
+    # of the binding. !include's have already been processed at this point, and
+    # leave the data for the !include'd file(s) in the 'inherits:' section.
+    #
+    # Properties from the !include'ing file override properties from the
+    # !include'd file, which is why this logic might seem "backwards".
 
-    _check_expected_props(yaml_top)
+    _check_expected_props(binding_path, yaml_top)
 
     if 'inherits' in yaml_top:
         for inherited in yaml_top.pop('inherits'):
-            inherited = _merge_binding(inherited)
-            _merge_props(inherited, yaml_top)
+            inherited = _merge_binding(binding_path, inherited)
+            _merge_props(binding_path, None, inherited, yaml_top)
             yaml_top = inherited
 
     return yaml_top
 
 
-def _check_expected_props(yaml_top):
+def _check_expected_props(binding_path, yaml_top):
     # Checks that the top-level YAML node 'node' has the expected properties.
     # Prints warnings and substitutes defaults otherwise.
 
     for prop in "title", "version", "description":
         if prop not in yaml_top:
-            _warn("binding lacks '{}' property: {}".format(prop, node))
+            _warn("'{}' lacks '{}' property: {}".format(
+                binding_path, prop, node))
 
 
-def _merge_props(to_dict, from_dict):
-    # Recursively merges 'from_dict' into 'to_dict', to implement !include
+def _merge_props(binding_path, parent_prop, to_dict, from_dict):
+    # Recursively merges 'from_dict' into 'to_dict', to implement !include.
+    #
+    # binding_path is the path of the top-level binding, and parent_prop the
+    # name of the dictionary containing 'prop'. These are used to generate
+    # warnings for sketchy property overwrites.
 
-    for key in from_dict:
-        if isinstance(from_dict[key], dict) and \
-           isinstance(to_dict.get(key), dict):
-            _merge_props(to_dict[key], from_dict[key])
+    for prop in from_dict:
+        if isinstance(from_dict[prop], dict) and \
+           isinstance(to_dict.get(prop), dict):
+            _merge_props(binding_path, prop, to_dict[prop], from_dict[prop])
         else:
-            # TODO: Add back previously broken override check?
-            to_dict[key] = from_dict[key]
+            if _bad_overwrite(to_dict, from_dict, prop):
+                _warn("{} (in '{}'): '{}' from !include'd file overwritten "
+                      "('{}' replaced with '{}')".format(
+                          binding_path, parent_prop, prop, from_dict[prop],
+                          to_dict[prop]))
+
+            to_dict[prop] = from_dict[prop]
+
+
+def _bad_overwrite(to_dict, from_dict, prop):
+    # _merge_props() helper. Returns True if overwriting to_dict[prop] with
+    # from_dict[prop] seems bad. parent_prop is the name of the dictionary
+    # containing 'prop'.
+
+    if prop not in to_dict or to_dict[prop] == from_dict[prop]:
+        return False
+
+    # These are overriden deliberately
+    if prop in {"title", "version", "description"}:
+        return False
+
+    # TODO: There's an old check for changing the category here. Add it back
+    # later if it makes sense.
+
+    return True
 
 
 def _translate(addr, node):
