@@ -388,6 +388,15 @@ def _translate(addr, node):
         # No translation
         return addr
 
+    if not node.parent.props["ranges"].value:
+        # DT spec.: "If the property is defined with an <empty> value, it
+        # specifies that the parent and child address space is identical, and
+        # no address translation is required."
+        #
+        # Treat this the same as a 'range' that explicitly does a one-to-one
+        # mapping, as opposed to there not being any translation.
+        return _translate(addr, node.parent)
+
     # Gives the size of each component in a translation 3-tuple in 'ranges'
     child_address_cells = _address_cells(node)
     parent_address_cells = _address_cells(node.parent)
