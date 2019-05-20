@@ -316,7 +316,7 @@ def _merge_binding(yaml_top):
     # binding. !include's have already been processed at this point, and leave
     # the data for the !include'd file(s) in the 'inherits:' section.
 
-    _check_binding(yaml_top)
+    _check_expected_props(yaml_top)
 
     if 'inherits' in yaml_top:
         for inherited in yaml_top.pop('inherits'):
@@ -327,7 +327,7 @@ def _merge_binding(yaml_top):
     return yaml_top
 
 
-def _check_binding(yaml_top):
+def _check_expected_props(yaml_top):
     # Checks that the top-level YAML node 'node' has the expected properties.
     # Prints warnings and substitutes defaults otherwise.
 
