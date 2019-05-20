@@ -204,6 +204,14 @@ class Device:
         self._create_regs()
         self._set_instance_no()
 
+        self.aliases = []
+
+        # TODO: implement this better, this is a poor way to populate
+        # self.aliases[]
+        for (alias, alias_node) in node.dt._alias_to_node.items():
+            if (alias_node == node):
+                self.aliases.append(alias)
+
     def _create_regs(self):
         # Initializes self.regs with a list of Register instances
 
