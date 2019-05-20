@@ -50,7 +50,7 @@ def write_regs(dev, out):
 
 def write_aliases(dev, out):
     for reg in dev.regs:
-        print("#define {}\t{}".format(alias_ident(reg), reg_ident(reg)),
+        print("#define {}\t{}".format(alias_inst_ident(reg), reg_ident(reg)),
               file=out)
 
 
@@ -77,9 +77,9 @@ def reg_ident(reg):
     return ident
 
 
-def alias_ident(reg):
+def alias_inst_ident(reg):
     # Returns the identifier (e.g., macro name) to be used for the alias of
-    # 'reg' in the output
+    # 'reg' in the output - based on instance number
 
     dev = reg.dev
 
