@@ -50,11 +50,14 @@ def write_regs(dev, out):
 
 def write_aliases(dev, out):
     for reg in dev.regs:
+        r_ident = reg_ident(reg)
         for alias in dev.aliases:
-            print("#define {}\t{}".format(alias_path_ident(reg, alias),
-                  reg_ident(reg)), file=out)
-        print("#define {}\t{}".format(alias_inst_ident(reg), reg_ident(reg)),
-              file=out)
+            r_path_ident = alias_path_ident(reg, alias)
+            if r_path_ident != r_ident:
+                print("#define {}\t{}".format(r_path_ident, r_ident), file=out)
+        r_inst_ident = alias_inst_ident(reg)
+        if r_inst_ident != r_ident:
+            print("#define {}\t{}".format(r_inst_ident, r_ident), file=out)
 
 
 def reg_ident(reg):
