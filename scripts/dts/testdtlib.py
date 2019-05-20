@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-# Copyright (c) 2019, Nordic Semiconductor ASA and Ulf Magnusson
-# SPDX-License-Identifier: ISC
+# Copyright (c) 2019, Nordic Semiconductor
+# SPDX-License-Identifier: Apache-2.0
 
 import os
 import shutil
