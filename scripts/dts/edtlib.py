@@ -23,7 +23,7 @@ class EDT:
     These attributes are available on EDT instances:
 
     devices:
-      The list of devices, represented as Device instances.
+      A list of Device instances for the devices.
     """
     def __init__(self, dts, bindings_dir):
         self._find_bindings(bindings_dir)
