@@ -259,12 +259,13 @@ class Device:
     def _set_instance_no(self):
         # Initializes self.instance_no
 
-        self.instance_no = 0
-        for other_dev in self.edt.devices:
-            if other_dev.matching_compat == self.matching_compat and \
-                other_dev.enabled:
+        self.instance_no = {}
 
-                self.instance_no += 1
+        for compat in self.compats:
+            self.instance_no[compat] = 0
+            for other_dev in self.edt.devices:
+                if compat in other_dev.compats and other_dev.enabled:
+                    self.instance_no[compat] += 1
 
 
 class Register:
