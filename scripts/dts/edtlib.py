@@ -41,7 +41,9 @@ class EDT:
         # Maps dtlib.Node's to their corresponding Devices
         self._node2dev = {}
 
-        self._create_devices(dts)
+        self.dt = DT(dts)
+
+        self._create_devices()
 
     def _find_bindings(self, bindings_dir):
         # Creates a list with paths to all binding files, in self._bindings
@@ -100,14 +102,14 @@ class EDT:
         with open(paths[0], encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.Loader)
 
-    def _create_devices(self, dts):
+    def _create_devices(self):
         # Creates self.devices, which maps device names to Device instances.
         # Currently, a device is defined as a node whose 'compatible' property
         # contains a compat string covered by some binding.
 
         self.devices = []
 
-        for node in DT(dts).node_iter():
+        for node in self.dt.node_iter():
             if "compatible" in node.props:
                 for compat in node.props["compatible"].to_strings():
                     if compat in self._compat2binding:
