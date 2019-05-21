@@ -109,7 +109,9 @@ class EDT:
 
         self.devices = []
 
-        for node in self.dt.node_iter():
+        # TODO: Remove the sorting later? It's there to make it easy to compare
+        # output against extract_dts_include.py.
+        for node in sorted(self.dt.node_iter(), key=lambda node: node.name):
             if "compatible" in node.props:
                 for compat in node.props["compatible"].to_strings():
                     if compat in self._compat2binding:
