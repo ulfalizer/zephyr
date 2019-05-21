@@ -27,6 +27,10 @@ class DT:
     root:
       A Node instance representing the root (/) node.
 
+    alias_to_node:
+      A dictionary that maps maps alias strings (from /aliases) to Node
+      instances
+
     label_to_node:
       A dictionary that maps each node label (a string) to the Node instance
       for the node.
@@ -82,7 +86,7 @@ class DT:
         self._tok_i = self._tok_end_i = 0
         self._filestack = []
 
-        self._alias_to_node = {}
+        self.alias_to_node = {}
 
         self._lexer_state = _DEFAULT
         self._saved_token = None
@@ -136,12 +140,12 @@ class DT:
             # Use a separate 'rest' variable rather than directly modifying
             # 'path' so that all of 'path' still shows up in error messages.
             alias, _, rest = path.partition("/")
-            if alias not in self._alias_to_node:
+            if alias not in self.alias_to_node:
                 raise DTError("node path does not start with '/'"
                               if self._is_parsing else
                               "no alias '{}' found -- did you forget the "
                               "leading '/' in the node path?".format(alias))
-            cur = self._alias_to_node[alias]
+            cur = self.alias_to_node[alias]
             component_i = 1
 
         for component in rest.split("/"):
@@ -1005,10 +1009,10 @@ class DT:
                 prop.value = res + prop.value[prev_pos:]
 
     def _register_aliases(self):
-        # Registers aliases from the /aliases node in self._alias_to_node. Also
+        # Registers aliases from the /aliases node in self.alias_to_node. Also
         # checks the format of the alias properties.
 
-        # We copy this to self._alias_to_node at the end to avoid get_node()
+        # We copy this to self.alias_to_node at the end to avoid get_node()
         # looking up paths via other aliases while verifying aliases
         alias_to_node = {}
 
@@ -1032,7 +1036,7 @@ class DT:
                     raise DTError("/aliases: bad path for '{}': {}"
                                   .format(prop.name, e))
 
-        self._alias_to_node = alias_to_node
+        self.alias_to_node = alias_to_node
 
     def _remove_unreferenced(self):
         # Removes any unreferenced nodes marked with /omit-if-no-ref/ from the
