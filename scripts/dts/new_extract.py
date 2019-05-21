@@ -89,12 +89,22 @@ def reg_ident(reg):
 
     return ident
 
+def reg_name_aliases(reg):
+    idents = []
+    dev = reg.dev
+    if reg.name:
+        ident = "DT_{}_{:X}_{}_BASE_ADDRESS".format(
+                str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
+        idents.append(ident)
+
+    return idents
+
 
 def reg_aliases(reg):
     # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
     # output. TODO: give example output
 
-    return reg_path_aliases(reg) + reg_instance_alias(reg)
+    return reg_path_aliases(reg) + reg_instance_alias(reg) + reg_path_aliases(reg)
 
 
 def reg_path_aliases(reg):
@@ -113,6 +123,11 @@ def reg_path_aliases(reg):
             alias += "_" + str(dev.regs.index(reg))
 
         aliases.append(alias)
+
+        if reg.name:
+            ident = "DT_{}_{:X}_{}_BASE_ADDRESS".format(
+                    str2ident(dev.matching_compat), reg.addr, str2ident(reg.name))
+            aliases.append(ident)
 
     return aliases
 
@@ -135,6 +150,12 @@ def reg_instance_alias(reg):
             ident += "_" + str(dev.regs.index(reg))
 
         idents.append(ident)
+
+        if reg.name:
+            ident = "DT_{}_{}_{}_BASE_ADDRESS".format(
+                    str2ident(dev.matching_compat), dev.instance_no[compat],
+                    str2ident(reg.name))
+            idents.append(ident)
 
     return idents
 
