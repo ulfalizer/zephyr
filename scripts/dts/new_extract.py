@@ -19,6 +19,11 @@ def str2ident(s):
             .upper()
 
 
+regs_chosen = {
+    'zephyr,sram'  : 'DT_SRAM_BASE_ADDRESS',
+    'zephyr,ccm'   : 'DT_CCM_BASE_ADDRESS'
+}
+
 def main():
     # Copied from extract_dts_includes.py
     parser = argparse.ArgumentParser()
@@ -41,6 +46,11 @@ def main():
             if dev.enabled:
                 write_regs(dev, out)
                 write_aliases(dev, out)
+        for prop in edt.dt.get_node("/chosen").props.values():
+            if prop.name in regs_chosen:
+                d = edt._node2dev[edt.dt.get_node(prop.to_string())]
+                print("#define {}\t0x{:x}".format(regs_chosen[prop.name],
+                      d.regs[0].addr), file=out)
 
 
 def write_regs(dev, out):
