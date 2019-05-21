@@ -212,6 +212,7 @@ class Device:
         self.binding = _load_binding(edt._compat2binding[matching_compat])
         self._node = node
 
+        self.compats = node.props["compatible"].to_strings()
         self._create_regs()
         self._set_instance_no()
 
