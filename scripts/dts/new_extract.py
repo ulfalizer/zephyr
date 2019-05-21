@@ -75,7 +75,7 @@ def reg_ident(reg):
 
     ident = "DT"
 
-    if dev.bus in {"i2c", "spi"}:
+    if dev.bus:
         ident += "_{}_{:X}".format(str2ident(dev.parent.matching_compat),
                                    dev.parent.regs[0].addr)
 
