@@ -50,14 +50,11 @@ def write_regs(dev, out):
 
 def write_aliases(dev, out):
     for reg in dev.regs:
-        r_ident = reg_ident(reg)
-        for alias in dev.aliases:
-            r_path_ident = alias_path_ident(reg, alias)
-            if r_path_ident != r_ident:
-                print("#define {}\t{}".format(r_path_ident, r_ident), file=out)
-        r_inst_ident = alias_inst_ident(reg)
-        if r_inst_ident != r_ident:
-            print("#define {}\t{}".format(r_inst_ident, r_ident), file=out)
+        for alias in reg_aliases(reg):
+            # Avoid writing aliases that overlap with the base identifier for
+            # the register
+            if alias != reg_ident(reg):
+                print("#define {}\t{}".format(alias, reg_ident(reg)), file=out)
 
 
 def reg_ident(reg):
@@ -82,24 +79,38 @@ def reg_ident(reg):
 
     return ident
 
-def alias_path_ident(reg, alias):
-    # Returns the identifier (e.g., macro name) to be used for the alias of
-    # 'reg' in the output - based on path alias
+
+def reg_aliases(reg):
+    # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
+    # output. TODO: give example output
+
+    return reg_path_aliases(reg) + [reg_instance_alias(reg)]
+
+
+def reg_path_aliases(reg):
+    # reg_aliases() helper. Returns a list of aliases for 'reg' based on the
+    # aliases registered for the register's device, in the /aliases node.
 
     dev = reg.dev
 
-    ident = "DT_{}_{}_BASE_ADDRESS".format(
-        str2ident(dev.matching_compat), str2ident(alias))
+    aliases = []
 
-    if len(dev.regs) > 1:
-        ident += "_" + str(dev.regs.index(reg))
+    for dev_alias in dev.aliases:
+        alias = "DT_{}_{}_BASE_ADDRESS".format(
+            str2ident(dev.matching_compat), str2ident(dev_alias))
 
-    return ident
+        if len(dev.regs) > 1:
+            alias += "_" + str(dev.regs.index(reg))
+
+        aliases.append(alias)
+
+    return aliases
 
 
-def alias_inst_ident(reg):
-    # Returns the identifier (e.g., macro name) to be used for the alias of
-    # 'reg' in the output - based on instance number
+def reg_instance_alias(reg):
+    # reg_aliases() helper. Returns an alias for 'reg' based on the instance
+    # number of the register's device (based on how many instances of that
+    # particular device there are).
 
     dev = reg.dev
 
