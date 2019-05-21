@@ -137,6 +137,9 @@ class Device:
     name:
       The name of the device. This is fetched from the node name.
 
+    aliases:
+      A list of aliases for the device. This is fetched from the /aliases node.
+
     binding:
       The data from the device's binding file, in the format returned by PyYAML
       (plain Python lists, dicts, etc.)
@@ -168,6 +171,12 @@ class Device:
     def name(self):
         "See the class docstring"
         return self._node.name
+
+    @property
+    def aliases(self):
+        "See the class docstring"
+        return [alias for alias, node in self._node.dt.alias_to_node.items()
+                if node is self._node]
 
     @property
     def bus(self):
@@ -203,14 +212,6 @@ class Device:
 
         self._create_regs()
         self._set_instance_no()
-
-        self.aliases = []
-
-        # TODO: implement this better, this is a poor way to populate
-        # self.aliases[]
-        for (alias, alias_node) in node.dt._alias_to_node.items():
-            if (alias_node == node):
-                self.aliases.append(alias)
 
     def _create_regs(self):
         # Initializes self.regs with a list of Register instances
