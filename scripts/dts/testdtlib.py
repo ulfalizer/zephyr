@@ -1241,6 +1241,15 @@ verify_path_missing("/foo/missing")
 # Test /aliases
 #
 
+def verify_alias_target(alias, node_name):
+    verify_path_is(alias, node_name)
+    if alias not in dt.alias_to_node:
+        fail("expected {} to be in alias_to_node".format(alias))
+    if dt.alias_to_node[alias].name != node_name:
+        fail("expected alias {} to lead to {}, lead to {}"
+             .format(alias, node_name, dt.alias_to_node[alias].name))
+
+
 dt = parse("""
 /dts-v1/;
 
@@ -1270,10 +1279,10 @@ dt = parse("""
 };
 """)
 
-verify_path_is("alias1", "node1")
-verify_path_is("alias2", "node2")
-verify_path_is("alias3", "node3")
-verify_path_is("alias4", "node4")
+verify_alias_target("alias1", "node1")
+verify_alias_target("alias2", "node2")
+verify_alias_target("alias3", "node3")
+verify_alias_target("alias4", "node4")
 verify_path_is("alias4/node5", "node5")
 
 verify_path_error("alias4/node5/node6",
