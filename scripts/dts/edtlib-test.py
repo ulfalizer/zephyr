@@ -7,7 +7,7 @@ import edtlib
 
 
 edt = edtlib.EDT("test.dts", "../../dts/bindings")
-for dev in edt.devices.values():
+for dev in edt.devices:
     print("registers in " + dev.name + ":")
     for i, reg in enumerate(dev.regs):
         print("register " + str(i) + ": ")
