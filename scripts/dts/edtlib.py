@@ -23,7 +23,7 @@ class EDT:
     These attributes are available on EDT instances:
 
     devices:
-      A dictionary that maps device names to Device instances.
+      The list of devices, represented as Device instances.
     """
     def __init__(self, dts, bindings_dir):
         self._find_bindings(bindings_dir)
@@ -105,7 +105,7 @@ class EDT:
         # Currently, a device is defined as a node whose 'compatible' property
         # contains a compat string covered by some binding.
 
-        self.devices = {}
+        self.devices = []
 
         for node in DT(dts).node_iter():
             if "compatible" in node.props:
@@ -118,7 +118,7 @@ class EDT:
         # binding via the 'compatible' string 'matching_compat'
 
         dev = Device(self, node, matching_compat)
-        self.devices[dev.name] = dev
+        self.devices.append(dev)
         self._node2dev[node] = dev
 
     def __repr__(self):
@@ -253,7 +253,7 @@ class Device:
         # Initializes self.instance_no
 
         self.instance_no = 0
-        for other_dev in self.edt.devices.values():
+        for other_dev in self.edt.devices:
             if other_dev.matching_compat == self.matching_compat and \
                 other_dev.enabled:
 

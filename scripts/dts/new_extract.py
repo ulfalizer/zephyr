@@ -37,7 +37,7 @@ def main():
     edt = edtlib.EDT(args.dts, args.yaml[0])
 
     with open(args.keyvalue + "-new", "w") as out:
-        for dev in edt.devices.values():
+        for dev in edt.devices:
             if dev.enabled:
                 write_regs(dev, out)
                 write_aliases(dev, out)
