@@ -198,8 +198,10 @@ class Device:
     name:
       The name of the device. This is fetched from the node name.
 
-    unit-address:
-      The unit-address portion of the node name
+    unit_addr:
+      An integer with the ...@<unit-address> portion of the node name,
+      translated through any 'ranges' properties on parent nodes, or None if
+      the node name has no unit-address portion
 
     aliases:
       A list of aliases for the device. This is fetched from the /aliases node.
@@ -243,12 +245,17 @@ class Device:
         return self._node.name
 
     @property
-    def unit_address(self):
+    def unit_addr(self):
         "See the class docstring"
-        if '@' in self._node.name:
-            return self._node.name.split('@')[1]
-        else:
+        if "@" not in self._node.name:
             return None
+
+        try:
+            addr = int(self._node.name.split("@", 1)[1], 16)
+        except ValueError:
+            raise EDTError(edt.name + " has non-hex unit address")
+
+        return _translate(addr, self._node)
 
     @property
     def aliases(self):
