@@ -156,10 +156,9 @@ def reg_instance_aliases(reg):
         idents.append(ident)
 
         if reg.name:
-            ident = "DT_{}_{}_{}_BASE_ADDRESS".format(
-                    str2ident(dev.matching_compat), dev.instance_no[compat],
-                    str2ident(reg.name))
-            idents.append(ident)
+            idents.append("DT_{}_{}_{}_BASE_ADDRESS".format(
+                str2ident(dev.matching_compat), dev.instance_no[compat],
+                str2ident(reg.name)))
 
     return idents
 
