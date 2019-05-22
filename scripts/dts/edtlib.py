@@ -198,6 +198,9 @@ class Device:
     name:
       The name of the device. This is fetched from the node name.
 
+    unit-address:
+      The unit-address portion of the node name
+
     aliases:
       A list of aliases for the device. This is fetched from the /aliases node.
 
@@ -238,6 +241,14 @@ class Device:
     def name(self):
         "See the class docstring"
         return self._node.name
+
+    @property
+    def unit_address(self):
+        "See the class docstring"
+        if '@' in self._node.name:
+            return self._node.name.split('@')[1]
+        else:
+            return None
 
     @property
     def aliases(self):
