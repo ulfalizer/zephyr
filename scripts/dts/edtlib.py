@@ -255,7 +255,15 @@ class Device:
         except ValueError:
             raise EDTError(edt.name + " has non-hex unit address")
 
-        return _translate(addr, self._node)
+        addr = _translate(addr, self._node)
+
+        # TODO: Is this a good spot to check it? Could be moved to some
+        # checking code later maybe...
+        if self.regs and self.regs[0].addr != addr:
+            _warn("unit-address and first reg (0x{:x}) don't match for {}"
+                  .format(self.regs[0].addr, self.name))
+
+        return addr
 
     @property
     def aliases(self):
