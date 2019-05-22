@@ -477,8 +477,14 @@ def _bad_overwrite(to_dict, from_dict, prop):
     if prop in {"title", "version", "description"}:
         return False
 
-    # TODO: There's an old check for changing the category here. Add it back
-    # later if it makes sense.
+    # Allow the category to be changed from 'optional' to 'required'
+    # without a warning
+    #
+    # TODO: The category is never checked otherwise, and wasn't in
+    # extract_dts_includes.py either
+    if prop == "category" and \
+       to_dict["category"] == "optional" and from_dict["category"] == "required":
+        return False
 
     return True
 
