@@ -121,11 +121,13 @@ class EDT:
         # TODO: Remove the sorting later? It's there to make it easy to compare
         # output against extract_dts_include.py.
         for node in sorted(dt.node_iter(), key=lambda node: node.name):
-            if "compatible" in node.props:
-                for compat in node.props["compatible"].to_strings():
-                    if compat in self._compat2binding:
-                        self._create_device(node, compat)
-                        break
+            if "compatible" not in node.props:
+                continue
+
+            for compat in node.props["compatible"].to_strings():
+                if compat in self._compat2binding:
+                    self._create_device(node, compat)
+                    break
 
     def _create_device(self, node, matching_compat):
         # Creates and registers a Device for 'node', which was matched to a
