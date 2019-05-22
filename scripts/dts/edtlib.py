@@ -222,8 +222,11 @@ class Device:
       The 'compatible' string for the binding that matched the device
 
     instance_no:
-      Unique numeric ID for the device among all devices that matched the same
-      binding. Counts from zero.
+      Dictionary that maps each 'compatible' string for the device to a unique
+      index among all devices that have that 'compatible' string.
+
+      As an example, 'instance_no["foo,led"] == 3' can be read as "this is the
+      fourth foo,led device".
 
       Only enabled devices (status != "disabled") are counted. 'instance_no' is
       meaningless for disabled devices.
