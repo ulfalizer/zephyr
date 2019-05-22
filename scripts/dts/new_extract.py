@@ -133,9 +133,8 @@ def reg_path_aliases(reg):
         aliases.append(alias)
 
         if reg.name:
-            ident = "DT_{}_{:X}_{}_BASE_ADDRESS".format(
-                    str2ident(dev.matching_compat), reg.addr, str2ident(reg.name))
-            aliases.append(ident)
+            aliases.append("DT_{}_{:X}_{}_BASE_ADDRESS".format(
+                str2ident(dev.matching_compat), reg.addr, str2ident(reg.name)))
 
     return aliases
 
