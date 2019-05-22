@@ -100,6 +100,7 @@ def reg_ident(reg):
 def reg_aliases(reg):
     # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
     # output. TODO: give example output
+
     aliases = reg_path_aliases(reg) + reg_instance_aliases(reg)
     if reg.name:
         aliases.append(reg_name_alias(reg))
