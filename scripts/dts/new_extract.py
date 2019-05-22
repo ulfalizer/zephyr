@@ -86,8 +86,13 @@ def reg_ident(reg):
         ident += "_{}_{:X}".format(str2ident(dev.parent.matching_compat),
                                    dev.parent.regs[0].addr)
 
+    unit_addr = edtlib._translate(int(dev.unit_address,16), dev._node)
     ident += "_{}_{:X}_BASE_ADDRESS".format(
-        str2ident(dev.matching_compat), dev.regs[0].addr)
+        str2ident(dev.matching_compat), unit_addr)
+
+    if dev.regs[0].addr != unit_addr:
+        print("warning: unit-address and first reg (0x%X)"
+              "doesn't match for %s" % (dev.regs[0].addr, dev.name))
 
     # TODO: Could the index always be added later, even if there's
     # just a single register? Might streamline things.
