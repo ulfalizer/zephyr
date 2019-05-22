@@ -194,7 +194,7 @@ class Device:
     These attributes are available on Device instances:
 
     edt:
-      The EDT instance this device is from.
+      The EDT instance this device is from
 
     name:
       The name of the device. This is fetched from the node name.
@@ -202,12 +202,15 @@ class Device:
     aliases:
       A list of aliases for the device. This is fetched from the /aliases node.
 
+    compats:
+      A list of 'compatible' strings for the device
+
     binding:
       The data from the device's binding file, in the format returned by PyYAML
       (plain Python lists, dicts, etc.)
 
     regs:
-      A list of Register instances for the device's registers.
+      A list of Register instances for the device's registers
 
     bus:
       The bus the device is on, e.g. "i2c" or "spi", as a string, or None if
