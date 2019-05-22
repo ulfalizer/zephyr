@@ -247,13 +247,13 @@ class Device:
     @property
     def unit_addr(self):
         "See the class docstring"
-        if "@" not in self._node.name:
+        if "@" not in self.name:
             return None
 
         try:
-            addr = int(self._node.name.split("@", 1)[1], 16)
+            addr = int(self.name.split("@", 1)[1], 16)
         except ValueError:
-            raise EDTError(edt.name + " has non-hex unit address")
+            raise EDTError(self.name + " has non-hex unit address")
 
         addr = _translate(addr, self._node)
 
