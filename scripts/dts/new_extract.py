@@ -93,6 +93,7 @@ def reg_ident(reg):
 
     return ident
 
+
 def reg_name_aliases(reg):
     idents = []
     dev = reg.dev
@@ -107,7 +108,7 @@ def reg_name_aliases(reg):
 def reg_aliases(reg):
     # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
     # output. TODO: give example output
-    aliases = reg_path_aliases(reg) + reg_instance_alias(reg) + reg_path_aliases(reg)
+    aliases = reg_path_aliases(reg) + reg_instance_aliases(reg) + reg_path_aliases(reg)
 
     # remove duplicates
     aliases = list(set(aliases))
@@ -140,17 +141,19 @@ def reg_path_aliases(reg):
     return aliases
 
 
-def reg_instance_alias(reg):
-    # reg_aliases() helper. Returns an alias for 'reg' based on the instance
-    # number of the register's device (based on how many instances of that
-    # particular device there are).
+def reg_instance_aliases(reg):
+    # reg_aliases() helper. Returns a list of aliases for 'reg' based on the
+    # instance number(s) of the register's device (based on how many instances
+    # of that particular device there are).
+    #
+    # This is a list since a device can have multiple 'compatible' strings,
+    # each with their own instance number.
 
     dev = reg.dev
 
     idents = []
 
     for compat in dev.compats:
-
         ident = "DT_{}_{}_BASE_ADDRESS".format(
             str2ident(compat), dev.instance_no[compat])
 
