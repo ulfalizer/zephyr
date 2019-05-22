@@ -166,9 +166,5 @@ def reg_name_alias(reg):
         str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
 
 
-def warn(msg):
-    print("warning: " + msg, file=sys.stderr)
-
-
 if __name__ == "__main__":
     main()
