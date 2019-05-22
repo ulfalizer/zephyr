@@ -103,8 +103,12 @@ def reg_name_aliases(reg):
 def reg_aliases(reg):
     # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
     # output. TODO: give example output
+    aliases = reg_path_aliases(reg) + reg_instance_alias(reg) + reg_path_aliases(reg)
 
-    return reg_path_aliases(reg) + reg_instance_alias(reg) + reg_path_aliases(reg)
+    # remove duplicates
+    aliases = list(set(aliases))
+
+    return aliases
 
 
 def reg_path_aliases(reg):
