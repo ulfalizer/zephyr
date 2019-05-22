@@ -79,6 +79,9 @@ def reg_ident(reg):
 
     ident = "DT"
 
+    # TODO: Factor out helper? Seems to be the same thing being done to the
+    # node and the parent. Maybe elsewhere too.
+
     if dev.bus:
         ident += "_{}_{:X}".format(str2ident(dev.parent.matching_compat),
                                    dev.parent.regs[0].addr)
