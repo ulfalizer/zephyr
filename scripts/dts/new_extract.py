@@ -80,7 +80,7 @@ def reg_ident(reg):
                                    dev.parent.regs[0].addr)
 
     ident += "_{}_{:X}_BASE_ADDRESS".format(
-        str2ident(dev.matching_compat), reg.addr)
+        str2ident(dev.matching_compat), dev.regs[0].addr)
 
     # TODO: Could the index always be added later, even if there's
     # just a single register? Might streamline things.
