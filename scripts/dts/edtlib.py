@@ -111,7 +111,7 @@ class EDT:
             return yaml.load(f, Loader=yaml.Loader)
 
     def _create_devices(self, dt):
-        # Creates self.devices, which maps device names to Device instances.
+        # Creates a list of all devices (Device instances) in self.devices.
         # Currently, a device is defined as a node whose 'compatible' property
         # contains a compat string covered by some binding. 'dt' is the
         # dtlib.DT instance for the device tree.
