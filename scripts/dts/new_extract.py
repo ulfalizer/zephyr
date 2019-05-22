@@ -83,15 +83,11 @@ def reg_ident(reg):
     # node and the parent. Maybe elsewhere too.
 
     if dev.bus:
-        ident += "_{}_{:X}".format(str2ident(dev.parent.matching_compat),
-                                   dev.parent.regs[0].addr)
+        ident += "_{}_{:X}".format(
+            str2ident(dev.parent.matching_compat), dev.parent.unit_addr)
 
     ident += "_{}_{:X}_BASE_ADDRESS".format(
         str2ident(dev.matching_compat), dev.unit_addr)
-
-    if dev.regs[0].addr != dev.unit_addr:
-        warn("unit-address and first reg (0x{:x}) don't match for {}"
-             .format(dev.regs[0].addr, dev.name))
 
     # TODO: Could the index always be added later, even if there's
     # just a single register? Might streamline things.
