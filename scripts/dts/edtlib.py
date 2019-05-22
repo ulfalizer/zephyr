@@ -24,6 +24,14 @@ class EDT:
 
     devices:
       A list of Device instances for the devices.
+
+    sram_dev:
+      The Device instance for the device chosen by the 'zephyr,sram' property
+      on the /chosen node, or None if missing
+
+    ccm_dev:
+      The Device instance for the device chosen by the 'zephyr,ccm' property on
+      the /chosen node, or None if missing
     """
     def __init__(self, dts, bindings_dir):
         self._find_bindings(bindings_dir)
@@ -41,9 +49,9 @@ class EDT:
         # Maps dtlib.Node's to their corresponding Devices
         self._node2dev = {}
 
-        self.dt = DT(dts)
-
-        self._create_devices()
+        dt = DT(dts)
+        self._create_devices(dt)
+        self._parse_chosen(dt)
 
     def _find_bindings(self, bindings_dir):
         # Creates a list with paths to all binding files, in self._bindings
@@ -102,16 +110,17 @@ class EDT:
         with open(paths[0], encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.Loader)
 
-    def _create_devices(self):
+    def _create_devices(self, dt):
         # Creates self.devices, which maps device names to Device instances.
         # Currently, a device is defined as a node whose 'compatible' property
-        # contains a compat string covered by some binding.
+        # contains a compat string covered by some binding. 'dt' is the
+        # dtlib.DT instance for the device tree.
 
         self.devices = []
 
         # TODO: Remove the sorting later? It's there to make it easy to compare
         # output against extract_dts_include.py.
-        for node in sorted(self.dt.node_iter(), key=lambda node: node.name):
+        for node in sorted(dt.node_iter(), key=lambda node: node.name):
             if "compatible" in node.props:
                 for compat in node.props["compatible"].to_strings():
                     if compat in self._compat2binding:
@@ -126,6 +135,53 @@ class EDT:
         dev = Device(self, node, matching_compat)
         self.devices.append(dev)
         self._node2dev[node] = dev
+
+    def _parse_chosen(self, dt):
+        # Extracts information from the device tree's /chosen node. 'dt' is the
+        # dtlib.DT instance for the device tree.
+
+        self.sram_dev = None
+        self.ccm_dev = None
+
+        if not dt.has_node("/chosen"):
+            return
+
+        chosen = dt.get_node("/chosen")
+
+        # TODO: Get rid of some code duplication below?
+
+        if "zephyr,sram" in chosen.props:
+            # Value is the path of a node that represents the memory device
+            path = chosen.props["zephyr,sram"].to_string()
+            if not dt.has_node(path):
+                raise EDTError(
+                    "'zephyr,sram' points to '{}', which does not exist"
+                    .format(path))
+
+            node = dt.get_node(path)
+            if node not in self._node2dev:
+                raise EDTError(
+                    "'zephyr,sram' points to '{}', which lacks a binding"
+                    .format(path))
+
+            self.sram_dev = self._node2dev[node]
+
+        if "zephyr,ccm" in chosen.props:
+            # Value is the path of a node that represents the CCM (Core Coupled
+            # Memory) device
+            path = chosen.props["zephyr,ccm"].to_string()
+            if not dt.has_node(path):
+                raise EDTError(
+                    "'zephyr,ccm' points to '{}', which does not exist"
+                    .format(path))
+
+            node = dt.get_node(path)
+            if node not in self._node2dev:
+                raise EDTError(
+                    "'zephyr,ccm' points to '{}', which lacks a binding"
+                    .format(path))
+
+            self.ccm_dev = self._node2dev[node]
 
     def __repr__(self):
         return "<EDT, {} devices>".format(len(self.devices))
