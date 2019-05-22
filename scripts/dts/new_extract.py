@@ -108,10 +108,6 @@ def reg_aliases(reg):
     aliases = reg_path_aliases(reg) + reg_instance_aliases(reg)
     if reg.name:
         aliases.append(reg_name_alias(reg))
-
-    # remove duplicates
-    aliases = list(set(aliases))
-
     return aliases
 
 
