@@ -125,7 +125,6 @@ class EDT:
                 for compat in node.props["compatible"].to_strings():
                     if compat in self._compat2binding:
                         self._create_device(node, compat)
-                        # only process this for the first match
                         break
 
     def _create_device(self, node, matching_compat):
