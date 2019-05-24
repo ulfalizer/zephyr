@@ -244,7 +244,7 @@ verify_parse("""
 /dts-v1/;
 
 / {
-	l1: l2: foo {
+	l1: l2: l1: foo {
 		foo1 = [ 01 ];
 		l4: l5: bar {
 			bar1 = [ 01 ];
@@ -352,7 +352,7 @@ dt = verify_parse("""
 	a;
 	b;
 	l2: c;
-	l4: l5: l5: d = < 0 >;
+	l4: l5: l5: l4: d = < 0 >;
 };
 
 / {
@@ -1782,7 +1782,7 @@ l1: l2: /memreserve/ 0x0000000000000002 0x0000000000000004;
 };
 """)
 
-expected = [({"l1", "l2"}, 2, 4), (set(), 0x100, 0x200)]
+expected = [(["l1", "l2"], 2, 4), ([], 0x100, 0x200)]
 if dt.memreserves != expected:
     fail("expected {} for dt.memreserve, got {}"
          .format(expected, dt.memreserves))
