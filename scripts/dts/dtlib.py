@@ -197,7 +197,7 @@ class DT:
         if self.memreserves:
             for labels, address, offset in self.memreserves:
                 # List the labels in a consistent order to help with testing
-                for label in sorted(labels):
+                for label in labels:
                     s += label + ": "
                 s += "/memreserve/ {:#018x} {:#018x};\n" \
                      .format(address, offset)
@@ -233,13 +233,13 @@ class DT:
         # Parse /memreserve/
         self.memreserves = []
         while True:
-            labels = set()
+            labels = []
             while True:
                 tok = self._peek_token()
                 if tok.id is not _T_LABEL:
                     break
                 self._next_token()
-                labels.add(tok.val)
+                _append_no_dup(labels, tok.val)
 
             tok = self._peek_token()
             if tok.id is _T_MEMRESERVE:
@@ -282,7 +282,7 @@ class DT:
                 node = self._parse_node(node)
 
                 if label:
-                    node.labels.add(label)
+                    _append_no_dup(node.labels, label)
 
             elif tok.id is _T_DEL_NODE:
                 try:
@@ -319,7 +319,7 @@ class DT:
             omit_if_no_ref = False
             while tok.id in (_T_LABEL, _T_OMIT_IF_NO_REF):
                 if tok.id is _T_LABEL:
-                    labels.append(tok.val)
+                    _append_no_dup(labels, tok.val)
                 elif tok.id is _T_OMIT_IF_NO_REF:
                     omit_if_no_ref = True
                 tok = self._next_token()
@@ -339,7 +339,8 @@ class DT:
                     child = node.nodes.get(tok.val) or \
                             Node(name=tok.val, parent=node, dt=self)
 
-                    child.labels.update(labels)
+                    for label in labels:
+                        _append_no_dup(child.labels, label)
 
                     if omit_if_no_ref:
                         child._omit_if_no_ref = True
@@ -354,12 +355,14 @@ class DT:
                 elif tok2.val == "=":
                     prop = self._node_prop(node, tok.val)
                     self._parse_assignment(prop)
-                    prop.labels.update(labels)
+                    for label in labels:
+                        _append_no_dup(prop.labels, label)
 
                 elif tok2.val == ";":
                     # Empty property, like 'foo;'
                     prop = self._node_prop(node, tok.val)
-                    prop.labels.update(labels)
+                    for label in labels:
+                        _append_no_dup(prop.labels, label)
 
                 else:
                     self._parse_error("expected '{', '=', or ';'")
@@ -981,10 +984,10 @@ class DT:
 
                     if ref_type is _LABEL:
                         # This is a temporary format so that we can catch
-                        # duplicate references. prop.offset_labels is
-                        # changed to a dictionary that maps labels to
-                        # offsets in _register_labels().
-                        prop.offset_labels.add((ref, len(res)))
+                        # duplicate references. prop.offset_labels is changed
+                        # to a dictionary that maps labels to offsets in
+                        # _register_labels().
+                        _append_no_dup(prop.offset_labels, (ref, len(res)))
                     else:
                         # Path or phandle reference
                         try:
@@ -1186,9 +1189,11 @@ class Node:
       A dictionary containing the subnodes of the node, indexed by name.
 
     labels:
-      A set() with all labels pointing to the node.
+      A list with all labels pointing to the node, in the same order as the
+      labels appear, but with duplicates removed.
+
       'label_1: label_2: node { ... };' gives 'labels' the value
-      {"label_1", "label_2"}.
+      ["label_1", "label_2"].
 
     parent:
       The parent Node of the node. 'None' for the root node.
@@ -1214,7 +1219,7 @@ class Node:
 
         self.props = {}
         self.nodes = {}
-        self.labels = set()
+        self.labels = []
         self._omit_if_no_ref = False
         self._is_referenced = False
 
@@ -1254,8 +1259,7 @@ class Node:
         Returns a DTS representation of the node. Called automatically if the
         node is print()ed.
         """
-        # The sorted() makes the order deterministic, which is nice for tests
-        s = "".join(label + ": " for label in sorted(self.labels))
+        s = "".join(label + ": " for label in self.labels)
 
         s += "{} {{\n".format(self.name)
 
@@ -1296,7 +1300,9 @@ class Property:
       See the to_*() methods for converting the value to other types.
 
     labels:
-      A set() with all labels pointing to the property.
+      A list with all labels pointing to the property, in the same order as the
+      labels appear, but with duplicates removed.
+
       'label_1: label2: x = ...' gives 'labels' the value
       {"label_1", "label_2"}.
 
@@ -1304,6 +1310,9 @@ class Property:
       A dictionary that maps any labels within the property's value to their
       offset, in bytes. For example, 'x = < 0 label_1: 1 label_2: >' gives
       'offset_labels' the value {"label_1": 4, "label_2": 8}.
+
+      Iteration order will match the order of the labels on Python versions
+      that preserve dict insertion order.
 
     node:
       The Node the property is on.
@@ -1320,8 +1329,8 @@ class Property:
         self.name = name
         self.node = node
         self.value = b""
-        self.labels = set()
-        self.offset_labels = set()
+        self.labels = []
+        self.offset_labels = []
 
         # A list of (offset, label, type) tuples (sorted by offset), giving the
         # locations of references within the value. 'type' is either _PATH, for
@@ -1399,7 +1408,7 @@ class Property:
             self._err_with_context(e)
 
     def __str__(self):
-        s = "".join(label + ": " for label in sorted(self.labels)) + self.name
+        s = "".join(label + ": " for label in self.labels) + self.name
 
         if not self.value:
             return s + ";"
@@ -1410,7 +1419,7 @@ class Property:
                          for label, offset in self.offset_labels.items()]
 
         label_offset = offset = 0
-        for label_offset, label in sorted(offset_labels):
+        for label_offset, label in offset_labels:
             s += "".join(" {:02X}".format(byte)
                          for byte in self.value[offset:label_offset]) \
                  + " " + label + ":"
@@ -1529,6 +1538,14 @@ def _check_is_bytes(data):
 def _check_length_positive(length):
     if length < 1:
         raise DTError("'size' must be greater than zero, was " + str(length))
+
+
+def _append_no_dup(lst, elm):
+    # Appends 'elm' to 'lst', but only if it isn't already in 'lst'. Lets us
+    # preserve order, which a set() doesn't.
+
+    if elm not in lst:
+        lst.append(elm)
 
 
 class DTError(Exception):
