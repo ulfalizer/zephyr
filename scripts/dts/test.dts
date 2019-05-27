@@ -37,5 +37,17 @@
 			reg-names = "mmio", "foo";
 			label = "UART_1";
 		};
+
+		foo {
+			// Hack so that a Device gets created
+			compatible = "nxp,kinetis-uart";
+			interrupt-controller;
+			bar {
+				baz {
+					// Hack so that a Device gets created
+					compatible = "nxp,kinetis-uart";
+				};
+			};
+		};
 	};
 };

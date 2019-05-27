@@ -279,17 +279,18 @@ class Device:
     @property
     def interrupt_parent(self):
         "See the class docstring"
-        phandle = self._node.props.get("interrupt-parent")
-        if not phandle:
-            # TODO
+
+        # TODO: #interrupt-cells
+
+        iparent_node = _interrupt_parent_node(self._node)
+        if not iparent_node:
             return None
 
-        # TODO: always create Devices for everything instead?
-        iparent = self.edt._node2dev.get(phandle.to_node())
+        iparent = self.edt._node2dev.get(iparent_node)
         if not iparent:
             raise EDTError(
-                "interrupt-parent in {} points to {}, which lacks a binding"
-                .format(self._node.path, iparent.path))
+                "interrupt parent of {} is {}, which lacks a binding"
+                .format(self._node.path, iparent_node.path))
 
         return iparent
 
@@ -550,6 +551,25 @@ def _translate(addr, node):
 
     # 'addr' is not within range of any translation in 'ranges'
     return addr
+
+
+def _interrupt_parent_node(node):
+    # Returns the interrupt parent node for 'node' (the node it sends
+    # interrupts to), or None if there is no interrupt parent
+
+    if "interrupt-parent" in node.props:
+        return node.props["interrupt-parent"].to_node()
+
+    # No 'interrupt-parent' property. Search parents for an
+    # 'interrupt-controller'.
+    cur = node.parent
+    while cur:
+        if "interrupt-controller" in cur.props:
+            return cur
+        cur = cur.parent
+
+    # No interrupt parent found
+    return None
 
 
 def _address_cells(node):
