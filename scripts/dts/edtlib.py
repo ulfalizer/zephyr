@@ -12,7 +12,7 @@ import sys
 
 import yaml
 
-from dtlib import DT, to_num
+from dtlib import DT, to_num, to_nums
 
 
 class EDT:
@@ -221,6 +221,9 @@ class Device:
     interrupt_parent:
       TODO
 
+    interrupts:
+      TODO
+
     bus:
       The bus the device is on, e.g. "i2c" or "spi", as a string, or None if
       non-applicable
@@ -275,6 +278,14 @@ class Device:
         "See the class docstring"
         return [alias for alias, node in self._node.dt.alias_to_node.items()
                 if node is self._node]
+
+    @property
+    def interrupts(self):
+        if "interrupts" not in self._node.props:
+            return None
+
+        return [to_nums(raw) for raw in _slice(self._node, "interrupts",
+                                               4*self._interrupt_cells())]
 
     @property
     def interrupt_parent(self):
@@ -378,6 +389,18 @@ class Device:
             for other_dev in self.edt.devices:
                 if compat in other_dev.compats and other_dev.enabled:
                     self.instance_no[compat] += 1
+
+    def _interrupt_cells(self):
+        # interrupts() helper. Returns the #interrupt-cells value from the
+        # interrupt root (usually an interrupt controller).
+
+        iparent_node = self.interrupt_parent._node
+        if "#interrupt-cells" not in iparent_node.props:
+            raise EDTError(
+                "interrupt parent {} of {} lacks #interrupt-cells"
+                .format(iparent_node.path, self._node.path))
+
+        return iparent_node.props["#interrupt-cells"].to_num()
 
 
 class Register:
