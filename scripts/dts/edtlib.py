@@ -219,10 +219,26 @@ class Device:
       A list of Register instances for the device's registers
 
     interrupt_parent:
-      TODO
+      The interrupt parent of the node, as a Device. This is either the device
+      pointed to by the 'interrupt-parent' property, or the closest parent node
+      with an 'interrupt-controller' property.
+
+      This attribute is None if there is no 'interrupt-parent' property and no
+      parent node has an 'interrupt-controller' property.
 
     interrupts:
-      TODO
+      An array with one element per interrupt, derived from the 'interrupts'
+      property and the '#interrupt-cells' property on the interrupt parent.
+
+      Each element is in turn an array of cell values. For example,
+      'interrupts = <0 1 2 10 11 12>' coupled with '#interrupt-cells = <3>'
+      gives [[0, 1, 2], [10, 11, 12]]. This means interrupts can be
+      iterated through e.g. like this:
+
+        for irq, level in dev.interrupts:
+            ...
+
+      This attribute is None if the node has no 'interrupts' property.
 
     bus:
       The bus the device is on, e.g. "i2c" or "spi", as a string, or None if
