@@ -281,6 +281,8 @@ class Device:
         "See the class docstring"
 
         # TODO: #interrupt-cells
+        # TODO: add some interrupt-controller sanity checks?
+        # TODO: dealing with varying 'interrupt' formats
 
         iparent_node = _interrupt_parent_node(self._node)
         if not iparent_node:
