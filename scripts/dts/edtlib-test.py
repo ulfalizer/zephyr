@@ -16,6 +16,10 @@ for dev in edt.devices:
         print("\taddress: " + hex(reg.addr))
         print("\tsize: " + hex(reg.size))
     print()
-    print("interrupt parent for " + dev.name + ":")
-    print(dev.interrupt_parent)
-    print()
+    if dev.interrupt_parent:
+        print("interrupt parent for " + dev.name + ":")
+        print(dev.interrupt_parent)
+        print()
+        print("interrupts for " + dev.name + ":")
+        print(dev.interrupts)
+        print()
