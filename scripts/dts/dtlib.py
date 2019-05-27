@@ -1344,8 +1344,8 @@ class Property:
         Returns the property value interpreted as a number.
 
         length (default: 4):
-          The expected length of the value in bytes. A DTError is raised if it
-          has a different length. This is provided as a simple type check.
+          The expected length of the value in bytes. Raises DTError if it has a
+          different length. This is provided as a simple type check.
 
           Four bytes is the length of a cell, so the value of e.g.
           'x = < 73 >;' can be fetched with a plain prop.to_num().
@@ -1367,8 +1367,8 @@ class Property:
         Returns the property value interpreted as a list of numbers.
 
         length (default: 4):
-          The length in bytes of each number. A DTError is raised if the length
-          of the value is not a multiple of 'length'.
+          The length in bytes of each number. Raises DTError if the length of
+          the value is not a multiple of 'length'.
 
         signed (default: False):
           If True, the values will be interpreted as signed rather than
@@ -1383,10 +1383,10 @@ class Property:
         """
         Returns the property value interpreted as a string.
 
-        A DTError is raised if the value is not valid UTF-8, is not
-        null-terminated, or if contains more than one null terminator (the null
-        terminator is stripped from the returned string). Strings in Device
-        Tree (e.g., 'x = "foo"') are implicitly null-terminated.
+        Raises DTError if the value is not valid UTF-8, is not null-terminated,
+        or if contains more than one null terminator (the null terminator is
+        stripped from the returned string). Strings in Device Tree (e.g., 'x =
+        "foo"') are implicitly null-terminated.
         """
         try:
             return to_string(self.value)
@@ -1397,7 +1397,7 @@ class Property:
         """
         Returns the property value interpreted as a list of strings.
 
-        A DTError is raised if the value is not valid UTF-8 or is not
+        Raises DTError if the value is not valid UTF-8 or is not
         null-terminated (the null terminators are stripped from the returned
         string). Strings in Device Tree (e.g., 'x = "foo"') are implicitly
         null-terminated.
@@ -1406,6 +1406,20 @@ class Property:
             return to_strings(self.value)
         except DTError as e:
             self._err_with_context(e)
+
+    def to_node(self):
+        """
+        Interprets the property value as a phandle and returns the
+        corresponding Node.
+
+        Raises DTError if the value is not a valid phandle or if no node with
+        that phandle exists.
+        """
+        phandle = self.to_num()
+        node = self.node.dt.phandle_to_node.get(phandle)
+        if not node:
+            self._err_with_context("non-existent phandle " + str(phandle))
+        return node
 
     def __str__(self):
         s = "".join(label + ": " for label in self.labels) + self.name

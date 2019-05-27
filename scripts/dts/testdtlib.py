@@ -1333,7 +1333,7 @@ verify_error(r"""
 "/aliases: bad path for 'a': component 1 ('missing') in path '/missing' does not exist")
 
 #
-# Test to_{num,nums,string,strings}()
+# Test to_{num,nums,string,strings,node}()
 #
 
 def verify_to_num(prop, size, signed, expected):
@@ -1462,6 +1462,30 @@ def verify_to_strings_error(prop, msg):
         fail("{} the non-DTError '{}'".format(prefix, e))
 
 
+def verify_to_node(prop, path):
+    try:
+        actual = dt.root.props[prop].to_node().path
+    except dtlib.DTError as e:
+        fail("failed to convert {} to node: {}".format(prop, e))
+
+    if actual != path:
+        fail("expected {} to point to {}, pointed to {}"
+             .format(prop, path, actual))
+
+
+def verify_to_node_error(prop, msg):
+    prefix = "expected converting {} to node to generate the error '{}', " \
+             "generated".format(prop, msg)
+    try:
+        dt.root.props[prop].to_node()
+        fail(prefix + " no error")
+    except dtlib.DTError as e:
+        if str(e) != msg:
+            fail("{} the error '{}'".format(prefix, e))
+    except Exception as e:
+        fail("{} the non-DTError '{}'".format(prefix, e))
+
+
 dt = parse(r"""
 /dts-v1/;
 
@@ -1482,6 +1506,12 @@ dt = parse(r"""
 	strings = "foo", "bar", "baz";
 	invalid_strings = "foo", "\xff", "bar";
 	non_null_terminated_strings = "foo", "bar", [ 01 ];
+	ref = <&{/target}>;
+	missingref = < 123 >;
+	badref;
+
+	target {
+	};
 };
 """)
 
@@ -1583,6 +1613,14 @@ verify_to_strings("strings", ["foo", "bar", "baz"])
 
 verify_to_strings_error("invalid_strings", r"b'foo\x00\xff\x00bar\x00' is not valid UTF-8 (for property 'invalid_strings' on /)")
 verify_to_strings_error("non_null_terminated_strings", r"b'foo\x00bar\x00\x01' is not null-terminated (for property 'non_null_terminated_strings' on /)")
+
+# Test to_node()
+
+verify_to_node("ref", "/target")
+
+verify_to_node_error("missingref", "non-existent phandle 123 (for property 'missingref' on /)")
+verify_to_node_error("badref", "b'' is 0 bytes long, expected 4 (for property 'badref' on /)")
+
 
 #
 # Test duplicate label error
@@ -1926,3 +1964,6 @@ os.remove(".tmp.dts")
 os.remove(".tmp2.dts")
 os.remove(".tmp3.dts")
 os.remove(".tmp.bin")
+
+
+# TODO: Factor out common code from error tests

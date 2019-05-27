@@ -156,13 +156,13 @@ class EDT:
             path = chosen.props["zephyr,sram"].to_string()
             if not dt.has_node(path):
                 raise EDTError(
-                    "'zephyr,sram' points to '{}', which does not exist"
+                    "'zephyr,sram' points to {}, which does not exist"
                     .format(path))
 
             node = dt.get_node(path)
             if node not in self._node2dev:
                 raise EDTError(
-                    "'zephyr,sram' points to '{}', which lacks a binding"
+                    "'zephyr,sram' points to {}, which lacks a binding"
                     .format(path))
 
             self.sram_dev = self._node2dev[node]
@@ -173,13 +173,13 @@ class EDT:
             path = chosen.props["zephyr,ccm"].to_string()
             if not dt.has_node(path):
                 raise EDTError(
-                    "'zephyr,ccm' points to '{}', which does not exist"
+                    "'zephyr,ccm' points to {}, which does not exist"
                     .format(path))
 
             node = dt.get_node(path)
             if node not in self._node2dev:
                 raise EDTError(
-                    "'zephyr,ccm' points to '{}', which lacks a binding"
+                    "'zephyr,ccm' points to {}, which lacks a binding"
                     .format(path))
 
             self.ccm_dev = self._node2dev[node]
@@ -217,6 +217,9 @@ class Device:
 
     regs:
       A list of Register instances for the device's registers
+
+    interrupt_parent:
+      TODO
 
     bus:
       The bus the device is on, e.g. "i2c" or "spi", as a string, or None if
@@ -272,6 +275,23 @@ class Device:
         "See the class docstring"
         return [alias for alias, node in self._node.dt.alias_to_node.items()
                 if node is self._node]
+
+    @property
+    def interrupt_parent(self):
+        "See the class docstring"
+        phandle = self._node.props.get("interrupt-parent")
+        if not phandle:
+            # TODO
+            return None
+
+        # TODO: always create Devices for everything instead?
+        iparent = self.edt._node2dev.get(phandle.to_node())
+        if not iparent:
+            raise EDTError(
+                "interrupt-parent in {} points to {}, which lacks a binding"
+                .format(self._node.path, iparent.path))
+
+        return iparent
 
     @property
     def bus(self):
