@@ -308,11 +308,17 @@ class Device:
     def interrupt_parent(self):
         "See the class docstring"
 
-        # TODO: add some interrupt-controller sanity checks?
+        # Interrupt-generating nodes should have an 'interrupts' property
+        if "interrupts" not in self._node.props:
+            return None
 
         iparent_node = _interrupt_parent_node(self._node)
-        if not iparent_node:
-            return None
+        # TODO: Could also be an interrupt-map, though those don't seem to be
+        # used yet in Zephyr
+        if "interrupt-controller" not in iparent_node.props:
+            raise EDTError(
+                "interrupt parent of {} has no interrupt-controller property"
+                .format(self._node.path, iparent_node.path))
 
         iparent = self.edt._node2dev.get(iparent_node)
         if not iparent:
@@ -595,21 +601,11 @@ def _translate(addr, node):
 
 def _interrupt_parent_node(node):
     # Returns the interrupt parent node for 'node' (the node it sends
-    # interrupts to), or None if there is no interrupt parent
+    # interrupts to), or None if the node does not generate interrupts
 
     if "interrupt-parent" in node.props:
         return node.props["interrupt-parent"].to_node()
-
-    # No 'interrupt-parent' property. Search parents for an
-    # 'interrupt-controller'.
-    cur = node.parent
-    while cur:
-        if "interrupt-controller" in cur.props:
-            return cur
-        cur = cur.parent
-
-    # No interrupt parent found
-    return None
+    return node.parent
 
 
 def _address_cells(node):
