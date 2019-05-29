@@ -44,11 +44,9 @@
 			interrupt-controller;
 			#interrupt-cells = <3>;
 			bar {
-				baz {
-					// Hack so that a Device gets created
-					compatible = "nxp,kinetis-uart";
-					interrupts = <1 2 3>, <10 11 12>;
-				};
+				// Hack so that a Device gets created
+				compatible = "nxp,kinetis-uart";
+				interrupts = <1 2 3>, <10 11 12>;
 			};
 		};
 	};
