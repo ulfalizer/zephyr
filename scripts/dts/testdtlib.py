@@ -1849,8 +1849,8 @@ dt = parse("""
 include_path=("foo", "bar"))
 
 verify_repr(dt, "DT(filename='.tmp.dts', include_path=('foo', 'bar'))")
-verify_repr(dt.root.props["x"], "<Property object for 'x' at '/' in '.tmp.dts'>")
-verify_repr(dt.root.nodes["sub"], "<Node object for /sub in '.tmp.dts'>")
+verify_repr(dt.root.props["x"], "<Property 'x' at '/' in '.tmp.dts'>")
+verify_repr(dt.root.nodes["sub"], "<Node /sub in '.tmp.dts'>")
 
 #
 # Test names

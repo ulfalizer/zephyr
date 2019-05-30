@@ -220,11 +220,10 @@ class Device:
 
     interrupt_parent:
       The interrupt parent of the node, as a Device. This is either the device
-      pointed to by the 'interrupt-parent' property, or the closest parent node
-      with an 'interrupt-controller' property.
+      pointed to by the 'interrupt-parent' property, or the parent node.
 
-      This attribute is None if there is no 'interrupt-parent' property and no
-      parent node has an 'interrupt-controller' property.
+      This attribute is None if the node doesn't generate any interrupts (has
+      no 'interrupts' property).
 
     interrupts:
       An array with one element per interrupt, derived from the 'interrupts'
@@ -239,6 +238,9 @@ class Device:
             ...
 
       This attribute is None if the node has no 'interrupts' property.
+
+    gpios:
+      TODO
 
     bus:
       The bus the device is on, e.g. "i2c" or "spi", as a string, or None if
@@ -327,6 +329,61 @@ class Device:
                 .format(self._node.path, iparent_node.path))
 
         return iparent
+
+    @property
+    def gpios(self):
+        "See the class docstring"
+
+        res = []
+
+        node = self._node
+        for name, prop in self._node.props.items():
+            if not name.endswith("gpios"):
+                continue
+            res.extend(self._gpios(prop))
+
+        return res
+
+    def _gpios(self, prop):
+        # gpios() helper. Returns a list of (<controller>, <data>) GPIO
+        # specifications parsed from 'prop'.
+
+        raw = prop.value
+        res = []
+
+        while raw:
+            if len(raw) < 4:
+                # Not enough room for phandle
+                raise EDTError("bad value for " + repr(prop))
+
+            phandle = to_num(raw[:4])
+            raw = raw[4:]
+
+            # Bleh...
+            controller = prop.node.dt.phandle_to_node.get(phandle)
+            if not controller:
+                raise EDTError("bad phandle for " + repr(prop))
+
+            # TODO: The stuff below doesn't deal with gpio-map
+
+            if "gpio-controller" not in controller.props:
+                raise EDTError("{} has no 'gpio-controller;', but is referenced by {}"
+                               .format(controller.path, repr(prop)))
+
+            if "#gpio-cells" not in controller.props:
+                raise EDTError("{} has no #gpio-cells property"
+                               .format(controller.path))
+
+            gpio_cells = controller.props["#gpio-cells"].to_num()
+            if len(raw) < 4*gpio_cells:
+                raise EDTError("missing data after phandle in " + repr(prop))
+
+            data = [to_num(raw[4*i:4*i + 4]) for i in range(gpio_cells)]
+            raw = raw[4*gpio_cells:]
+
+            res.append((controller, data))
+
+        return res
 
     @property
     def bus(self):
