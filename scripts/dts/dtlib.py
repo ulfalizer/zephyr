@@ -1278,7 +1278,7 @@ class Node:
         Returns some information about the Node instance. Called automatically
         if the Node instance is evaluated.
         """
-        return "<Node object for {} in '{}'>" \
+        return "<Node {} in '{}'>" \
                .format(self.path, self.dt.filename)
 
 
@@ -1445,7 +1445,7 @@ class Property:
         return s + " ];"
 
     def __repr__(self):
-        return "<Property object for '{}' at '{}' in '{}'>" \
+        return "<Property '{}' at '{}' in '{}'>" \
                .format(self.name, self.node.path, self.node.dt.filename)
 
     #

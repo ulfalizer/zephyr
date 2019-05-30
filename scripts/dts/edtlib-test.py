@@ -16,6 +16,12 @@ for dev in edt.devices:
         print("\taddress: " + hex(reg.addr))
         print("\tsize: " + hex(reg.size))
     print()
+
+    print("GPIOS in " + dev.name + ":")
+    for i, gpio in enumerate(dev.gpios):
+        print("GPIO " + str(i) + ": " + str(gpio))
+    print()
+
     if dev.interrupt_parent:
         print("interrupt parent for " + dev.name + ":")
         print(dev.interrupt_parent)
