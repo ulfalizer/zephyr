@@ -17,20 +17,14 @@
 		ranges = <0x0 0x40000000 0x200>;
 
 		irq-ctrl {
-			// Hack so that a Device gets created
-			compatible = "nxp,kinetis-uart";
 		};
 
         gpio_controller: gpio_controller {
-			// Hack so that a Device gets created
             gpio-controller;
             #gpio-cells = <3>;
-			compatible = "nxp,kinetis-uart";
         };
 
         has_gpios {
-			// Hack so that a Device gets created
-			compatible = "nxp,kinetis-uart";
             gpios = <&gpio_controller 1 2 3>,
                     <&gpio_controller 4 5 6>;
         };
@@ -53,13 +47,9 @@
 		};
 
 		foo {
-			// Hack so that a Device gets created
-			compatible = "nxp,kinetis-uart";
 			interrupt-controller;
 			#interrupt-cells = <3>;
 			bar {
-				// Hack so that a Device gets created
-				compatible = "nxp,kinetis-uart";
 				interrupts = <1 2 3>, <10 11 12>;
 			};
 		};
