@@ -111,31 +111,17 @@ class EDT:
             return yaml.load(f, Loader=yaml.Loader)
 
     def _create_devices(self, dt):
-        # Creates a list of all devices (Device instances) in self.devices.
-        # Currently, a device is defined as a node whose 'compatible' property
-        # contains a compat string covered by some binding. 'dt' is the
-        # dtlib.DT instance for the device tree.
+        # Creates a list of devices (Device instances) from the DT nodes, in
+        # self.devices. 'dt' is the dtlib.DT instance for the device tree.
 
         self.devices = []
 
         # TODO: Remove the sorting later? It's there to make it easy to compare
         # output against extract_dts_include.py.
         for node in sorted(dt.node_iter(), key=lambda node: node.name):
-            if "compatible" not in node.props:
-                continue
-
-            for compat in node.props["compatible"].to_strings():
-                if compat in self._compat2binding:
-                    self._create_device(node, compat)
-                    break
-
-    def _create_device(self, node, matching_compat):
-        # Creates and registers a Device for 'node', which was matched to a
-        # binding via the 'compatible' string 'matching_compat'
-
-        dev = Device(self, node, matching_compat)
-        self.devices.append(dev)
-        self._node2dev[node] = dev
+            dev = Device(self, node)
+            self.devices.append(dev)
+            self._node2dev[node] = dev
 
     def _parse_chosen(self, dt):
         # Extracts information from the device tree's /chosen node. 'dt' is the
@@ -159,13 +145,7 @@ class EDT:
                     "'zephyr,sram' points to {}, which does not exist"
                     .format(path))
 
-            node = dt.get_node(path)
-            if node not in self._node2dev:
-                raise EDTError(
-                    "'zephyr,sram' points to {}, which lacks a binding"
-                    .format(path))
-
-            self.sram_dev = self._node2dev[node]
+            self.sram_dev = self._node2dev[dt.get_node(path)]
 
         if "zephyr,ccm" in chosen.props:
             # Value is the path of a node that represents the CCM (Core Coupled
@@ -176,13 +156,7 @@ class EDT:
                     "'zephyr,ccm' points to {}, which does not exist"
                     .format(path))
 
-            node = dt.get_node(path)
-            if node not in self._node2dev:
-                raise EDTError(
-                    "'zephyr,ccm' points to {}, which lacks a binding"
-                    .format(path))
-
-            self.ccm_dev = self._node2dev[node]
+            self.ccm_dev = self._node2dev[dt.get_node(path)]
 
     def __repr__(self):
         return "<EDT, {} devices>".format(len(self.devices))
@@ -213,7 +187,7 @@ class Device:
 
     binding:
       The data from the device's binding file, in the format returned by PyYAML
-      (plain Python lists, dicts, etc.)
+      (plain Python lists, dicts, etc.), or None if the device has no binding.
 
     regs:
       A list of Register instances for the device's registers
@@ -250,7 +224,8 @@ class Device:
       True unless the device's node has 'status = "disabled"'
 
     matching_compat:
-      The 'compatible' string for the binding that matched the device
+      The 'compatible' string for the binding that matched the device, or
+      None if the device has no binding
 
     instance_no:
       Dictionary that maps each 'compatible' string for the device to a unique
@@ -322,13 +297,7 @@ class Device:
                 "interrupt parent of {} has no interrupt-controller property"
                 .format(self._node.path, iparent_node.path))
 
-        iparent = self.edt._node2dev.get(iparent_node)
-        if not iparent:
-            raise EDTError(
-                "interrupt parent of {} is {}, which lacks a binding"
-                .format(self._node.path, iparent_node.path))
-
-        return iparent
+        return self.edt._node2dev[iparent_node]
 
     @property
     def gpios(self):
@@ -407,17 +376,33 @@ class Device:
         return "<Device {}, {} regs>".format(
             self.name, len(self.regs))
 
-    def __init__(self, edt, node, matching_compat):
+    def __init__(self, edt, node):
         "Private constructor. Not meant to be called by clients."
 
         self.edt = edt
-        self.matching_compat = matching_compat
-        self.binding = _load_binding(edt._compat2binding[matching_compat])
         self._node = node
-
-        self.compats = node.props["compatible"].to_strings()
+        self._init_binding()
         self._create_regs()
         self._set_instance_no()
+
+    def _init_binding(self):
+        # Initializes Device.matching_compat and Device.binding
+
+        if "compatible" not in self._node.props:
+            self.compats = []
+            self.matching_compat = self.binding = None
+            return
+
+        self.compats = self._node.props["compatible"].to_strings()
+
+        for compat in self.compats:
+            binding = self.edt._compat2binding.get(compat)
+            if binding:
+                self.matching_compat = compat
+                self.binding = _load_binding(binding)
+                return
+
+        self.matching_compat = self.binding = None
 
     def _create_regs(self):
         # Initializes self.regs with a list of Register instances
