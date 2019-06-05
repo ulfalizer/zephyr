@@ -38,7 +38,7 @@ def main():
 
     with open(args.keyvalue + "-new", "w") as out:
         for dev in edt.devices:
-            if dev.enabled:
+            if dev.enabled and dev.binding:
                 write_regs(dev, out)
                 write_aliases(dev, out)
 
