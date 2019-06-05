@@ -64,11 +64,12 @@ def write_regs(dev, out):
 
 def write_aliases(dev, out):
     for reg in dev.regs:
+        ident = reg_ident(reg)
         for alias in reg_aliases(reg):
             # Avoid writing aliases that overlap with the base identifier for
             # the register
-            if alias != reg_ident(reg):
-                print("#define {}\t{}".format(alias, reg_ident(reg)), file=out)
+            if alias != ident:
+                print("#define {}\t{}".format(alias, ident), file=out)
 
 
 def reg_ident(reg):
