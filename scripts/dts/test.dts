@@ -4,6 +4,11 @@
 /dts-v1/;
 
 / {
+	chosen {
+		zephyr,sram = "/soc/sram-dev";
+		zephyr,ccm = "/soc/ccm-dev";
+	};
+
 	#address-cells = <0x01>;
 	#size-cells = <0x01>;
 	model = "NXP Freedom MK64F board";
@@ -19,15 +24,15 @@
 		irq-ctrl {
 		};
 
-        gpio_controller: gpio_controller {
-            gpio-controller;
-            #gpio-cells = <3>;
-        };
+		gpio_controller: gpio_controller {
+			gpio-controller;
+			#gpio-cells = <3>;
+		};
 
-        has_gpios {
-            gpios = <&gpio_controller 1 2 3>,
-                    <&gpio_controller 4 5 6>;
-        };
+		has_gpios {
+			gpios = <&gpio_controller 1 2 3>,
+				<&gpio_controller 4 5 6>;
+		};
 
 		uart0: uart@4006a000 {
 			compatible = "nxp,kinetis-uart";
@@ -52,6 +57,12 @@
 			bar {
 				interrupts = <1 2 3>, <10 11 12>;
 			};
+		};
+
+		sram-dev {
+		};
+
+		ccm-dev {
 		};
 	};
 };
