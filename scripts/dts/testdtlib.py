@@ -338,8 +338,8 @@ verify_error("""
 #
 
 
-def verify_label_to_prop(label, expected):
-    actual = dt.label_to_prop[label].name
+def verify_label2prop(label, expected):
+    actual = dt.label2prop[label].name
     if actual != expected:
         fail("expected label '{}' to map to prop '{}', mapped to prop '{}'"
              .format(label, expected, actual))
@@ -372,20 +372,20 @@ dt = verify_parse("""
 };
 """)
 
-verify_label_to_prop("l1", "b")
-verify_label_to_prop("l2", "c")
-verify_label_to_prop("l3", "c")
-verify_label_to_prop("l4", "d")
-verify_label_to_prop("l5", "d")
-verify_label_to_prop("l6", "d")
+verify_label2prop("l1", "b")
+verify_label2prop("l2", "c")
+verify_label2prop("l3", "c")
+verify_label2prop("l4", "d")
+verify_label2prop("l5", "d")
+verify_label2prop("l6", "d")
 
 #
 # Test offset labels
 #
 
 
-def verify_label_to_offset(label, expected_prop, expected_offset):
-    actual_prop, actual_offset = dt.label_to_prop_offset[label]
+def verify_label2offset(label, expected_prop, expected_offset):
+    actual_prop, actual_offset = dt.label2prop_offset[label]
     actual_prop = actual_prop.name
     if (actual_prop, actual_offset) != (expected_prop, expected_offset):
         fail("expected label '{}' to map to offset {} on prop '{}', mapped "
@@ -420,15 +420,15 @@ dt = verify_parse("""
 };
 """)
 
-verify_label_to_offset("l01", "a", 0)
-verify_label_to_offset("l04", "a", 0)
-verify_label_to_offset("l05", "a", 4)
-verify_label_to_offset("l14", "a", 8)
-verify_label_to_offset("l15", "a", 9)
-verify_label_to_offset("l22", "a", 10)
+verify_label2offset("l01", "a", 0)
+verify_label2offset("l04", "a", 0)
+verify_label2offset("l05", "a", 4)
+verify_label2offset("l14", "a", 8)
+verify_label2offset("l15", "a", 9)
+verify_label2offset("l22", "a", 10)
 
-verify_label_to_offset("l23", "b", 4)
-verify_label_to_offset("l24", "b", 4)
+verify_label2offset("l23", "b", 4)
+verify_label2offset("l24", "b", 4)
 
 #
 # Test node path references
@@ -653,12 +653,12 @@ verify_error("""
 """,
 "/foo: phandle refers to another node")
 
-# Test phandle_to_node
+# Test phandle2node
 
 
-def verify_phandle_to_node(prop, offset, expected_name):
+def verify_phandle2node(prop, offset, expected_name):
     phandle = dtlib.to_num(dt.root.props[prop].value[offset:offset + 4])
-    actual_name = dt.phandle_to_node[phandle].name
+    actual_name = dt.phandle2node[phandle].name
 
     if actual_name != expected_name:
         fail("expected {} to be a phandle for {}, was a phandle for {}"
@@ -684,9 +684,9 @@ dt = parse("""
 };
 """)
 
-verify_phandle_to_node("phandle_", 0, "node1")
-verify_phandle_to_node("phandles", 4, "node2")
-verify_phandle_to_node("phandles", 12, "node3")
+verify_phandle2node("phandle_", 0, "node1")
+verify_phandle2node("phandles", 4, "node2")
+verify_phandle2node("phandles", 12, "node3")
 
 
 #
@@ -1243,11 +1243,11 @@ verify_path_missing("/foo/missing")
 
 def verify_alias_target(alias, node_name):
     verify_path_is(alias, node_name)
-    if alias not in dt.alias_to_node:
-        fail("expected {} to be in alias_to_node".format(alias))
-    if dt.alias_to_node[alias].name != node_name:
+    if alias not in dt.alias2node:
+        fail("expected {} to be in alias2node".format(alias))
+    if dt.alias2node[alias].name != node_name:
         fail("expected alias {} to lead to {}, lead to {}"
-             .format(alias, node_name, dt.alias_to_node[alias].name))
+             .format(alias, node_name, dt.alias2node[alias].name))
 
 
 dt = parse("""
