@@ -8,24 +8,24 @@ import edtlib
 
 edt = edtlib.EDT("test.dts", "../../dts/bindings")
 for dev in edt.devices:
-    print("registers in " + dev.name + ":")
-    for i, reg in enumerate(dev.regs):
-        print("register " + str(i) + ": ")
-        if reg.name is not None:
-            print("\tname: " + reg.name)
-        print("\taddress: " + hex(reg.addr))
-        print("\tsize: " + hex(reg.size))
-    print()
+    print("Device " + dev.name)
 
-    print("GPIOS in " + dev.name + ":")
+    for i, reg in enumerate(dev.regs):
+        print("\tRegister " + str(i))
+        if reg.name is not None:
+            print("\t\tName: " + reg.name)
+        print("\t\tAddress: " + hex(reg.addr))
+        print("\t\tSize: " + hex(reg.size))
+
     for i, gpio in enumerate(dev.gpios):
-        print("GPIO " + str(i) + ": " + str(gpio))
-    print()
+        print("\tGPIO " + str(i) + ": " + str(gpio))
 
     if dev.interrupt_parent:
-        print("interrupt parent for " + dev.name + ":")
-        print(dev.interrupt_parent)
-        print()
-        print("interrupts for " + dev.name + ":")
-        print(dev.interrupts)
-        print()
+        print("\tInterrupt parent: " + str(dev.interrupt_parent))
+        print("\tInterrupts: " + str(dev.interrupts))
+
+if edt.sram_dev:
+    print("SRAM device: " + str(edt.sram_dev))
+
+if edt.ccm_dev:
+    print("CCM device: " + str(edt.ccm_dev))
