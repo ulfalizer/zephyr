@@ -260,7 +260,7 @@ class Device:
     @property
     def aliases(self):
         "See the class docstring"
-        return [alias for alias, node in self._node.dt.alias_to_node.items()
+        return [alias for alias, node in self._node.dt.alias2node.items()
                 if node is self._node]
 
     @property
@@ -319,7 +319,7 @@ class Device:
             phandle = to_num(raw[:4])
             raw = raw[4:]
 
-            controller = prop.node.dt.phandle_to_node.get(phandle)
+            controller = prop.node.dt.phandle2node.get(phandle)
             if not controller:
                 raise EDTError("bad phandle for " + repr(prop))
 
