@@ -101,10 +101,30 @@ def reg_aliases(reg):
     # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
     # output. TODO: give example output
 
-    aliases = reg_path_aliases(reg) + reg_instance_aliases(reg)
+    aliases = reg_path_aliases(reg) + reg_instance_aliases(reg) + reg_label_aliases(reg)
+
     if reg.name:
         aliases.append(reg_name_alias(reg))
     return aliases
+
+def reg_label_aliases(reg):
+    # reg_aliases() helper. Returns a list of aliases for 'reg' based on the
+    # labels associated with the node.  We ignore the last label currently
+    # as this is meant to generate defines for shield connectors.
+    #
+    # Generates: DT_<COMPAT>_<LABEL>_<PROP>
+
+    dev = reg.dev
+
+    reg_labels = []
+
+    if len(dev._node.labels) > 1:
+        for label in list(dev._node.labels)[:-1]:
+            reg_label = "DT_{}_{}_BASE_ADDRESS".format(
+                str2ident(dev.matching_compat), str2ident(label))
+            reg_labels.append(reg_label)
+
+    return reg_labels
 
 
 def reg_path_aliases(reg):
