@@ -161,6 +161,7 @@ def reg_instance_aliases(reg):
 
 
 def reg_name_alias(reg):
+    dev = reg.dev
     # reg_aliases() helper. Returns an alias based on 'reg's name.
     return "DT_{}_{:X}_{}_BASE_ADDRESS".format(
         str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
