@@ -130,6 +130,8 @@ def reg_label_aliases(reg):
 def reg_path_aliases(reg):
     # reg_aliases() helper. Returns a list of aliases for 'reg' based on the
     # aliases registered for the register's device, in the /aliases node.
+    #
+    # Generates: DT_<COMPAT>_<ALIAS>_<PROP>
 
     dev = reg.dev
 
@@ -158,6 +160,8 @@ def reg_instance_aliases(reg):
     #
     # This is a list since a device can have multiple 'compatible' strings,
     # each with their own instance number.
+    #
+    # Generates: DT_<COMPAT>_<INSTANCE>_<PROP>
 
     dev = reg.dev
 
