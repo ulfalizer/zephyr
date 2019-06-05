@@ -347,7 +347,7 @@ class Device:
     @property
     def bus(self):
         "See the class docstring"
-        if "parent" in self.binding:
+        if self.binding and "parent" in self.binding:
             return self.binding["parent"].get("bus")
         return None
 
