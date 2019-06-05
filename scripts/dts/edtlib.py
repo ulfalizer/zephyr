@@ -319,7 +319,6 @@ class Device:
             phandle = to_num(raw[:4])
             raw = raw[4:]
 
-            # Bleh...
             controller = prop.node.dt.phandle_to_node.get(phandle)
             if not controller:
                 raise EDTError("bad phandle for " + repr(prop))
@@ -341,7 +340,7 @@ class Device:
             data = [to_num(raw[4*i:4*i + 4]) for i in range(gpio_cells)]
             raw = raw[4*gpio_cells:]
 
-            res.append((controller, data))
+            res.append((self.edt._node2dev[controller], data))
 
         return res
 
