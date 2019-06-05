@@ -27,25 +27,25 @@ class DT:
     root:
       A Node instance representing the root (/) node.
 
-    alias_to_node:
+    alias2node:
       A dictionary that maps maps alias strings (from /aliases) to Node
       instances
 
-    label_to_node:
+    label2node:
       A dictionary that maps each node label (a string) to the Node instance
       for the node.
 
-    label_to_prop:
+    label2prop:
       A dictionary that maps each property label (a string) to a Property
       instance.
 
-    label_to_prop_offset:
+    label2prop_offset:
       A dictionary that maps each label (a string) within a property value
       (e.g., 'x = label_1: < 1 label2: 2 >;') to a (prop, offset) tuple, where
       'prop' is a Property instance and 'offset' the byte offset (0 for label_1
       and 4 for label_2 in the example).
 
-    phandle_to_node:
+    phandle2node:
       A dictionary that maps each phandle (a number) to a Node instance.
 
     memreserves:
@@ -86,7 +86,7 @@ class DT:
         self._tok_i = self._tok_end_i = 0
         self._filestack = []
 
-        self.alias_to_node = {}
+        self.alias2node = {}
 
         self._lexer_state = _DEFAULT
         self._saved_token = None
@@ -140,12 +140,12 @@ class DT:
             # Use a separate 'rest' variable rather than directly modifying
             # 'path' so that all of 'path' still shows up in error messages.
             alias, _, rest = path.partition("/")
-            if alias not in self.alias_to_node:
+            if alias not in self.alias2node:
                 raise DTError("node path does not start with '/'"
                               if self._is_parsing else
                               "no alias '{}' found -- did you forget the "
                               "leading '/' in the node path?".format(alias))
-            cur = self.alias_to_node[alias]
+            cur = self.alias2node[alias]
             component_i = 1
 
         for component in rest.split("/"):
@@ -570,9 +570,9 @@ class DT:
 
         if phandle_prop.value == b'\0\0\0\0':
             phandle_i = 1
-            while phandle_i in self.phandle_to_node:
+            while phandle_i in self.phandle2node:
                 phandle_i += 1
-            self.phandle_to_node[phandle_i] = node
+            self.phandle2node[phandle_i] = node
 
             phandle_prop.value = phandle_i.to_bytes(4, "big")
             node.props["phandle"] = phandle_prop
@@ -903,8 +903,8 @@ class DT:
             # Will raise DTError if the path doesn't exist
             return self.get_node(s[1:-1])
 
-        # 'node_to_label' hasn't been filled in yet, and using it would get
-        # messy when nodes are deleted
+        # node2label hasn't been filled in yet, and using it would get messy
+        # when nodes are deleted
         for node in self.node_iter():
             if s in node.labels:
                 return node
@@ -917,11 +917,11 @@ class DT:
 
     def _register_phandles(self):
         # Registers any manually-inserted phandle properties in
-        # self.phandle_to_node, so that we can avoid allocating any phandles
-        # from that set. Also checks the format of the phandles and does misc.
+        # self.phandle2node, so that we can avoid allocating any phandles from
+        # that set. Also checks the format of the phandles and does misc.
         # sanity checking.
 
-        self.phandle_to_node = {}
+        self.phandle2node = {}
         for node in self.node_iter():
             phandle = node.props.get("phandle")
             if phandle:
@@ -956,12 +956,12 @@ class DT:
                                       .format(node.path, phandle_val,
                                               phandle.name))
 
-                    if phandle_val in self.phandle_to_node:
+                    if phandle_val in self.phandle2node:
                         raise DTError(
                             "{}: duplicated phandle {:#x} (seen before at {})"
                             .format(node.path, phandle_val,
-                                    self.phandle_to_node[phandle_val].path))
-                    self.phandle_to_node[phandle_val] = node
+                                    self.phandle2node[phandle_val].path))
+                    self.phandle2node[phandle_val] = node
 
     def _fixup_props(self):
         # Fills in node path and phandle references in property values, and
@@ -1012,12 +1012,12 @@ class DT:
                 prop.value = res + prop.value[prev_pos:]
 
     def _register_aliases(self):
-        # Registers aliases from the /aliases node in self.alias_to_node. Also
+        # Registers aliases from the /aliases node in self.alias2node. Also
         # checks the format of the alias properties.
 
-        # We copy this to self.alias_to_node at the end to avoid get_node()
+        # We copy this to self.alias2node at the end to avoid get_node()
         # looking up paths via other aliases while verifying aliases
-        alias_to_node = {}
+        alias2node = {}
 
         alias_re = re.compile("[0-9a-z-]+$")
 
@@ -1034,12 +1034,12 @@ class DT:
                 path = prop.to_string()
 
                 try:
-                    alias_to_node[prop.name] = self.get_node(path)
+                    alias2node[prop.name] = self.get_node(path)
                 except DTError as e:
                     raise DTError("/aliases: bad path for '{}': {}"
                                   .format(prop.name, e))
 
-        self.alias_to_node = alias_to_node
+        self.alias2node = alias2node
 
     def _remove_unreferenced(self):
         # Removes any unreferenced nodes marked with /omit-if-no-ref/ from the
@@ -1050,29 +1050,29 @@ class DT:
                 self._del_node(node)
 
     def _register_labels(self):
-        # Checks for duplicate labels and registers labels in label_to_node,
-        # label_to_prop, and label_to_prop_offset
+        # Checks for duplicate labels and registers labels in label2node,
+        # label2prop, and label2prop_offset
 
         label2things = collections.defaultdict(set)
 
-        self.label_to_node = {}
-        self.label_to_prop = {}
-        self.label_to_prop_offset = {}
+        self.label2node = {}
+        self.label2prop = {}
+        self.label2prop_offset = {}
 
         # Register all labels and the nodes/props they point to in label2things
         for node in self.node_iter():
             for label in node.labels:
                 label2things[label].add(node)
-                self.label_to_node[label] = node
+                self.label2node[label] = node
 
             for prop in node.props.values():
                 for label in prop.labels:
                     label2things[label].add(prop)
-                    self.label_to_prop[label] = prop
+                    self.label2prop[label] = prop
 
                 for label, offset in prop.offset_labels:
                     label2things[label].add((prop, offset))
-                    self.label_to_prop_offset[label] = (prop, offset)
+                    self.label2prop_offset[label] = (prop, offset)
 
                 # See _fixup_props()
                 prop.offset_labels = {label: offset for label, offset in
@@ -1416,7 +1416,7 @@ class Property:
         that phandle exists.
         """
         phandle = self.to_num()
-        node = self.node.dt.phandle_to_node.get(phandle)
+        node = self.node.dt.phandle2node.get(phandle)
         if not node:
             self._err_with_context("non-existent phandle " + str(phandle))
         return node
