@@ -131,7 +131,7 @@ class EDT:
         self.ccm_dev = self._chosen_dev(dt, "zephyr,ccm")
 
     def _chosen_dev(self, dt, prop_name):
-        # _parse_chosen helper. Returns the device pointed to by prop_name in
+        # _parse_chosen() helper. Returns the device pointed to by prop_name in
         # /chosen in 'dt', or None if /chosen has no property named prop_name.
 
         if not dt.has_node("/chosen"):
@@ -195,8 +195,8 @@ class Device:
       property and the '#interrupt-cells' property on the interrupt parent.
 
       Each element is in turn an array of cell values. For example,
-      'interrupts = <0 1 2 10 11 12>' coupled with '#interrupt-cells = <3>'
-      gives [[0, 1, 2], [10, 11, 12]]. This means interrupts can be
+      'interrupts = <0 1 2 3>' coupled with '#interrupt-cells = <2>'
+      gives [[0, 1], [2, 3]]. This means interrupts can be
       iterated through e.g. like this:
 
         for irq, level in dev.interrupts:
