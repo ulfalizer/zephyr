@@ -127,36 +127,27 @@ class EDT:
         # Extracts information from the device tree's /chosen node. 'dt' is the
         # dtlib.DT instance for the device tree.
 
-        self.sram_dev = None
-        self.ccm_dev = None
+        self.sram_dev = self._chosen_dev(dt, "zephyr,sram")
+        self.ccm_dev = self._chosen_dev(dt, "zephyr,ccm")
+
+    def _chosen_dev(self, dt, prop_name):
+        # _parse_chosen helper. Returns the device pointed to by prop_name in
+        # /chosen in 'dt', or None if /chosen has no property named prop_name.
 
         if not dt.has_node("/chosen"):
-            return
+            return None
 
         chosen = dt.get_node("/chosen")
 
-        # TODO: Get rid of some code duplication below?
-
-        if "zephyr,sram" in chosen.props:
+        if prop_name in chosen.props:
             # Value is the path of a node that represents the memory device
-            path = chosen.props["zephyr,sram"].to_string()
+            path = chosen.props[prop_name].to_string()
             if not dt.has_node(path):
                 raise EDTError(
-                    "'zephyr,sram' points to {}, which does not exist"
-                    .format(path))
+                    "{} points to {}, which does not exist"
+                    .format(prop_name, path))
 
-            self.sram_dev = self._node2dev[dt.get_node(path)]
-
-        if "zephyr,ccm" in chosen.props:
-            # Value is the path of a node that represents the CCM (Core Coupled
-            # Memory) device
-            path = chosen.props["zephyr,ccm"].to_string()
-            if not dt.has_node(path):
-                raise EDTError(
-                    "'zephyr,ccm' points to {}, which does not exist"
-                    .format(path))
-
-            self.ccm_dev = self._node2dev[dt.get_node(path)]
+            return self._node2dev[dt.get_node(path)]
 
     def __repr__(self):
         return "<EDT, {} devices>".format(len(self.devices))
