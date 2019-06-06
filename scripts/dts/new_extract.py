@@ -123,6 +123,10 @@ def reg_label_aliases(reg):
         for label in list(dev._node.labels)[:-1]:
             reg_label = "DT_{}_{}_BASE_ADDRESS".format(
                 str2ident(dev.matching_compat), str2ident(label))
+
+            if len(dev.regs) > 1:
+                reg_label += "_" + str(dev.regs.index(reg))
+
             reg_labels.append(reg_label)
 
     return reg_labels
