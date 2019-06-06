@@ -698,7 +698,6 @@ def _unmapped_interrupts(node):
         # Treat 'interrupts' as a special case of 'interrupts-extended' with
         # the same interrupt parent for all interrupts
 
-        print(node.path)
         iparent = _interrupt_parent(node)
         interrupt_cells = _interrupt_cells(iparent)
 
