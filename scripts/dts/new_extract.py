@@ -55,26 +55,39 @@ def main():
             print("#define DT_SRAM_BASE_ADDRESS\t"
                       + hex(edt.sram_dev.regs[0].addr),
                   file=out)
+            print("#define DT_SRAM_SIZE\t"
+                      + ascii(int(edt.sram_dev.regs[0].size / 1024)),
+                  file=out)
 
         if edt.ccm_dev:
             print("#define DT_CCM_BASE_ADDRESS\t"
                       + hex(edt.ccm_dev.regs[0].addr),
                   file=out)
+            print("#define DT_CCM_SIZE\t"
+                      + ascii(int(edt.ccm_dev.regs[0].size / 1024)),
+                  file=out)
 
 
 def write_regs(dev, out):
     for reg in dev.regs:
-        print("#define {}\t0x{:x}".format(reg_ident(reg), reg.addr), file=out)
+        print("#define {}\t0x{:x}".format(reg_ident(reg, "BASE_ADDRESS"), reg.addr), file=out)
+        if reg.size:
+            print("#define {}\t{:d}".format(reg_ident(reg, "SIZE"), reg.size), file=out)
 
 
 def write_aliases(dev, out):
     for reg in dev.regs:
-        ident = reg_ident(reg)
+        ident = reg_ident(reg, "BASE_ADDRESS")
+        ident_size = reg_ident(reg, "SIZE")
         for alias in reg_aliases(reg):
             # Avoid writing aliases that overlap with the base identifier for
             # the register
             if alias != ident:
                 print("#define {}\t{}".format(alias, ident), file=out)
+                if reg.size:
+                    alias = alias.replace("BASE_ADDRESS", "SIZE")
+                    print("#define {}\t{}".format(alias, ident_size), file=out)
+
 
 def dev_ident(dev):
     # Returns the identifier (e.g., macro name) to be used for property in the
@@ -103,13 +116,13 @@ def dev_ident(dev):
     return ident
 
 
-def reg_ident(reg):
+def reg_ident(reg, prop):
     # Returns the identifier (e.g., macro name) to be used for 'reg' in the
     # output
 
     dev = reg.dev
 
-    ident = "{}_{}".format(dev_ident(dev), "BASE_ADDRESS")
+    ident = "{}_{}".format(dev_ident(dev), prop)
 
     # TODO: Could the index always be added later, even if there's
     # just a single register? Might streamline things.
