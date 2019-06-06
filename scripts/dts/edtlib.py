@@ -643,10 +643,12 @@ def _translate(addr, node):
 
 def _interrupt_parent(node):
     # TODO: Update documentation
+    # TODO: Fixup error handling if we don't find a match
 
     if "interrupt-parent" in node.props:
         return node.props["interrupt-parent"].to_node()
-    return node.parent
+
+    return _interrupt_parent(node.parent)
 
 
 def _address_cells(node):
