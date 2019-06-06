@@ -42,6 +42,11 @@ def main():
                 write_regs(dev, out)
                 write_aliases(dev, out)
 
+                # Generate defines of the form #define DT_<COMPAT>_<INSTANCE> 1
+                for compat in dev.compats:
+                    print('#define DT_{}_{}\t1'.format(str2ident(compat),
+                        dev.instance_no[compat]), file=out)
+
         # These are derived from /chosen
 
         # TODO: Check that regs[0] exists below?
