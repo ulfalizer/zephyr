@@ -9,6 +9,7 @@ import edtlib
 edt = edtlib.EDT("test.dts", "../../dts/bindings")
 for dev in edt.devices:
     print("Device " + dev.name)
+    print("\tInterrupts: " + str(dev.interrupts))
 
     for i, reg in enumerate(dev.regs):
         print("\tRegister " + str(i))
@@ -19,10 +20,6 @@ for dev in edt.devices:
 
     for i, gpio in enumerate(dev.gpios):
         print("\tGPIO " + str(i) + ": " + str(gpio))
-
-    if dev.interrupt_parent:
-        print("\tInterrupt parent: " + str(dev.interrupt_parent))
-        print("\tInterrupts: " + str(dev.interrupts))
 
 if edt.sram_dev:
     print("SRAM device: " + str(edt.sram_dev))
