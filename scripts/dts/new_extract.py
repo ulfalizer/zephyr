@@ -76,12 +76,12 @@ def write_aliases(dev, out):
             if alias != ident:
                 print("#define {}\t{}".format(alias, ident), file=out)
 
-
-def reg_ident(reg):
-    # Returns the identifier (e.g., macro name) to be used for 'reg' in the
+def dev_ident(dev):
+    # Returns the identifier (e.g., macro name) to be used for property in the
     # output
 
-    dev = reg.dev
+    # TODO: Handle PWM on STM,
+    # TODO: Better document the rules of how we generate things
 
     ident = "DT"
 
@@ -92,8 +92,24 @@ def reg_ident(reg):
         ident += "_{}_{:X}".format(
             str2ident(dev.parent.matching_compat), dev.parent.unit_addr)
 
-    ident += "_{}_{:X}_BASE_ADDRESS".format(
-        str2ident(dev.matching_compat), dev.unit_addr)
+    ident += "_{}".format(str2ident(dev.matching_compat))
+
+    if dev.unit_addr is not None:
+        ident += "_{:X}".format(dev.unit_addr)
+    else:
+        # This is a bit of a hack
+        ident += "_{}".format(str2ident(dev.name))
+
+    return ident
+
+
+def reg_ident(reg):
+    # Returns the identifier (e.g., macro name) to be used for 'reg' in the
+    # output
+
+    dev = reg.dev
+
+    ident = "{}_{}".format(dev_ident(dev), "BASE_ADDRESS")
 
     # TODO: Could the index always be added later, even if there's
     # just a single register? Might streamline things.
