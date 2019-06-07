@@ -777,7 +777,4 @@ def _slice(node, prop_name, size):
 def _warn(msg):
     print("warning: " + msg, file=sys.stderr)
 
-# TODO: pass node to _init_binding() instead?
 # TODO: replace node.path, etc., with repr's, which give more information
-# TODO: call it "child specifier" in the interrupt-map code, like the
-#       nexus node part of the DT spec. does?
