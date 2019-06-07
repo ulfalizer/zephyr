@@ -123,11 +123,6 @@ class EDT:
             self.devices.append(dev)
             self._node2dev[node] = dev
 
-        for dev in self.devices:
-            # Must be done after creating Devices, because interrupts can link
-            # Devices arbitrarily
-            dev._init_interrupts()
-
     def _parse_chosen(self, dt):
         # Extracts information from the device tree's /chosen node. 'dt' is the
         # dtlib.DT instance for the device tree.
@@ -188,26 +183,8 @@ class Device:
     regs:
       A list of Register instances for the device's registers
 
-    interrupt_parent:
-      The interrupt parent of the node, as a Device. This is either the device
-      pointed to by the 'interrupt-parent' property, or the parent node.
-
-      This attribute is None if the node doesn't generate any interrupts (has
-      no 'interrupts' property).
-
     interrupts:
-      An array with one element per interrupt, derived from the 'interrupts'
-      property and the '#interrupt-cells' property on the interrupt parent.
-
-      Each element is in turn an array of cell values. For example,
-      'interrupts = <0 1 2 3>' coupled with '#interrupt-cells = <2>'
-      gives [[0, 1], [2, 3]]. This means interrupts can be
-      iterated through e.g. like this:
-
-        for irq, level in dev.interrupts:
-            ...
-
-      This attribute is None if the node has no 'interrupts' property.
+      TODO: now is [(<controller>, <interrupts>), ...]
 
     gpios:
       TODO
@@ -271,29 +248,8 @@ class Device:
     @property
     def interrupts(self):
         "See the class docstring"
-        if "interrupts" not in self._node.props:
-            return None
-
-        return [to_nums(raw) for raw in _slice(self._node, "interrupts",
-                                               4*self._interrupt_cells())]
-
-    @property
-    def interrupt_parent(self):
-        "See the class docstring"
-
-        # Interrupt-generating nodes should have an 'interrupts' property
-        if "interrupts" not in self._node.props:
-            return None
-
-        iparent_node = _interrupt_parent(self._node)
-        # TODO: Could also be an interrupt-map, though those don't seem to be
-        # used yet in Zephyr
-        if "interrupt-controller" not in iparent_node.props:
-            raise EDTError(
-                "interrupt parent of {} has no interrupt-controller property"
-                .format(self._node.path, iparent_node.path))
-
-        return self.edt._node2dev[iparent_node]
+        # Later, maybe compute this once
+        return _interrupts(self._node)
 
     @property
     def gpios(self):
@@ -399,11 +355,6 @@ class Device:
 
         self.matching_compat = self.binding = None
 
-    def _init_interrupts(self):
-        # TODO: clean up and factor out code common with GPIO
-
-        self.interrupts_tmp = _interrupts(self._node)
-
     def _create_regs(self):
         # Initializes self.regs with a list of Register instances
 
@@ -452,18 +403,6 @@ class Device:
             for other_dev in self.edt.devices:
                 if compat in other_dev.compats and other_dev.enabled:
                     self.instance_no[compat] += 1
-
-    def _interrupt_cells(self):
-        # interrupts() helper. Returns the #interrupt-cells value from the
-        # interrupt root (usually an interrupt controller).
-
-        iparent_node = self.interrupt_parent._node
-        if "#interrupt-cells" not in iparent_node.props:
-            raise EDTError(
-                "interrupt parent {} of {} lacks #interrupt-cells"
-                .format(iparent_node.path, self._node.path))
-
-        return iparent_node.props["#interrupt-cells"].to_num()
 
 
 class Register:
