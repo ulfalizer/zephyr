@@ -431,6 +431,48 @@ verify_label2offset("l23", "b", 4)
 verify_label2offset("l24", "b", 4)
 
 #
+# Test unit_addr
+#
+
+
+def verify_unit_addr(path, expected):
+    node = dt.get_node(path)
+    if node.unit_addr != expected:
+        fail("expected {!r} to have unit_addr '{}', was '{}'"
+             .format(node, expected, node.unit_addr))
+
+dt = verify_parse("""
+/dts-v1/;
+
+/ {
+	no-unit-addr {
+	};
+
+	unit-addr@ABC {
+	};
+
+	unit-addr-non-numeric@foo-bar {
+	};
+};
+""",
+"""
+/dts-v1/;
+
+/ {
+	no-unit-addr {
+	};
+	unit-addr@ABC {
+	};
+	unit-addr-non-numeric@foo-bar {
+	};
+};
+""")
+
+verify_unit_addr("/no-unit-addr", "")
+verify_unit_addr("/unit-addr@ABC", "ABC")
+verify_unit_addr("/unit-addr-non-numeric@foo-bar", "foo-bar")
+
+#
 # Test node path references
 #
 

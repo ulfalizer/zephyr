@@ -1169,6 +1169,13 @@ class Node:
     name:
       The name of the node (a string).
 
+    unit_addr:
+      The portion after the '@' in the node's name, or the empty string if the
+      name has no '@' in it.
+
+      Note that this is a string. Run int(node.unit_addr, 16) to get an
+      integer.
+
     props:
       A dictionary that maps the properties defined on the node to their
       values. 'props' is indexed by property name (a string), and values are
@@ -1222,6 +1229,13 @@ class Node:
         self.labels = []
         self._omit_if_no_ref = False
         self._is_referenced = False
+
+    @property
+    def unit_addr(self):
+        """
+        See the class documentation.
+        """
+        return self.name.partition("@")[2]
 
     @property
     def path(self):
