@@ -249,7 +249,8 @@ class Device:
     def interrupts(self):
         "See the class docstring"
         # Later, maybe compute this once
-        return _interrupts(self._node)
+        return [(self.edt._node2dev[node], specifier)
+                for node, specifier in _interrupts(self._node)]
 
     @property
     def gpios(self):
