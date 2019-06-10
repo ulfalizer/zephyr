@@ -249,7 +249,7 @@ class Device:
     def interrupts(self):
         "See the class docstring"
         # Later, maybe compute this once
-        return [(self.edt._node2dev[node], specifier)
+        return [(self.edt._node2dev[node], to_nums(specifier))
                 for node, specifier in _interrupts(self._node)]
 
     @property
@@ -277,7 +277,6 @@ class Device:
             if len(raw) < 4:
                 # Not enough room for phandle
                 raise EDTError("bad value for " + repr(prop))
-
             phandle = to_num(raw[:4])
             raw = raw[4:]
 
@@ -286,7 +285,6 @@ class Device:
                 raise EDTError("bad phandle in " + repr(prop))
 
             # TODO: The stuff below doesn't deal with gpio-map
-
             if "gpio-controller" not in controller.props:
                 raise EDTError("{} has no 'gpio-controller;', but is referenced by {}"
                                .format(controller.path, repr(prop)))
@@ -587,7 +585,6 @@ def _interrupt_parent(node):
 
     if "interrupt-parent" in node.props:
         return node.props["interrupt-parent"].to_node()
-
     return _interrupt_parent(node.parent)
 
 
@@ -643,8 +640,10 @@ def _interrupts(node):
 
 
 def _map_interrupt(child, parent, child_ispec):
+    # TODO: document
+
     if "interrupt-controller" in parent.props:
-        return (parent, to_nums(child_ispec))
+        return (parent, child_ispec)
 
     def spec_len_fn(node):
         return 4*(_address_cells(node) + _interrupt_cells(node))
@@ -654,7 +653,7 @@ def _map_interrupt(child, parent, child_ispec):
         spec_len_fn)
 
     # Strip the parent unit address part, if any
-    return (parent, to_nums(raw_spec[4*_address_cells(parent):]))
+    return (parent, raw_spec[4*_address_cells(parent):])
 
 
 def _map(prefix, child, parent, child_spec, spec_len_fn):
