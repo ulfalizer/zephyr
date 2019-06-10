@@ -670,7 +670,6 @@ def _map(child, parent, child_spec, spec_len_fn):
                            "bytes, is {} bytes".format(
                                child, parent, len(child_spec), len(mask)))
 
-        # TODO: check that lengths match
         child_spec = _and(child_spec, mask)
 
     raw = map_prop.value
