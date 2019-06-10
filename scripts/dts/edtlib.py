@@ -298,7 +298,7 @@ class Device:
             if len(raw) < 4*gpio_cells:
                 raise EDTError("missing data after phandle in " + repr(prop))
 
-            data = [to_num(raw[4*i:4*i + 4]) for i in range(gpio_cells)]
+            data = to_nums(raw[:4*gpio_cells])
             raw = raw[4*gpio_cells:]
 
             res.append((self.edt._node2dev[controller], data))
@@ -641,17 +641,21 @@ def _interrupts(node):
     return []
 
 
-def _map_interrupt(node, parent, child_ispec):
-    parent, raw_spec = _map(node, parent, _raw_unit_addr(node) + child_ispec)
+def _map_interrupt(child, parent, child_ispec):
+    if "interrupt-controller" in parent.props:
+        return (parent, to_nums(child_ispec))
+
+    def spec_len_fn(node):
+        return 4*(_address_cells(node) + _interrupt_cells(node))
+
+    parent, raw_spec = _map(child, parent, _raw_unit_addr(child) + child_ispec,
+                            spec_len_fn)
 
     # Strip the parent unit address part, if any
-    raw_ispec = raw_spec[4*_address_cells(parent):]
-
-    return (parent, [to_num(raw_ispec[4*i:4*i + 4])
-                     for i in range(_interrupt_cells(parent))])
+    return (parent, to_nums(raw_spec[4*_address_cells(parent):]))
 
 
-def _map(child, parent, child_spec):
+def _map(child, parent, child_spec, spec_len_fn):
     # TODO: document
 
     map_prop = parent.props.get("interrupt-map")
@@ -672,13 +676,13 @@ def _map(child, parent, child_spec):
     raw = map_prop.value
     while raw:
         if len(raw) < len(child_spec):
-            raise EDTError("bad value for {!r}, not enough room for child "
+            raise EDTError("bad value for {!r}, missing/truncated child "
                            "specifier".format(map_prop))
         child_spec_entry = raw[:len(child_spec)]
         raw = raw[len(child_spec_entry):]
 
         if len(raw) < 4:
-            raise EDTError("bad value for {!r}, not enough room for phandle "
+            raise EDTError("bad value for {!r}, missing/truncated phandle "
                            .format(map_prop))
         phandle = to_num(raw[:4])
         raw = raw[4:]
@@ -688,27 +692,18 @@ def _map(child, parent, child_spec):
         if not map_parent:
             raise EDTError("bad phandle in " + repr(map_prop))
 
-        # Not sure how the interrupt parent unit address would be used
-        # given that the phandle already points out the interrupt parent.
-        # Just skip over it.
-        parent_unit_addr_len = len(_raw_unit_addr(map_parent))
-        if len(raw) < parent_unit_addr_len:
-            raise EDTError("bad value for {!r}, not enough room for parent "
-                           "unit address".format(map_prop))
-        raw = raw[parent_unit_addr_len:]
-
-        parent_interrupt_cells = _interrupt_cells(map_parent)
-        if len(raw) < 4*parent_interrupt_cells:
-            raise EDTError("bad value for {!r}, not enough room for parent "
-                           "interrupt specifier".format(map_prop))
-        parent_spec = raw[4*parent_interrupt_cells:]
-        raw = raw[4*parent_interrupt_cells:]
+        map_parent_spec_len = spec_len_fn(map_parent)
+        if len(raw) < map_parent_spec_len:
+            raise EDTError("bad value for {!r}, missing/truncated parent "
+                           "specifier".format(map_prop))
+        parent_spec = raw[:map_parent_spec_len]
+        raw = raw[map_parent_spec_len:]
 
         # Got one 'interrupt-map' row. Check if it matches the child
         # specifier.
         if child_spec_entry == child_spec:
             # Found match. Recursively map and return it.
-            return _map(parent, map_parent, parent_spec)
+            return _map(parent, map_parent, parent_spec, spec_len_fn)
 
     # TODO: Is raising an error the right thing to do here?
     raise EDTError("child specifier for {!r} ({}) does not appear in {!r}"
@@ -723,8 +718,6 @@ def _raw_unit_addr(node):
 
     if not node.unit_addr:
         return b""
-
-    address_cells = _address_cells(node)
 
     try:
         child_unit_addr = int(node.unit_addr, 16)
