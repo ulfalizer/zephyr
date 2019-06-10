@@ -649,27 +649,30 @@ def _map_interrupt(child, parent, child_ispec):
     def spec_len_fn(node):
         return 4*(_address_cells(node) + _interrupt_cells(node))
 
-    parent, raw_spec = _map(child, parent, _raw_unit_addr(child) + child_ispec,
-                            spec_len_fn)
+    parent, raw_spec = _map(
+        "interrupt", child, parent, _raw_unit_addr(child) + child_ispec,
+        spec_len_fn)
 
     # Strip the parent unit address part, if any
     return (parent, to_nums(raw_spec[4*_address_cells(parent):]))
 
 
-def _map(child, parent, child_spec, spec_len_fn):
+def _map(prefix, child, parent, child_spec, spec_len_fn):
     # TODO: document
 
-    map_prop = parent.props.get("interrupt-map")
+    map_prop = parent.props.get(prefix + "-map")
     if not map_prop:
         # No mapping
         return (parent, child_spec)
 
-    if "interrupt-map-mask" in parent.props:
-        mask = parent.props["interrupt-map-mask"].value
+    mask_prop = parent.props.get(prefix + "-map-mask")
+    if mask_prop:
+        mask = mask_prop.value
         if len(mask) != len(child_spec):
-            raise EDTError("{!r}: expected 'interrupt-mask' in {!r} to be {} "
-                           "bytes, is {} bytes".format(
-                               child, parent, len(child_spec), len(mask)))
+            raise EDTError("{!r}: expected '{}-mask' in {!r} to be {} "
+                           "bytes, is {} bytes"
+                           .format(child, prefix, parent, len(child_spec),
+                                   len(mask)))
 
         child_spec = _and(child_spec, mask)
 
@@ -687,7 +690,7 @@ def _map(child, parent, child_spec, spec_len_fn):
         phandle = to_num(raw[:4])
         raw = raw[4:]
 
-        # Interrupt parent specified in 'interrupt-map'
+        # Parent specified in '*-map'
         map_parent = parent.dt.phandle2node.get(phandle)
         if not map_parent:
             raise EDTError("bad phandle in " + repr(map_prop))
@@ -699,11 +702,11 @@ def _map(child, parent, child_spec, spec_len_fn):
         parent_spec = raw[:map_parent_spec_len]
         raw = raw[map_parent_spec_len:]
 
-        # Got one 'interrupt-map' row. Check if it matches the child
+        # Got one '*-map' row. Check if it matches the child
         # specifier.
         if child_spec_entry == child_spec:
             # Found match. Recursively map and return it.
-            return _map(parent, map_parent, parent_spec, spec_len_fn)
+            return _map(prefix, parent, map_parent, parent_spec, spec_len_fn)
 
     # TODO: Is raising an error the right thing to do here?
     raise EDTError("child specifier for {!r} ({}) does not appear in {!r}"
