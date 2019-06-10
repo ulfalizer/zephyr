@@ -625,7 +625,7 @@ def _interrupts(node):
             if len(raw) < 4*interrupt_cells:
                 raise EDTError("missing data after phandle in " + repr(prop))
 
-            res.append(_map_interrupt(node, iparent, raw[4*interrupt_cells:]))
+            res.append(_map(node, iparent, raw[4*interrupt_cells:]))
             raw = raw[4*interrupt_cells:]
 
         return res
@@ -637,81 +637,81 @@ def _interrupts(node):
         iparent = _interrupt_parent(node)
         interrupt_cells = _interrupt_cells(iparent)
 
-        return [_map_interrupt(node, iparent, raw)
+        return [_map(node, iparent, raw)
                 for raw in _slice(node, "interrupts", 4*interrupt_cells)]
 
     return []
 
 
-def _map_interrupt(node, iparent, ispec):
+def _map(node, parent, spec):
     # TODO: document
 
-    if "interrupt-controller" in iparent.props:
+    if "interrupt-controller" in parent.props:
         # No mapping
-        return (iparent, [to_num(ispec[4*i:4*i + 4])
-                          for i in range(_interrupt_cells(iparent))])
+        return (parent, [to_num(spec[4*i:4*i + 4])
+                         for i in range(_interrupt_cells(parent))])
 
-    imap_prop = iparent.props.get("interrupt-map")
-    if not imap_prop:
+    map_prop = parent.props.get("interrupt-map")
+    if not map_prop:
         raise EDTError("interrupt parent {!r} for {!r} has neither "
                        "interrupt-controller nor interrupt-map"
-                       .format(iparent, node))
+                       .format(parent, node))
 
-    child_spec = _raw_unit_addr(node) + ispec
-    if "interrupt-map-mask" in iparent.props:
-        mask = iparent.props["interrupt-map-mask"].value
+    child_spec = _raw_unit_addr(node) + spec
+    if "interrupt-map-mask" in parent.props:
+        mask = parent.props["interrupt-map-mask"].value
         if len(mask) != len(child_spec):
             raise EDTError("{!r}: expected 'interrupt-mask' in {!r} to be {} "
                            "bytes, is {} bytes".format(
-                               node, iparent, len(child_spec), len(mask)))
+                               node, parent, len(child_spec), len(mask)))
 
         # TODO: check that lengths match
         child_spec = _and(child_spec, mask)
 
-    raw = imap_prop.value
+    raw = map_prop.value
     while raw:
         if len(raw) < len(child_spec):
             raise EDTError("bad value for {!r}, not enough room for child "
-                           "specifier".format(imap_prop))
+                           "specifier".format(map_prop))
         child_spec_entry = raw[:len(child_spec)]
         raw = raw[len(child_spec_entry):]
 
         if len(raw) < 4:
             raise EDTError("bad value for {!r}, not enough room for phandle "
-                           .format(imap_prop))
+                           .format(map_prop))
         phandle = to_num(raw[:4])
         raw = raw[4:]
 
         # Interrupt parent specified in 'interrupt-map'
-        iparent_map = node.dt.phandle2node.get(phandle)
-        if not iparent_map:
-            raise EDTError("bad phandle in " + repr(imap_prop))
+        parent_map = node.dt.phandle2node.get(phandle)
+        if not parent_map:
+            raise EDTError("bad phandle in " + repr(map_prop))
 
         # Not sure how the interrupt parent unit address would be used
         # given that the phandle already points out the interrupt parent.
         # Just skip over it.
-        iparent_unit_addr_len = len(_raw_unit_addr(iparent_map))
-        if len(raw) < iparent_unit_addr_len:
+        parent_unit_addr_len = len(_raw_unit_addr(parent_map))
+        if len(raw) < parent_unit_addr_len:
             raise EDTError("bad value for {!r}, not enough room for parent "
-                           "unit address".format(imap_prop))
-        raw = raw[iparent_unit_addr_len:]
+                           "unit address".format(map_prop))
+        raw = raw[parent_unit_addr_len:]
 
-        iparent_interrupt_cells = _interrupt_cells(iparent_map)
-        if len(raw) < 4*iparent_interrupt_cells:
+        parent_interrupt_cells = _interrupt_cells(parent_map)
+        if len(raw) < 4*parent_interrupt_cells:
             raise EDTError("bad value for {!r}, not enough room for parent "
-                           "interrupt specifier".format(imap_prop))
-        iparent_ispec = raw[4*iparent_interrupt_cells:]
-        raw = raw[4*iparent_interrupt_cells:]
+                           "interrupt specifier".format(map_prop))
+        parent_spec = raw[4*parent_interrupt_cells:]
+        raw = raw[4*parent_interrupt_cells:]
 
         # Got one 'interrupt-map' row. Check if it matches the child
         # specifier.
         if child_spec_entry == child_spec:
             # Found match. Recursively map and return it.
-            return _map_interrupt(iparent, iparent_map, iparent_ispec)
+            return _map(parent, parent_map, parent_spec)
 
     # TODO: Is raising an error the right thing to do here?
     raise EDTError("child specifier for {!r} ({}) does not appear in {!r}"
-                   .format(node, child_spec, imap_prop))
+                   .format(node, child_spec, map_prop))
 
 
 def _raw_unit_addr(node):
