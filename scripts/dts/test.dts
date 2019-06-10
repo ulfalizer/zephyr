@@ -71,10 +71,12 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			open_pic: open-pic {
-				interrupt-controller;
+			hmm {
 				#address-cells = <0>;
-				#interrupt-cells = <2>;
+				open_pic: open-pic {
+					interrupt-controller;
+					#interrupt-cells = <2>;
+				};
 			};
 
 			pci: pci {
