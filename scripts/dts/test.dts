@@ -30,8 +30,8 @@
 		};
 
 		has_gpios {
-			gpios = <&gpio_controller 1 2 3>,
-				<&gpio_controller 4 5 6>;
+			foo-gpios = <&gpio_controller 1 2 3>,
+				    <&gpio_controller 4 5 6>;
 		};
 
 		uart0: uart@4006a000 {
@@ -93,7 +93,7 @@
 				    /* IDSEL 0x12 - PCI slot 2 */
 				    0x9000 0 0 1 &open_pic 3 1 /* INTA */
 				    0x9000 0 0 2 &open_pic 4 1 /* INTB */
-				    0x9000 0 0 3 &open_pic 1 1 /* INTC */
+				    0x9000 0 0 3 &open_pic 7 4 /* INTC */
 				    0x9000 0 0 4 &open_pic 2 1 /* INTD */
 				>;
 
