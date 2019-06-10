@@ -600,8 +600,6 @@ def _address_cells(node):
 
 
 def _interrupts(node):
-    # TODO: document
-
     # Takes precedence over 'interrupts' if both are present
     if "interrupts-extended" in node.props:
         prop = node.props["interrupts-extended"]
@@ -625,7 +623,7 @@ def _interrupts(node):
             if len(raw) < 4*interrupt_cells:
                 raise EDTError("missing data after phandle in " + repr(prop))
 
-            res.append(_map(node, iparent, raw[4*interrupt_cells:]))
+            res.append(_map_interrupt(node, iparent, raw[4*interrupt_cells:]))
             raw = raw[4*interrupt_cells:]
 
         return res
@@ -637,33 +635,36 @@ def _interrupts(node):
         iparent = _interrupt_parent(node)
         interrupt_cells = _interrupt_cells(iparent)
 
-        return [_map(node, iparent, raw)
+        return [_map_interrupt(node, iparent, raw)
                 for raw in _slice(node, "interrupts", 4*interrupt_cells)]
 
     return []
 
 
-def _map(node, parent, spec):
-    # TODO: document
+def _map_interrupt(node, parent, child_ispec):
+    parent, raw_spec = _map(node, parent, _raw_unit_addr(node) + child_ispec)
 
-    if "interrupt-controller" in parent.props:
-        # No mapping
-        return (parent, [to_num(spec[4*i:4*i + 4])
-                         for i in range(_interrupt_cells(parent))])
+    # Strip the parent unit address part, if any
+    raw_ispec = raw_spec[4*_address_cells(parent):]
+
+    return (parent, [to_num(raw_ispec[4*i:4*i + 4])
+                     for i in range(_interrupt_cells(parent))])
+
+
+def _map(child, parent, child_spec):
+    # TODO: document
 
     map_prop = parent.props.get("interrupt-map")
     if not map_prop:
-        raise EDTError("interrupt parent {!r} for {!r} has neither "
-                       "interrupt-controller nor interrupt-map"
-                       .format(parent, node))
+        # No mapping
+        return (parent, child_spec)
 
-    child_spec = _raw_unit_addr(node) + spec
     if "interrupt-map-mask" in parent.props:
         mask = parent.props["interrupt-map-mask"].value
         if len(mask) != len(child_spec):
             raise EDTError("{!r}: expected 'interrupt-mask' in {!r} to be {} "
                            "bytes, is {} bytes".format(
-                               node, parent, len(child_spec), len(mask)))
+                               child, parent, len(child_spec), len(mask)))
 
         # TODO: check that lengths match
         child_spec = _and(child_spec, mask)
@@ -683,20 +684,20 @@ def _map(node, parent, spec):
         raw = raw[4:]
 
         # Interrupt parent specified in 'interrupt-map'
-        parent_map = node.dt.phandle2node.get(phandle)
-        if not parent_map:
+        map_parent = parent.dt.phandle2node.get(phandle)
+        if not map_parent:
             raise EDTError("bad phandle in " + repr(map_prop))
 
         # Not sure how the interrupt parent unit address would be used
         # given that the phandle already points out the interrupt parent.
         # Just skip over it.
-        parent_unit_addr_len = len(_raw_unit_addr(parent_map))
+        parent_unit_addr_len = len(_raw_unit_addr(map_parent))
         if len(raw) < parent_unit_addr_len:
             raise EDTError("bad value for {!r}, not enough room for parent "
                            "unit address".format(map_prop))
         raw = raw[parent_unit_addr_len:]
 
-        parent_interrupt_cells = _interrupt_cells(parent_map)
+        parent_interrupt_cells = _interrupt_cells(map_parent)
         if len(raw) < 4*parent_interrupt_cells:
             raise EDTError("bad value for {!r}, not enough room for parent "
                            "interrupt specifier".format(map_prop))
@@ -707,11 +708,11 @@ def _map(node, parent, spec):
         # specifier.
         if child_spec_entry == child_spec:
             # Found match. Recursively map and return it.
-            return _map(parent, parent_map, parent_spec)
+            return _map(parent, map_parent, parent_spec)
 
     # TODO: Is raising an error the right thing to do here?
     raise EDTError("child specifier for {!r} ({}) does not appear in {!r}"
-                   .format(node, child_spec, map_prop))
+                   .format(child, child_spec, map_prop))
 
 
 def _raw_unit_addr(node):
@@ -778,6 +779,8 @@ def _warn(msg):
     print("warning: " + msg, file=sys.stderr)
 
 # TODO: replace node.path, etc., with repr's, which give more information
+# TODO: check if interrupt-controller exists on domain root?
+# TODO: does e.g. gpio-controller need to exist as well?
 
 # Unimplemented features:
 #   virtual-reg (unused)
