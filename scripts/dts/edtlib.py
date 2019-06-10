@@ -256,51 +256,11 @@ class Device:
     def gpios(self):
         "See the class docstring"
 
-        res = []
+        res = {}
 
-        node = self._node
-        for name, prop in self._node.props.items():
-            if not name.endswith("gpios"):
-                continue
-            res.extend(self._gpios(prop))
-
-        return res
-
-    def _gpios(self, prop):
-        # gpios() helper. Returns a list of (<controller>, <data>) GPIO
-        # specifications parsed from 'prop'.
-
-        raw = prop.value
-        res = []
-
-        while raw:
-            if len(raw) < 4:
-                # Not enough room for phandle
-                raise EDTError("bad value for " + repr(prop))
-            phandle = to_num(raw[:4])
-            raw = raw[4:]
-
-            controller = prop.node.dt.phandle2node.get(phandle)
-            if not controller:
-                raise EDTError("bad phandle in " + repr(prop))
-
-            # TODO: The stuff below doesn't deal with gpio-map
-            if "gpio-controller" not in controller.props:
-                raise EDTError("{} has no 'gpio-controller;', but is referenced by {}"
-                               .format(controller.path, repr(prop)))
-
-            if "#gpio-cells" not in controller.props:
-                raise EDTError("{} has no #gpio-cells property"
-                               .format(controller.path))
-
-            gpio_cells = controller.props["#gpio-cells"].to_num()
-            if len(raw) < 4*gpio_cells:
-                raise EDTError("missing data after phandle in " + repr(prop))
-
-            data = to_nums(raw[:4*gpio_cells])
-            raw = raw[4*gpio_cells:]
-
-            res.append((self.edt._node2dev[controller], data))
+        for prefix, gpios in _gpios(self._node).items():
+            res[prefix] = [(self.edt._node2dev[controller], to_nums(data))
+                           for controller, data in gpios]
 
         return res
 
@@ -598,6 +558,8 @@ def _address_cells(node):
 
 
 def _interrupts(node):
+    # TODO: document
+
     # Takes precedence over 'interrupts' if both are present
     if "interrupts-extended" in node.props:
         prop = node.props["interrupts-extended"]
@@ -621,7 +583,7 @@ def _interrupts(node):
             if len(raw) < 4*interrupt_cells:
                 raise EDTError("missing data after phandle in " + repr(prop))
 
-            res.append(_map_interrupt(node, iparent, raw[4*interrupt_cells:]))
+            res.append(_map_interrupt(node, iparent, raw[:4*interrupt_cells]))
             raw = raw[4*interrupt_cells:]
 
         return res
@@ -639,21 +601,79 @@ def _interrupts(node):
     return []
 
 
-def _map_interrupt(child, parent, child_ispec):
+def _map_interrupt(child, parent, child_spec):
     # TODO: document
 
     if "interrupt-controller" in parent.props:
-        return (parent, child_ispec)
+        return (parent, child_spec)
 
     def spec_len_fn(node):
         return 4*(_address_cells(node) + _interrupt_cells(node))
 
     parent, raw_spec = _map(
-        "interrupt", child, parent, _raw_unit_addr(child) + child_ispec,
+        "interrupt", child, parent, _raw_unit_addr(child) + child_spec,
         spec_len_fn)
 
     # Strip the parent unit address part, if any
     return (parent, raw_spec[4*_address_cells(parent):])
+
+
+def _gpios(node):
+    # TODO: document
+
+    res = {}
+
+    for name, prop in node.props.items():
+        if name.endswith("gpios"):
+            # Get the prefix from the property name:
+            #   - gpios     -> "" (deprecated, should have a prefix)
+            #   - foo-gpios -> "foo"
+            #   - etc.
+            prefix = name[:-5]
+            if prefix.endswith("-"):
+                prefix = prefix[:-1]
+
+            res[prefix] = _gpios_from_prop(prop)
+
+    return res
+
+
+def _gpios_from_prop(prop):
+    # gpios() helper. Returns a list of (<controller>, <data>) GPIO
+    # specifications parsed from 'prop'.
+
+    raw = prop.value
+    res = []
+
+    while raw:
+        if len(raw) < 4:
+            # Not enough room for phandle
+            raise EDTError("bad value for " + repr(prop))
+        phandle = to_num(raw[:4])
+        raw = raw[4:]
+
+        controller = prop.node.dt.phandle2node.get(phandle)
+        if not controller:
+            raise EDTError("bad phandle in " + repr(prop))
+
+        gpio_cells = _gpio_cells(controller)
+        if len(raw) < 4*gpio_cells:
+            raise EDTError("missing data after phandle in " + repr(prop))
+
+        res.append(_map_gpio(prop.node, controller, raw[:4*gpio_cells]))
+        raw = raw[4*gpio_cells:]
+
+    return res
+
+
+def _map_gpio(child, parent, child_spec):
+    # TODO: document
+
+    if "gpio-map" not in parent.props:
+        return (parent, child_spec)
+
+    return _map("gpio", child, parent, child_spec,
+                lambda node: 4*_gpio_cells(node))
 
 
 def _map(prefix, child, parent, child_spec, spec_len_fn):
@@ -739,12 +759,18 @@ def _and(b1, b2):
 def _interrupt_cells(node):
     # Returns the #interrupt-cells property value on 'node', erroring out if
     # 'node' has no #interrupt-cells property
-    #
-    # TODO: will replace Device._interrupt_cells() later
 
     if "#interrupt-cells" not in node.props:
         raise EDTError("{} lacks #interrupt-cells".format(node.path))
     return node.props["#interrupt-cells"].to_num()
+
+
+def _gpio_cells(node):
+    # TODO: have a _required_prop(node, "blah") or similar?
+
+    if "#gpio-cells" not in node.props:
+        raise EDTError("{!r} lacks #gpio-cells".format(node))
+    return node.props["#gpio-cells"].to_num()
 
 
 def _size_cells(node):

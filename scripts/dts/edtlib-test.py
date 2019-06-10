@@ -18,8 +18,8 @@ for dev in edt.devices:
         print("\t\tAddress: " + hex(reg.addr))
         print("\t\tSize: " + hex(reg.size))
 
-    for i, gpio in enumerate(dev.gpios):
-        print("\tGPIO " + str(i) + ": " + str(gpio))
+    for prefix, gpios in dev.gpios.items():
+        print("{} GPIOs: {}".format(prefix, gpios))
 
 if edt.sram_dev:
     print("SRAM device: " + str(edt.sram_dev))
