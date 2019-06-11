@@ -10,6 +10,8 @@ import os
 import re
 import sys
 
+from itertools import zip_longest
+
 import yaml
 
 from dtlib import DT, to_num, to_nums
@@ -724,6 +726,19 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
         # Got one '*-map' row. Check if it matches the child
         # specifier.
         if child_spec_entry == child_spec:
+            pass_thru_prop = parent.props.get(prefix + "-pass-thru")
+            if pass_thru_prop:
+                pass_thru = pass_thru_prop.value
+                if len(pass_thru) != len(child_spec):
+                    raise EDTError("{!r}: expected '{}-pass-thru' in {!r} to "
+                                   "be {} bytes, is {} bytes"
+                                   .format(child, prefix, len(child_spec),
+                                           len(pass_thru)))
+
+                # Clear out set bits and copy values
+                parent_spec = _or(_and(parent_spec, _not(pass_thru)),
+                                  _and(child_spec, pass_thru))
+
             # Found match. Recursively map and return it.
             return _map(prefix, parent, map_parent, parent_spec, spec_len_fn)
 
@@ -750,10 +765,23 @@ def _raw_unit_addr(node):
 
 
 def _and(b1, b2):
-    # Returns the bitwise AND of the two 'bytes' objects b1 and b2
+    # Returns the bitwise AND of the two 'bytes' objects b1 and b2. Pads
+    # with zero if the lengths are not equal.
 
-    # Wonder if there's a nicer way to do this...
-    return b"".join((x & y).to_bytes(1, "big") for x, y in zip(b1, b2))
+    return bytes(x & y for x, y in zip_longest(b1, b2, fillvalue=0))
+
+
+def _or(b1, b2):
+    # Returns the bitwise OR of the two 'bytes' objects b1 and b2. Pads with
+    # zero if the lengths are not equal.
+
+    return bytes(x | y for x, y in zip_longest(b1, b2, fillvalue=0))
+
+
+def _not(b):
+    # Returns the bitwise not of the 'bytes' object 'b'
+
+    return bytes(~x for x in b)
 
 
 def _interrupt_cells(node):
@@ -824,6 +852,8 @@ def _warn(msg):
 #     nal interrupt the reg property value must be a
 #     unique CPU/thread id that is addressable by
 #     the interrupt controller
+#
+#   "child specifier domian"
 #
 #  Translation look-aside buffer?
 #    The following properties of a cpu node describe the translate look-aside
