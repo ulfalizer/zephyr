@@ -689,16 +689,7 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
         # No mapping
         return (parent, child_spec)
 
-    mask_prop = parent.props.get(prefix + "-map-mask")
-    if mask_prop:
-        mask = mask_prop.value
-        if len(mask) != len(child_spec):
-            raise EDTError("{!r}: expected '{}-mask' in {!r} to be {} "
-                           "bytes, is {} bytes"
-                           .format(child, prefix, parent, len(child_spec),
-                                   len(mask)))
-
-        child_spec = _and(child_spec, mask)
+    masked_child_spec = _mask(prefix, child, parent, child_spec)
 
     raw = map_prop.value
     while raw:
@@ -709,12 +700,12 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
         raw = raw[len(child_spec_entry):]
 
         if len(raw) < 4:
-            raise EDTError("bad value for {!r}, missing/truncated phandle "
+            raise EDTError("bad value for {!r}, missing/truncated phandle"
                            .format(map_prop))
         phandle = to_num(raw[:4])
         raw = raw[4:]
 
-        # Parent specified in '*-map'
+        # Parent specified in *-map
         map_parent = parent.dt.phandle2node.get(phandle)
         if not map_parent:
             raise EDTError("bad phandle in " + repr(map_prop))
@@ -726,21 +717,11 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
         parent_spec = raw[:map_parent_spec_len]
         raw = raw[map_parent_spec_len:]
 
-        # Got one '*-map' row. Check if it matches the child
-        # specifier.
-        if child_spec_entry == child_spec:
-            pass_thru_prop = parent.props.get(prefix + "-pass-thru")
-            if pass_thru_prop:
-                pass_thru = pass_thru_prop.value
-                if len(pass_thru) != len(child_spec):
-                    raise EDTError("{!r}: expected '{}-pass-thru' in {!r} to "
-                                   "be {} bytes, is {} bytes"
-                                   .format(child, prefix, len(child_spec),
-                                           len(pass_thru)))
-
-                # Clear out set bits and copy values
-                parent_spec = _or(_and(parent_spec, _not(pass_thru)),
-                                  _and(child_spec, pass_thru))
+        # Got one *-map row. Check if it matches the child specifier.
+        if child_spec_entry == masked_child_spec:
+            # Handle *-map-pass-thru
+            parent_spec = _pass_thru(
+                prefix, child, parent, child_spec, parent_spec)
 
             # Found match. Recursively map and return it.
             return _map(prefix, parent, map_parent, parent_spec, spec_len_fn)
@@ -748,6 +729,41 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
     # TODO: Is raising an error the right thing to do here?
     raise EDTError("child specifier for {!r} ({}) does not appear in {!r}"
                    .format(child, child_spec, map_prop))
+
+
+def _mask(prefix, child, parent, child_spec):
+    # TODO: document
+
+    mask_prop = parent.props.get(prefix + "-map-mask")
+    if not mask_prop:
+        # No mask
+        return child_spec
+
+    mask = mask_prop.value
+    if len(mask) != len(child_spec):
+        raise EDTError("{!r}: expected '{}-mask' in {!r} to be {} bytes, is "
+                       "{} bytes".format(
+                           child, prefix, parent, len(child_spec), len(mask)))
+
+    return _and(child_spec, mask)
+
+
+def _pass_thru(prefix, child, parent, child_spec, parent_spec):
+    # TODO: document
+
+    pass_thru_prop = parent.props.get(prefix + "-map-pass-thru")
+    if not pass_thru_prop:
+        # No pass-thru
+        return parent_spec
+
+    pass_thru = pass_thru_prop.value
+    if len(pass_thru) != len(child_spec):
+        raise EDTError("{!r}: expected '{}-map-pass-thru' in {!r} to be {} "
+                       "bytes, is {} bytes".format(
+                           child, prefix, len(child_spec), len(pass_thru)))
+
+    return _or(_and(parent_spec, _not(pass_thru)),
+               _and(child_spec, pass_thru))
 
 
 def _raw_unit_addr(node):
@@ -769,22 +785,33 @@ def _raw_unit_addr(node):
 
 def _and(b1, b2):
     # Returns the bitwise AND of the two 'bytes' objects b1 and b2. Pads
-    # with zero if the lengths are not equal.
+    # with ones on the left if the lengths are not equal.
 
-    return bytes(x & y for x, y in zip_longest(b1, b2, fillvalue=0))
+    # Pad on the left, to equal length
+    maxlen = max(len(b1), len(b2))
+    b1 = b1.rjust(maxlen, b'\xff')
+    b2 = b2.rjust(maxlen, b'\xff')
+
+    return bytes(x & y for x, y in zip(b1, b2))
 
 
 def _or(b1, b2):
     # Returns the bitwise OR of the two 'bytes' objects b1 and b2. Pads with
-    # zero if the lengths are not equal.
+    # zeros on the left if the lengths are not equal.
 
-    return bytes(x | y for x, y in zip_longest(b1, b2, fillvalue=0))
+    # Pad on the left, to equal length
+    maxlen = max(len(b1), len(b2))
+    b1 = b1.rjust(maxlen, b'\x00')
+    b2 = b2.rjust(maxlen, b'\x00')
+
+    return bytes(x | y for x, y in zip(b1, b2))
 
 
 def _not(b):
     # Returns the bitwise not of the 'bytes' object 'b'
 
-    return bytes(~x for x in b)
+    # ANDing with 0xFF avoids negative numbers
+    return bytes(~x & 0xFF for x in b)
 
 
 def _interrupt_cells(node):
