@@ -10,8 +10,6 @@ import os
 import re
 import sys
 
-from itertools import zip_longest
-
 import yaml
 
 from dtlib import DT, to_num, to_nums
