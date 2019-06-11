@@ -226,6 +226,9 @@ class Device:
         if "@" not in self.name:
             return None
 
+        # TODO: Return the untranslated address here?
+        # TODO: A non-numeric @<unit-address> seems to be allowed
+
         try:
             addr = int(self.name.split("@", 1)[1], 16)
         except ValueError:
