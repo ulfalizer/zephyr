@@ -34,7 +34,9 @@ class EDT:
       the /chosen node, or None if missing
     """
     def __init__(self, dts, bindings_dir):
-        self._create_compat2binding(bindings_dir)
+        dt = DT(dts)
+
+        self._create_compat2binding(dt, bindings_dir)
 
         # Add '!include foo.yaml' handling.
         #
@@ -48,20 +50,21 @@ class EDT:
         # Maps dtlib.Node's to their corresponding Devices
         self._node2dev = {}
 
-        dt = DT(dts)
         self._create_devices(dt)
         self._parse_chosen(dt)
 
-    def _create_compat2binding(self, bindings_dir):
+    def _create_compat2binding(self, dt, bindings_dir):
         # Creates self._compat2binding, which maps each compat that's
         # implemented by some binding to the path to the binding
+
+        dt_compats = _dt_compats(dt)
 
         self._compat2binding = {}
 
         self._find_bindings(bindings_dir)
         for binding_path in self._bindings:
             compat = _binding_compat(binding_path)
-            if compat:
+            if compat in dt_compats:
                 self._compat2binding[compat] = binding_path
 
     def _find_bindings(self, bindings_dir):
@@ -404,6 +407,18 @@ class EDTError(Exception):
 #
 # Private global functions
 #
+
+
+def _dt_compats(dt):
+    # TODO: document
+
+    res = set()
+
+    for node in dt.node_iter():
+        if "compatible" in node.props:
+            res.update(node.props["compatible"].to_strings())
+
+    return res
 
 
 def _binding_compat(binding_path):
