@@ -38,10 +38,6 @@ class EDT:
         dt = DT(dts)
 
         self._create_compat2bindings(dt, bindings_dir)
-
-        # Maps dtlib.Node's to their corresponding Devices
-        self._node2dev = {}
-
         self._create_devices(dt)
         self._parse_chosen(dt)
 
@@ -127,6 +123,9 @@ class EDT:
     def _create_devices(self, dt):
         # Creates a list of devices (Device instances) from the DT nodes, in
         # self.devices. 'dt' is the dtlib.DT instance for the device tree.
+
+        # Maps dtlib.Node's to their corresponding Devices
+        self._node2dev = {}
 
         self.devices = []
 
@@ -919,6 +918,7 @@ def _warn(msg):
 # TODO: replace node.path, etc., with repr's, which give more information
 # TODO: check if interrupt-controller exists on domain root?
 # TODO: does e.g. gpio-controller need to exist as well?
+# TODO: Have (<compat>, <bus>) as keys in compatible2bindings
 
 # Unimplemented features:
 #   virtual-reg (unused)
