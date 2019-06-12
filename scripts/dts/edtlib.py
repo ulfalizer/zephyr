@@ -5,7 +5,6 @@
 Helper library for working with .dts files at a higher level compared to dtlib.
 Deals with devices, registers, bindings, etc.
 """
-import collections
 import fnmatch
 import os
 import re
@@ -42,15 +41,15 @@ class EDT:
         self._parse_chosen(dt)
 
     def _create_compat2bindings(self, dt, bindings_dir):
-        # Creates self._compat2bindings. This dictionary maps 'compatible'
-        # strings to dictionaries that map buses to bindings (in parsed PyYAML
-        # format).
+        # Creates self._compat2bindings. This dictionary maps
+        # (<compatible>, <bus>) tuples (both strings) to bindings (in parsed
+        # PyYAML format).
         #
-        # For example, self._compat2bindings["company,dev"]["can"] contains the
+        # For example, self._compat2bindings["company,dev", "can"] contains the
         # binding for the 'company,dev' device, when it appears on the CAN bus.
         #
         # For bindings that don't specify a bus, the bus part is None, so that
-        # e.g. self._compat2bindings["company,notonbus"][None] contains the
+        # e.g. self._compat2bindings["company,notonbus", None] contains the
         # binding.
         #
         # Only bindings for compatible strings mentioned in the device tree are
@@ -67,7 +66,7 @@ class EDT:
 
         dt_compats = _dt_compats(dt)
 
-        self._compat2bindings = collections.defaultdict(dict)
+        self._compat2bindings = {}
 
         self._find_bindings(bindings_dir)
         for binding_path in self._bindings:
@@ -75,7 +74,7 @@ class EDT:
             if compat in dt_compats:
                 binding = _load_binding(binding_path)
                 bus = _binding_parent_bus(binding)
-                self._compat2bindings[compat][bus] = binding
+                self._compat2bindings[compat, bus] = binding
 
     def _find_bindings(self, bindings_dir):
         # Creates a list with paths to all binding files, in self._bindings
@@ -327,10 +326,10 @@ class Device:
         self.compats = self._node.props["compatible"].to_strings()
 
         for compat in self.compats:
-            bindings = self.edt._compat2bindings.get(compat)
-            if bindings and bus in bindings:
+            binding = self.edt._compat2bindings.get((compat, bus))
+            if binding:
                 self.matching_compat = compat
-                self.binding = bindings[bus]
+                self.binding = binding
                 return
 
         self.matching_compat = self.binding = None
@@ -918,7 +917,6 @@ def _warn(msg):
 # TODO: replace node.path, etc., with repr's, which give more information
 # TODO: check if interrupt-controller exists on domain root?
 # TODO: does e.g. gpio-controller need to exist as well?
-# TODO: Have (<compat>, <bus>) as keys in compatible2bindings
 
 # Unimplemented features:
 #   virtual-reg (unused)
