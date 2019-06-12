@@ -5,6 +5,7 @@
 Helper library for working with .dts files at a higher level compared to dtlib.
 Deals with devices, registers, bindings, etc.
 """
+import collections
 import fnmatch
 import os
 import re
@@ -36,7 +37,7 @@ class EDT:
     def __init__(self, dts, bindings_dir):
         dt = DT(dts)
 
-        self._create_compat2binding(dt, bindings_dir)
+        self._create_compat2bindings(dt, bindings_dir)
 
         # Maps dtlib.Node's to their corresponding Devices
         self._node2dev = {}
@@ -44,10 +45,20 @@ class EDT:
         self._create_devices(dt)
         self._parse_chosen(dt)
 
-    def _create_compat2binding(self, dt, bindings_dir):
-        # Creates self._compat2binding, which maps compat strings to bindings
-        # (in parsed PyYAML format). Only bindings for compatible strings
-        # mentioned in the device tree are loaded.
+    def _create_compat2bindings(self, dt, bindings_dir):
+        # Creates self._compat2bindings. This dictionary maps 'compatible'
+        # strings to dictionaries that map buses to bindings (in parsed PyYAML
+        # format).
+        #
+        # For example, self._compat2bindings["company,dev"]["can"] contains the
+        # binding for the 'company,dev' device, when it appears on the CAN bus.
+        #
+        # For bindings that don't specify a bus, the bus part is None, so that
+        # e.g. self._compat2bindings["company,notonbus"][None] contains the
+        # binding.
+        #
+        # Only bindings for compatible strings mentioned in the device tree are
+        # loaded.
 
         # Add '!include foo.yaml' handling.
         #
@@ -60,13 +71,15 @@ class EDT:
 
         dt_compats = _dt_compats(dt)
 
-        self._compat2binding = {}
+        self._compat2bindings = collections.defaultdict(dict)
 
         self._find_bindings(bindings_dir)
         for binding_path in self._bindings:
             compat = _binding_compat(binding_path)
             if compat in dt_compats:
-                self._compat2binding[compat] = _load_binding(binding_path)
+                binding = _load_binding(binding_path)
+                bus = _binding_parent_bus(binding)
+                self._compat2bindings[compat][bus] = binding
 
     def _find_bindings(self, bindings_dir):
         # Creates a list with paths to all binding files, in self._bindings
@@ -307,13 +320,18 @@ class Device:
             self.matching_compat = self.binding = None
             return
 
+        if self.parent and self.parent.binding:
+            bus = _binding_child_bus(self.parent.binding)
+        else:
+            bus = None
+
         self.compats = self._node.props["compatible"].to_strings()
 
         for compat in self.compats:
-            binding = self.edt._compat2binding.get(compat)
-            if binding:
+            bindings = self.edt._compat2bindings.get(compat)
+            if bindings and bus in bindings:
                 self.matching_compat = compat
-                self.binding = binding
+                self.binding = bindings[bus]
                 return
 
         self.matching_compat = self.binding = None
@@ -432,6 +450,24 @@ def _binding_compat(binding_path):
                 return match.group(1)
 
     return None
+
+
+def _binding_child_bus(binding):
+    # TODO: document
+
+    parent = binding.get("child")
+    if not parent:
+        return None
+    return parent.get("bus")
+
+
+def _binding_parent_bus(binding):
+    # TODO: document
+
+    parent = binding.get("parent")
+    if not parent:
+        return None
+    return parent.get("bus")
 
 
 def _yaml_inc_error(msg):
