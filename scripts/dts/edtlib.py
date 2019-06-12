@@ -192,6 +192,11 @@ class Device:
       The data from the device's binding file, in the format returned by PyYAML
       (plain Python lists, dicts, etc.), or None if the device has no binding.
 
+    props:
+      A dictionary that maps (the names of) properties mentioned in the
+      'properties' section of the binding to their values. The 'type' key in
+      the binding determines the form of the value.
+
     regs:
       A list of Register instances for the device's registers
 
@@ -307,6 +312,7 @@ class Device:
         self.edt = edt
         self._node = node
         self._init_binding()
+        self._create_props()
         self._create_regs()
         self._set_instance_no()
 
@@ -333,6 +339,32 @@ class Device:
                 return
 
         self.matching_compat = self.binding = None
+
+    def _create_props(self):
+        # Creates self.props. See the class docstring.
+
+        self.props = {}
+
+        if not self.binding or "properties" not in self.binding:
+            return
+
+        node = self._node
+
+        for prop_name, options in self.binding["properties"].items():
+            if "generation" not in options:
+                _warn("{} lacks 'generation' in binding for {!r}"
+                      .format(prop_name, node))
+
+            prop_type = options.get("type")
+            if not prop_type:
+                raise EDTError(
+                    "{} lacks 'type' in binding for {!r}"
+                    .format(prop_name, node))
+
+            value = _prop_value(node, prop_name, prop_type,
+                                options.get("category") == "optional")
+            if value is not None:
+                self.props[prop_name] = value
 
     def _create_regs(self):
         # Initializes self.regs with a list of Register instances
@@ -466,6 +498,41 @@ def _binding_parent_bus(binding):
     if not parent:
         return None
     return parent.get("bus")
+
+
+def _prop_value(node, prop_name, prop_type, optional):
+    # Returns the value of the property named 'prop_name' on the DT node
+    # 'node'. 'prop_type' is from the binding and determines how the value is
+    # interpreted. 'optional' is True if the binding has 'category: optional'.
+    # for the property.
+
+    if prop_type == "boolean":
+        # True/False
+        return prop_name in node.props
+
+    prop = node.props.get(prop_name)
+    if not prop:
+        if optional:
+            return None
+
+        raise EDTError(
+            "'{}' appears in 'properties' in binding for {!r}, but not in its "
+            "device tree node".format(prop_name, node))
+
+    if prop_type == "int":
+        return prop.to_num()
+
+    if prop_type == "array":
+        return prop.to_nums()
+
+    if prop_type == "string":
+        return prop.to_string()
+
+    if prop_type == "stringlist":
+        return prop.to_strings()
+
+    # TODO... try to make it visible
+    return "UNKNOWN TYPE"
 
 
 def _yaml_inc_error(msg):
