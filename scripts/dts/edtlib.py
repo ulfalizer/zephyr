@@ -34,8 +34,7 @@ class EDT:
       the /chosen node, or None if missing
     """
     def __init__(self, dts, bindings_dir):
-        self._find_bindings(bindings_dir)
-        self._create_compat2binding()
+        self._create_compat2binding(bindings_dir)
 
         # Add '!include foo.yaml' handling.
         #
@@ -53,6 +52,18 @@ class EDT:
         self._create_devices(dt)
         self._parse_chosen(dt)
 
+    def _create_compat2binding(self, bindings_dir):
+        # Creates self._compat2binding, which maps each compat that's
+        # implemented by some binding to the path to the binding
+
+        self._compat2binding = {}
+
+        self._find_bindings(bindings_dir)
+        for binding_path in self._bindings:
+            compat = _binding_compat(binding_path)
+            if compat:
+                self._compat2binding[compat] = binding_path
+
     def _find_bindings(self, bindings_dir):
         # Creates a list with paths to all binding files, in self._bindings
 
@@ -61,17 +72,6 @@ class EDT:
         for root, _, filenames in os.walk(bindings_dir):
             for filename in fnmatch.filter(filenames, "*.yaml"):
                 self._bindings.append(os.path.join(root, filename))
-
-    def _create_compat2binding(self):
-        # Creates self._compat2binding, which maps each compat that's
-        # implemented by some binding to the path to the binding
-
-        self._compat2binding = {}
-
-        for binding_path in self._bindings:
-            compat = _binding_compat(binding_path)
-            if compat:
-                self._compat2binding[compat] = binding_path
 
     def _binding_include(self, loader, node):
         # Implements !include. Returns a list with the YAML structures for the
