@@ -38,6 +38,17 @@ class EDT:
 
         self._create_compat2binding(dt, bindings_dir)
 
+        # Maps dtlib.Node's to their corresponding Devices
+        self._node2dev = {}
+
+        self._create_devices(dt)
+        self._parse_chosen(dt)
+
+    def _create_compat2binding(self, dt, bindings_dir):
+        # Creates self._compat2binding, which maps compat strings to bindings
+        # (in parsed PyYAML format). Only bindings for compatible strings
+        # mentioned in the device tree are loaded.
+
         # Add '!include foo.yaml' handling.
         #
         # Do yaml.Loader.add_constructor() instead of yaml.add_constructor() to be
@@ -47,16 +58,6 @@ class EDT:
         # if multiple EDT instances are created?
         yaml.Loader.add_constructor("!include", self._binding_include)
 
-        # Maps dtlib.Node's to their corresponding Devices
-        self._node2dev = {}
-
-        self._create_devices(dt)
-        self._parse_chosen(dt)
-
-    def _create_compat2binding(self, dt, bindings_dir):
-        # Creates self._compat2binding, which maps each compat that's
-        # implemented by some binding to the path to the binding
-
         dt_compats = _dt_compats(dt)
 
         self._compat2binding = {}
@@ -65,7 +66,7 @@ class EDT:
         for binding_path in self._bindings:
             compat = _binding_compat(binding_path)
             if compat in dt_compats:
-                self._compat2binding[compat] = binding_path
+                self._compat2binding[compat] = _load_binding(binding_path)
 
     def _find_bindings(self, bindings_dir):
         # Creates a list with paths to all binding files, in self._bindings
@@ -312,7 +313,7 @@ class Device:
             binding = self.edt._compat2binding.get(compat)
             if binding:
                 self.matching_compat = compat
-                self.binding = _load_binding(binding)
+                self.binding = binding
                 return
 
         self.matching_compat = self.binding = None
