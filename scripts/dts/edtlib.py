@@ -69,12 +69,9 @@ class EDT:
         self._compat2binding = {}
 
         for binding_path in self._bindings:
-            with open(binding_path) as binding:
-                for line in binding:
-                    match = re.match(r'\s+constraint:\s*"([^"]*)"', line)
-                    if match:
-                        self._compat2binding[match.group(1)] = binding_path
-                        break
+            compat = _binding_compat(binding_path)
+            if compat:
+                self._compat2binding[compat] = binding_path
 
     def _binding_include(self, loader, node):
         # Implements !include. Returns a list with the YAML structures for the
@@ -407,6 +404,18 @@ class EDTError(Exception):
 #
 # Private global functions
 #
+
+
+def _binding_compat(binding_path):
+    # TODO: document
+
+    with open(binding_path) as binding:
+        for line in binding:
+            match = re.match(r'\s+constraint:\s*"([^"]*)"', line)
+            if match:
+                return match.group(1)
+
+    return None
 
 
 def _yaml_inc_error(msg):
