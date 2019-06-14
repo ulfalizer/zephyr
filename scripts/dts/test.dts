@@ -1,133 +1,76 @@
-// Copyright (c) 2019 Nordic Semiconductor ASA
-// SPDX-License-Identifier: Apache-2.0
-
 /dts-v1/;
 
 / {
-	chosen {
-		zephyr,sram = "/soc/sram-dev";
-		zephyr,ccm = "/soc/ccm-dev";
-	};
-
-	#address-cells = <0x01>;
-	#size-cells = <0x01>;
-	model = "NXP Freedom MK64F board";
-	compatible = "nxp,mk64f12", "nxp,k64f", "nxp,k6x";
-
-	soc {
-		#address-cells = <0x01>;
-		#size-cells = <0x01>;
-		compatible = "simple-bus";
-		interrupt-parent = <0x01>;
-		ranges = <0x0 0x40000000 0x200>;
-
-		irq-ctrl {
-		};
-
-		gpio_controller: gpio_controller {
-			gpio-controller;
-			#gpio-cells = <3>;
-		};
-
-		has_gpios {
-			foo-gpios = <&gpio_controller 1 2 3>,
-				    <&gpio_controller 4 5 6>;
-		};
-
-		uart0: uart@4006a000 {
-			compatible = "nxp,kinetis-uart";
-			reg = <0x4006a000 0x1000 0x123 0x456>;
-			interrupt-parent = <&{/soc/irq-ctrl}>;
-			interrupt-names = "status", "error";
-			label = "UART_0";
-			status = "ok";
-			current-speed = <0x1c200>;
-		};
-
-		uart1: uart@4006b000 {
-			compatible = "nxp,kinetis-uart";
-			reg = <0x4006b000 0x1000 0xF00 0xBA>;
-			reg-names = "mmio", "foo";
-			label = "UART_1";
-		};
-
-		foo {
-			interrupt-controller;
+	interrupt-parent-test {
+		controller {
 			#interrupt-cells = <3>;
-			bar {
-				interrupts = <1 2 3>, <10 11 12>;
-				interrupt-parent = <&{/soc/foo}>;
-			};
+			interrupt-controller;
 		};
-
-		sram-dev {
+		node {
+			interrupts = <1 2 3 4 5 6>;
+			interrupt-parent = <&{/interrupt-parent-test/controller}>;
 		};
-
-		ccm-dev {
+	};
+	interrupts-extended-test {
+		controller-0 {
+			#interrupt-cells = <1>;
+			interrupt-controller;
 		};
+		controller-1 {
+			#interrupt-cells = <2>;
+			interrupt-controller;
+		};
+		controller-2 {
+			#interrupt-cells = <3>;
+			interrupt-controller;
+		};
+		node {
+			interrupts-extended = <
+				&{/interrupts-extended-test/controller-0} 1
+				&{/interrupts-extended-test/controller-1} 2 3
+				&{/interrupts-extended-test/controller-2} 4 5 6>;
+		};
+	};
+	interrupt-map-test {
+		#address-cells = <2>;
+		#size-cells = <0>;
 
-		// interrupt-map example from DT spec.
-		imap-test {
+		controller-0 {
 			#address-cells = <1>;
-			#size-cells = <1>;
-
-			hmm {
-				#address-cells = <0>;
-				open_pic: open-pic {
-					interrupt-controller;
-					#interrupt-cells = <2>;
-				};
-			};
-
-			pci: pci {
-				#interrupt-cells = <1>;
-				#size-cells = <2>;
-				#address-cells = <3>;
-				interrupt-map-mask = <0x9800 0 0 7>;
-				interrupt-map = <
-				    /* IDSEL 0x11 - PCI slot 1 */
-				    0x8800 0 0 1 &open_pic 2 1 /* INTA */
-				    0x8800 0 0 2 &open_pic 3 1 /* INTB */
-				    0x8800 0 0 3 &open_pic 4 1 /* INTC */
-				    0x8800 0 0 4 &open_pic 1 1 /* INTD */
-				    /* IDSEL 0x12 - PCI slot 2 */
-				    0x9000 0 0 1 &open_pic 3 1 /* INTA */
-				    0x9000 0 0 2 &open_pic 4 1 /* INTB */
-				    0x9000 0 0 3 &open_pic 7 4 /* INTC */
-				    0x9000 0 0 4 &open_pic 2 1 /* INTD */
-				>;
-
-				// Matches second-to-last entry in interrupt-map
-				map-me@F7FF0000000000000000 {
-					interrupt-parent = <&pci>;
-					interrupts = < 3 >;
-				};
-			};
+			#interrupt-cells = <1>;
+			interrupt-controller;
 		};
-
-		gpio1: gpio-controller1 {
-			#gpio-cells = <1>;
+		controller-1 {
+			#address-cells = <2>;
+			#interrupt-cells = <2>;
+			interrupt-controller;
 		};
-
-		gpio2: gpio-controller2 {
-			#gpio-cells = <2>;
+		controller-2 {
+			#address-cells = <3>;
+			#interrupt-cells = <3>;
+			interrupt-controller;
 		};
-
-		gpio3: gpio-controller3 {
-			#gpio-cells = <3>;
+		nexus {
+			#interrupt-cells = <2>;
+			interrupt-map = <
+				0 0  0 0  &{/interrupt-map-test/controller-0}  0      0
+				0 0  0 1  &{/interrupt-map-test/controller-1}  0 0    0 1
+				0 0  0 2  &{/interrupt-map-test/controller-2}  0 0 0  0 0 2
+				0 1  0 0  &{/interrupt-map-test/controller-0}  0      3
+				0 1  0 1  &{/interrupt-map-test/controller-1}  0 0    0 4
+				0 1  0 2  &{/interrupt-map-test/controller-2}  0 0 0  0 0 5>;
 		};
-
-		connector: connector {
-			#gpio-cells = <2>;
-			gpio-map = <0 0 &gpio1 10>,
-			           <1 0 &gpio2 11 12>,
-				   <2 0 &gpio3 13 14 13>;
-			gpio-map-mask = <0xF 0x0>;
-			gpio-map-pass-thru = <0 2>;
+		node@0 {
+			reg = <0 0>;
+			interrupts = <0 0 0 1 0 2>;
+			interrupt-parent = <&{/interrupt-map-test/nexus}>;
 		};
-
-		expansion_device {
-			reset-gpios = <&connector 2 2>;
+		node@1 {
+			reg = <0 1>;
+			interrupts-extended = <
+			    &{/interrupt-map-test/nexus} 0 0
+			    &{/interrupt-map-test/nexus} 0 1
+			    &{/interrupt-map-test/nexus} 0 2>;
 		};
 	};
 };
