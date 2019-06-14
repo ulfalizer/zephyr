@@ -515,9 +515,10 @@ def _prop_value(node, prop_name, prop_type, optional):
         if optional:
             return None
 
-        raise EDTError(
+        _warn(
             "'{}' appears in 'properties' in binding for {!r}, but not in its "
             "device tree node".format(prop_name, node))
+        return None
 
     if prop_type == "int":
         return prop.to_num()
