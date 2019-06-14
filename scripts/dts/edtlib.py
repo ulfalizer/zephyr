@@ -12,7 +12,7 @@ import sys
 
 import yaml
 
-from dtlib import DT, to_num, to_nums
+from dtlib import DT, DTError, to_num, to_nums
 
 
 class EDT:
@@ -34,13 +34,23 @@ class EDT:
       the /chosen node, or None if missing
     """
     def __init__(self, dts, bindings_dir):
-        dt = DT(dts)
+        self._dt = DT(dts)
 
-        self._create_compat2bindings(dt, bindings_dir)
-        self._create_devices(dt)
-        self._parse_chosen(dt)
+        self._create_compat2bindings(bindings_dir)
+        self._create_devices()
+        self._parse_chosen()
 
-    def _create_compat2bindings(self, dt, bindings_dir):
+    def get_dev(self, path):
+        """
+        Returns the Device at the DT path or alias 'path'. Raises EDTError if
+        the path or alias doesn't exist.
+        """
+        try:
+            return self._node2dev[self._dt.get_node(path)]
+        except DTError as e:
+            raise EDTError(e)
+
+    def _create_compat2bindings(self, bindings_dir):
         # Creates self._compat2bindings. This dictionary maps
         # (<compatible>, <bus>) tuples (both strings) to bindings (in parsed
         # PyYAML format).
@@ -64,7 +74,7 @@ class EDT:
         # if multiple EDT instances are created?
         yaml.Loader.add_constructor("!include", self._binding_include)
 
-        dt_compats = _dt_compats(dt)
+        dt_compats = _dt_compats(self._dt)
 
         self._compat2bindings = {}
 
@@ -119,7 +129,7 @@ class EDT:
         with open(paths[0], encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.Loader)
 
-    def _create_devices(self, dt):
+    def _create_devices(self):
         # Creates a list of devices (Device instances) from the DT nodes, in
         # self.devices. 'dt' is the dtlib.DT instance for the device tree.
 
@@ -128,7 +138,7 @@ class EDT:
 
         self.devices = []
 
-        for node in dt.node_iter():
+        for node in self._dt.node_iter():
             dev = Device(self, node)
             self.devices.append(dev)
             self._node2dev[node] = dev
@@ -137,31 +147,31 @@ class EDT:
         # compare output against extract_dts_include.py.
         self.devices.sort(key=lambda dev: dev.name)
 
-    def _parse_chosen(self, dt):
+    def _parse_chosen(self):
         # Extracts information from the device tree's /chosen node. 'dt' is the
         # dtlib.DT instance for the device tree.
 
-        self.sram_dev = self._chosen_dev(dt, "zephyr,sram")
-        self.ccm_dev = self._chosen_dev(dt, "zephyr,ccm")
+        self.sram_dev = self._chosen_dev("zephyr,sram")
+        self.ccm_dev = self._chosen_dev("zephyr,ccm")
 
-    def _chosen_dev(self, dt, prop_name):
+    def _chosen_dev(self, prop_name):
         # _parse_chosen() helper. Returns the device pointed to by prop_name in
-        # /chosen in 'dt', or None if /chosen has no property named prop_name.
+        # /chosen, or None if /chosen has no property named prop_name.
 
-        if not dt.has_node("/chosen"):
+        if not self._dt.has_node("/chosen"):
             return None
 
-        chosen = dt.get_node("/chosen")
+        chosen = self._dt.get_node("/chosen")
 
         if prop_name in chosen.props:
             # Value is the path of a node that represents the memory device
             path = chosen.props[prop_name].to_string()
-            if not dt.has_node(path):
+            if not self._dt.has_node(path):
                 raise EDTError(
                     "{} points to {}, which does not exist"
                     .format(prop_name, path))
 
-            return self._node2dev[dt.get_node(path)]
+            return self._node2dev[self._dt.get_node(path)]
 
     def __repr__(self):
         return "<EDT, {} devices>".format(len(self.devices))
@@ -744,15 +754,28 @@ def _map_interrupt(child, parent, child_spec):
     if "interrupt-controller" in parent.props:
         return (parent, child_spec)
 
+    def own_address_cells(node):
+        # Used for parents pointed to by interrupt-map. We can't use
+        # _address_cells() here, because it's the #address-cells property on
+        # 'node' itself that matters.
+
+        address_cells = node.props.get("#address-cells")
+        if not address_cells:
+            raise EDTError("missing #address-cells on {!r} (while handling "
+                           "interrupt-map)".format(node))
+        return address_cells.to_num()
+
     def spec_len_fn(node):
-        return 4*(_address_cells(node) + _interrupt_cells(node))
+        # Can't use _address_cells() here, because it's the #address-cells
+        # property on 'node' itself that matters
+        return 4*(own_address_cells(node) + _interrupt_cells(node))
 
     parent, raw_spec = _map(
         "interrupt", child, parent, _raw_unit_addr(child) + child_spec,
         spec_len_fn)
 
     # Strip the parent unit address part, if any
-    return (parent, raw_spec[4*_address_cells(parent):])
+    return (parent, raw_spec[4*own_address_cells(parent):])
 
 
 def _gpios(node):

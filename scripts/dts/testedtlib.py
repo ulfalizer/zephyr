@@ -6,23 +6,33 @@
 import edtlib
 
 
-edt = edtlib.EDT("test.dts", "../../dts/bindings")
-for dev in edt.devices:
-    print("Device " + dev.name)
-    print("\tInterrupts: " + str(dev.interrupts))
+def fail(msg):
+    raise Exception("test failed: " + msg)
 
-    for i, reg in enumerate(dev.regs):
-        print("\tRegister " + str(i))
-        if reg.name is not None:
-            print("\t\tName: " + reg.name)
-        print("\t\tAddress: " + hex(reg.addr))
-        print("\t\tSize: " + hex(reg.size))
 
-    for prefix, gpios in dev.gpios.items():
-        print("{} GPIOs: {}".format(prefix, gpios))
+def verify_eq(actual, expected):
+    if actual != expected:
+        # Put values on separate lines to make it easy to spot differences
+        fail("not equal (expected value last):\n'{}'\n'{}'"
+             .format(actual, expected))
 
-if edt.sram_dev:
-    print("SRAM device: " + str(edt.sram_dev))
 
-if edt.ccm_dev:
-    print("CCM device: " + str(edt.ccm_dev))
+edt = edtlib.EDT("newtest.dts", ".")
+
+#
+# Test interrupts
+#
+
+verify_eq(str(edt.get_dev("/interrupt-parent-test/node").interrupts),
+          "[(<Device controller, 0 regs>, [1, 2, 3]), (<Device controller, 0 regs>, [4, 5, 6])]")
+
+verify_eq(str(edt.get_dev("/interrupts-extended-test/node").interrupts),
+          "[(<Device controller-0, 0 regs>, [1]), (<Device controller-1, 0 regs>, [2, 3]), (<Device controller-2, 0 regs>, [4, 5, 6])]")
+
+verify_eq(str(edt.get_dev("/interrupt-map-test/node@0").interrupts),
+          "[(<Device controller-0, 0 regs>, [0]), (<Device controller-1, 0 regs>, [0, 1]), (<Device controller-2, 0 regs>, [0, 0, 2])]")
+
+verify_eq(str(edt.get_dev("/interrupt-map-test/node@1").interrupts),
+          "[(<Device controller-0, 0 regs>, [3]), (<Device controller-1, 0 regs>, [0, 4]), (<Device controller-2, 0 regs>, [0, 0, 5])]")
+
+print("all tests passed")
