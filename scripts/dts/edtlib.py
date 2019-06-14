@@ -529,7 +529,7 @@ def _prop_value(node, prop_name, prop_type, optional):
     if prop_type == "string":
         return prop.to_string()
 
-    if prop_type == "stringlist":
+    if prop_type == "string-array":
         return prop.to_strings()
 
     # TODO... try to make it visible
