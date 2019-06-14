@@ -128,12 +128,14 @@ class EDT:
 
         self.devices = []
 
-        # TODO: Remove the sorting later? It's there to make it easy to compare
-        # output against extract_dts_include.py.
-        for node in sorted(dt.node_iter(), key=lambda node: node.name):
+        for node in dt.node_iter():
             dev = Device(self, node)
             self.devices.append(dev)
             self._node2dev[node] = dev
+
+        # TODO: Remove this sorting later? It's there to make it easy to
+        # compare output against extract_dts_include.py.
+        self.devices.sort(key=lambda dev: dev.name)
 
     def _parse_chosen(self, dt):
         # Extracts information from the device tree's /chosen node. 'dt' is the
@@ -324,6 +326,9 @@ class Device:
             self.matching_compat = self.binding = None
             return
 
+        # This relies on the parent of the Device having already been
+        # initialized, which is guaranteed by going through the nodes in
+        # node_iter() order
         if self.parent and self.parent.binding:
             bus = _binding_child_bus(self.parent.binding)
         else:
