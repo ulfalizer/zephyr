@@ -915,7 +915,8 @@ def _pass_thru(prefix, child, parent, child_spec, parent_spec):
     if len(pass_thru) != len(child_spec):
         raise EDTError("{!r}: expected '{}-map-pass-thru' in {!r} to be {} "
                        "bytes, is {} bytes".format(
-                           child, prefix, len(child_spec), len(pass_thru)))
+                           child, prefix, parent, len(child_spec),
+                           len(pass_thru)))
 
     return _or(_and(parent_spec, _not(pass_thru)),
                _and(child_spec, pass_thru))

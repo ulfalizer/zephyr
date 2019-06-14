@@ -73,4 +73,35 @@
 			    &{/interrupt-map-test/nexus} 0 2>;
 		};
 	};
+	interrupt-map-bitops-test {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		controller {
+			#address-cells = <0>;
+			#interrupt-cells = <2>;
+		};
+		nexus {
+			#interrupt-cells = <2>;
+			interrupt-map = <
+			    1 2  1 1  &{/interrupt-map-bitops-test/controller}  1 1
+			>;
+			interrupt-map-mask = <1 0xF 1 0xF>;
+			// Not specified in the DT spec., but shows up due to common code
+			// with GPIO. Might as well test it here.
+			interrupt-map-pass-thru = <0xF0 0 0x700 0>;
+		};
+		// Child unit specifier: 00 00 00 0F  00 00 00 02  00 00 0F 0F  00 00 00 01
+		// Mask:                 00 00 00 01  00 00 00 0F  00 00 00 01  00 00 0F 0F
+		// Masked:               00 00 00 01  00 00 00 02  00 00 00 01  00 00 00 01
+		// Pass-thru:            00 00 00 F0  00 00 00 00  00 00 07 00  00 00 00 00
+		// Passed-thru:          00 00 00 00  00 00 00 00  00 00 07 00  00 00 00 00
+		node@f00000002 {
+			reg = <0xf 1>;
+			interrupt-parent = <&{/interrupt-map-bitops-test/nexus}>;
+			interrupts = <0xf0f 1>;
+		};
+	};
 };
+
+// TODO: Include full path in __repr__() for Devices?

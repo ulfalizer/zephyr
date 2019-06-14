@@ -17,7 +17,7 @@ def verify_eq(actual, expected):
              .format(actual, expected))
 
 
-edt = edtlib.EDT("newtest.dts", ".")
+edt = edtlib.EDT("test.dts", ".")
 
 #
 # Test interrupts
