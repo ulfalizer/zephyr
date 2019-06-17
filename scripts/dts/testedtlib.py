@@ -35,4 +35,7 @@ verify_eq(str(edt.get_dev("/interrupt-map-test/node@0").interrupts),
 verify_eq(str(edt.get_dev("/interrupt-map-test/node@1").interrupts),
           "[(<Device controller-0, 0 regs>, [3]), (<Device controller-1, 0 regs>, [0, 4]), (<Device controller-2, 0 regs>, [0, 0, 5])]")
 
+verify_eq(str(edt.get_dev("/interrupt-map-bitops-test/node@70000000E").interrupts),
+          "[(<Device controller, 0 regs>, [3, 2])]")
+
 print("all tests passed")
