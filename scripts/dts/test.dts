@@ -84,22 +84,20 @@
 		nexus {
 			#interrupt-cells = <2>;
 			interrupt-map = <
-			    1 2  1 1  &{/interrupt-map-bitops-test/controller}  1 1
+			    6 6  6 6  &{/interrupt-map-bitops-test/controller}  2 1
 			>;
-			interrupt-map-mask = <1 0xF 1 0xF>;
+			interrupt-map-mask = <0xE 0x7 0xE 0x7>;
 			// Not specified in the DT spec., but shows up due to common code
 			// with GPIO. Might as well test it here.
-			interrupt-map-pass-thru = <0xF0 0 0x700 0>;
+			interrupt-map-pass-thru = <1 2 3 3>;
 		};
-		// Child unit specifier: 00 00 00 0F  00 00 00 02  00 00 0F 0F  00 00 00 01
-		// Mask:                 00 00 00 01  00 00 00 0F  00 00 00 01  00 00 0F 0F
-		// Masked:               00 00 00 01  00 00 00 02  00 00 00 01  00 00 00 01
-		// Pass-thru:            00 00 00 F0  00 00 00 00  00 00 07 00  00 00 00 00
-		// Passed-thru:          00 00 00 00  00 00 00 00  00 00 07 00  00 00 00 00
-		node@f00000002 {
-			reg = <0xf 1>;
+		// Child unit specifier: 00000007 0000000E 00000007 0000000E
+		// Mask:                 0000000E 00000007 0000000E 00000007
+		// Pass-thru:            00000001 00000002 00000003 00000003
+		node@70000000E {
+			reg = <0x7 0xE>;
 			interrupt-parent = <&{/interrupt-map-bitops-test/nexus}>;
-			interrupts = <0xf0f 1>;
+			interrupts = <0x7 0xE>;
 		};
 	};
 };

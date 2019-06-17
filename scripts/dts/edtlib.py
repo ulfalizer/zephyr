@@ -918,8 +918,11 @@ def _pass_thru(prefix, child, parent, child_spec, parent_spec):
                            child, prefix, parent, len(child_spec),
                            len(pass_thru)))
 
-    return _or(_and(parent_spec, _not(pass_thru)),
-               _and(child_spec, pass_thru))
+    res = _or(_and(child_spec, pass_thru),
+              _and(parent_spec, _not(pass_thru)))
+
+    # Truncate to length of parent spec.
+    return res[-len(parent_spec):]
 
 
 def _raw_unit_addr(node):
@@ -945,10 +948,8 @@ def _and(b1, b2):
 
     # Pad on the left, to equal length
     maxlen = max(len(b1), len(b2))
-    b1 = b1.rjust(maxlen, b'\xff')
-    b2 = b2.rjust(maxlen, b'\xff')
-
-    return bytes(x & y for x, y in zip(b1, b2))
+    return bytes(x & y for x, y in zip(b1.rjust(maxlen, b'\xff'),
+                                       b2.rjust(maxlen, b'\xff')))
 
 
 def _or(b1, b2):
@@ -957,10 +958,8 @@ def _or(b1, b2):
 
     # Pad on the left, to equal length
     maxlen = max(len(b1), len(b2))
-    b1 = b1.rjust(maxlen, b'\x00')
-    b2 = b2.rjust(maxlen, b'\x00')
-
-    return bytes(x | y for x, y in zip(b1, b2))
+    return bytes(x | y for x, y in zip(b1.rjust(maxlen, b'\x00'),
+                                       b2.rjust(maxlen, b'\x00')))
 
 
 def _not(b):
