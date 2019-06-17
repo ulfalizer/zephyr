@@ -109,7 +109,7 @@ def reg_ident(reg):
 
     dev = reg.dev
 
-    ident = "{}_{}".format(dev_ident(dev), "BASE_ADDRESS")
+    ident = dev_ident(dev) + "_BASE_ADDRESS"
 
     # TODO: Could the index always be added later, even if there's
     # just a single register? Might streamline things.
