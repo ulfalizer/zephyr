@@ -76,6 +76,23 @@ def write_aliases(dev, out):
             if alias != ident:
                 print("#define {}\t{}".format(alias, ident), file=out)
 
+
+def reg_ident(reg):
+    # Returns the identifier (e.g., macro name) to be used for 'reg' in the
+    # output
+
+    dev = reg.dev
+
+    ident = dev_ident(dev) + "_BASE_ADDRESS"
+
+    # TODO: Could the index always be added later, even if there's
+    # just a single register? Might streamline things.
+    if len(dev.regs) > 1:
+        ident += "_" + str(dev.regs.index(reg))
+
+    return ident
+
+
 def dev_ident(dev):
     # Returns the identifier (e.g., macro name) to be used for property in the
     # output
@@ -99,22 +116,6 @@ def dev_ident(dev):
     else:
         # This is a bit of a hack
         ident += "_{}".format(str2ident(dev.name))
-
-    return ident
-
-
-def reg_ident(reg):
-    # Returns the identifier (e.g., macro name) to be used for 'reg' in the
-    # output
-
-    dev = reg.dev
-
-    ident = dev_ident(dev) + "_BASE_ADDRESS"
-
-    # TODO: Could the index always be added later, even if there's
-    # just a single register? Might streamline things.
-    if len(dev.regs) > 1:
-        ident += "_" + str(dev.regs.index(reg))
 
     return ident
 
