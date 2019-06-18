@@ -19,6 +19,58 @@ def str2ident(s):
             .upper()
 
 
+def write_dev_aliases(dev, ident, prop_name):
+    # Generate alias defines for path aliases and instance aliases
+    # for a given device's property name
+
+    aliases = dev_path_aliases(dev, prop_name) + dev_instance_aliases(dev, prop_name)
+    for alias in aliases:
+        # Avoid writing aliases that overlap with the base identifier for
+        # the register
+        if alias != ident:
+            out("#define {}\t{}".format(alias, ident))
+
+
+def _reg_name_ident(dev, reg):
+    # Returns the identifier (e.g., macro name) to be used for reg name aliases
+
+    return "DT_{}_{:X}_{}".format(
+        str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
+
+
+def _process_reg_common(dev, reg, prop_name, prop_val, base_fmt):
+    # Comman handler for register define generation
+
+    post = prop_name
+    if len(dev.regs) > 1:
+        post = "{}_{}".format(post, str(dev.regs.index(reg)))
+    ident = "{}_{}".format(dev_ident(dev), post)
+
+    out('#define {}\t{:#{base}}'.format(ident, prop_val, base=base_fmt))
+    write_dev_aliases(dev, ident, post)
+
+    if reg.name:
+        post = "{}_{}".format(str2ident(reg.name), prop_name)
+        write_dev_aliases(dev, ident, post)
+
+        alias = "{}_{}".format(_reg_name_ident(dev, reg), prop_name)
+        if alias != ident:
+            # Avoid writing aliases that overlap with the base identifier for
+            # the register
+            out("#define {}\t{}".format(alias, ident))
+
+
+def process_reg(dev, reg):
+    # Generate define for register address
+    #
+    #   #define DT_<DEV_IDENT>_BASE_ADDRESS[_<N>] <ADDR>
+    #
+    #   if reg-name:
+    #      #define DT_<DEV_IDENT>_<REG_NAME>_BASE_ADDRESS DT_<DEV_IDENT>_BASE_ADDRESS[_<N>]
+
+    _process_reg_common(dev, reg, "BASE_ADDRESS", reg.addr, "x")
+
+
 def main():
     global _out
 
@@ -42,8 +94,8 @@ def main():
 
     for dev in edt.devices:
         if dev.enabled and dev.binding:
-            write_regs(dev)
-            write_aliases(dev)
+            for reg in dev.regs:
+                process_reg(dev, reg)
 
             # Generate defines of the form
             #
@@ -72,37 +124,6 @@ def main():
         # zephyr,flash-dev
         if dev.name.startswith("partition@"):
             write_flash_partition(dev)
-
-
-def write_regs(dev):
-    for reg in dev.regs:
-        out("#define {}\t0x{:x}".format(reg_ident(reg), reg.addr))
-
-
-def write_aliases(dev):
-    for reg in dev.regs:
-        ident = reg_ident(reg)
-        for alias in reg_aliases(reg):
-            # Avoid writing aliases that overlap with the base identifier for
-            # the register
-            if alias != ident:
-                out("#define {}\t{}".format(alias, ident))
-
-
-def reg_ident(reg):
-    # Returns the identifier (e.g., macro name) to be used for 'reg' in the
-    # output
-
-    dev = reg.dev
-
-    ident = dev_ident(dev) + "_BASE_ADDRESS"
-
-    # TODO: Could the index always be added later, even if there's
-    # just a single register? Might streamline things.
-    if len(dev.regs) > 1:
-        ident += "_" + str(dev.regs.index(reg))
-
-    return ident
 
 
 def dev_ident(dev):
@@ -134,81 +155,44 @@ def dev_ident(dev):
     return ident
 
 
-def reg_aliases(reg):
-    # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
-    # output. TODO: give example output
-
-    aliases = reg_path_aliases(reg) + reg_instance_aliases(reg)
-
-    if reg.name:
-        aliases.append(reg_name_alias(reg))
-    return aliases
-
-
-def reg_path_aliases(reg):
-    # reg_aliases() helper. Returns a list of aliases for 'reg' based on the
-    # aliases registered for the register's device, in the /aliases node.
+def dev_path_aliases(dev, prop_name):
+    # Returns a list of aliases (e.g., macro names) to be used for property in the
+    # output.
     #
-    # Generates: DT_<COMPAT>_<ALIAS>_<PROP>
-
-    dev = reg.dev
+    # Generates: DT_<DEV_IDENT>_<PATH_ALIAS>_<PROP_NAME>
+    #
+    # with <PATH_ALIAS> coming from the '/aliases' node
 
     aliases = []
 
     for dev_alias in dev.aliases:
-        alias = "DT_{}_{}_BASE_ADDRESS".format(
-            str2ident(dev.matching_compat), str2ident(dev_alias))
-
-        if len(dev.regs) > 1:
-            alias += "_" + str(dev.regs.index(reg))
+        alias = "DT_{}_{}_{}".format(
+                str2ident(dev.matching_compat), str2ident(dev_alias), prop_name)
 
         aliases.append(alias)
-
-        if reg.name:
-            aliases.append("DT_{}_{}_{}_BASE_ADDRESS".format(
-                str2ident(dev.matching_compat), str2ident(dev_alias),
-                str2ident(reg.name)))
 
     return aliases
 
 
-def reg_instance_aliases(reg):
-    # reg_aliases() helper. Returns a list of aliases for 'reg' based on the
+def dev_instance_aliases(dev, prop_name):
+    # Returns a list of aliases for property based on the
     # instance number(s) of the register's device (based on how many instances
     # of that particular device there are).
     #
     # This is a list since a device can have multiple 'compatible' strings,
     # each with their own instance number.
     #
-    # Generates: DT_<COMPAT>_<INSTANCE>_<PROP>
-
-    dev = reg.dev
+    # Generates: DT_<DEV_IDENT>_<INSTANCE>_<PROP_NAME>
 
     idents = []
 
     for compat in dev.compats:
-        ident = "DT_{}_{}_BASE_ADDRESS".format(
-            str2ident(compat), dev.instance_no[compat])
-
-        if len(dev.regs) > 1:
-            ident += "_" + str(dev.regs.index(reg))
+        ident = "DT_{}_{}_{}".format(
+            str2ident(compat), dev.instance_no[compat], prop_name)
 
         idents.append(ident)
 
-        if reg.name:
-            idents.append("DT_{}_{}_{}_BASE_ADDRESS".format(
-                str2ident(dev.matching_compat), dev.instance_no[compat],
-                str2ident(reg.name)))
-
     return idents
-
-
-def reg_name_alias(reg):
-    # reg_aliases() helper. Returns an alias based on 'reg's name.
-
-    dev = reg.dev
-    return "DT_{}_{:X}_{}_BASE_ADDRESS".format(
-        str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
 
 
 def write_flash(flash_dev):
