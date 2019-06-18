@@ -42,8 +42,8 @@ def main():
 
     for dev in edt.devices:
         if dev.enabled and dev.binding:
-            write_regs(dev, out)
-            write_aliases(dev, out)
+            write_regs(dev)
+            write_aliases(dev)
 
             # Generate defines of the form
             #
@@ -64,13 +64,16 @@ def main():
     if edt.ccm_dev:
         out("#define DT_CCM_BASE_ADDRESS\t" + hex(edt.ccm_dev.regs[0].addr))
 
+    if edt.flash_dev:
+        write_flash(edt.flash_dev)
 
-def write_regs(dev, out):
+
+def write_regs(dev):
     for reg in dev.regs:
         out("#define {}\t0x{:x}".format(reg_ident(reg), reg.addr))
 
 
-def write_aliases(dev, out):
+def write_aliases(dev):
     for reg in dev.regs:
         ident = reg_ident(reg)
         for alias in reg_aliases(reg):
@@ -199,11 +202,30 @@ def reg_name_alias(reg):
         str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
 
 
+def write_flash(flash_dev):
+    # Writes the size and address of the node pointed at by the zephyr,flash
+    # property in /chosen
+
+    if len(flash_dev.regs) != 1:
+        _err("Expected zephyr,flash to have a single register, has {}"
+             .format(len(flash_dev.regs)))
+
+    reg = flash_dev.regs[0]
+
+    out("#define DT_FLASH_BASE_ADDRESS\t0x{:x}".format(reg.addr))
+    if reg.size is not None:
+        out("#define DT_FLASH_SIZE\t{}".format(reg.size//1024))
+
+
 def out(s):
     # TODO: This is just for writing the header. Will get a .conf file later as
     # well.
 
     print(s, file=_out)
+
+
+def _err(s):
+    raise Exception(s)
 
 
 if __name__ == "__main__":
