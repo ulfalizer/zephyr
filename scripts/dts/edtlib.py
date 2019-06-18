@@ -32,6 +32,10 @@ class EDT:
     ccm_dev:
       The Device instance for the device chosen by the 'zephyr,ccm' property on
       the /chosen node, or None if missing
+
+    flash_dev:
+      The Device instance for the device chosen by the 'zephyr,flash' property
+      on the /chosen node, or None if missing
     """
     def __init__(self, dts, bindings_dir):
         self._dt = DT(dts)
@@ -153,6 +157,7 @@ class EDT:
 
         self.sram_dev = self._chosen_dev("zephyr,sram")
         self.ccm_dev = self._chosen_dev("zephyr,ccm")
+        self.flash_dev = self._chosen_dev("zephyr,flash")
 
     def _chosen_dev(self, prop_name):
         # _parse_chosen() helper. Returns the device pointed to by prop_name in
