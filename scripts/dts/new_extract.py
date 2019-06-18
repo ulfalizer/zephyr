@@ -169,13 +169,18 @@ def dev_path_aliases(dev, prop_name):
     # Returns a list of aliases (e.g., macro names) to be used for property in the
     # output.
     #
-    # Generates: DT_<DEV_IDENT>_<PATH_ALIAS>_<PROP_NAME>
+    # Generates: DT_ALIAS_<PATH_ALIAS>_<PROP_NAME>
+    #            DT_<DEV_IDENT>_<PATH_ALIAS>_<PROP_NAME>
     #
     # with <PATH_ALIAS> coming from the '/aliases' node
 
     aliases = []
 
     for dev_alias in dev.aliases:
+        alias = "DT_ALIAS_{}_{}".format(str2ident(dev_alias), prop_name)
+
+        aliases.append(alias)
+
         alias = "DT_{}_{}_{}".format(
                 str2ident(dev.matching_compat), str2ident(dev_alias), prop_name)
 
@@ -192,11 +197,18 @@ def dev_instance_aliases(dev, prop_name):
     # This is a list since a device can have multiple 'compatible' strings,
     # each with their own instance number.
     #
-    # Generates: DT_<DEV_IDENT>_<INSTANCE>_<PROP_NAME>
+    # Generates: DT_INST_<INSTANCE>_<DEV_IDENT>_<PROP_NAME>
+    #            DT_<DEV_IDENT>_<INSTANCE>_<PROP_NAME> (deprecated)
+    # TODO: deprecation handling
 
     idents = []
 
     for compat in dev.compats:
+        ident = "DT_INST_{}_{}_{}".format(
+             dev.instance_no[compat], str2ident(compat), prop_name)
+
+        idents.append(ident)
+
         ident = "DT_{}_{}_{}".format(
             str2ident(compat), dev.instance_no[compat], prop_name)
 
