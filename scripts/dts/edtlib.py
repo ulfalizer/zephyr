@@ -543,6 +543,9 @@ def _prop_value(node, prop_name, prop_type, optional):
     if prop_type == "array":
         return prop.to_nums()
 
+    if prop_type == "uint8-array":
+        return prop.to_nums(length=1)
+
     if prop_type == "string":
         return prop.to_string()
 
