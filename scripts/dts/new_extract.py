@@ -12,10 +12,10 @@ import edtlib
 
 def str2ident(s):
     # Change ,-@/ to _ and uppercase
-    return s.replace('-', '_') \
-            .replace(',', '_') \
-            .replace('@', '_') \
-            .replace('/', '_') \
+    return s.replace("-", "_") \
+            .replace(",", "_") \
+            .replace("@", "_") \
+            .replace("/", "_") \
             .upper()
 
 
@@ -23,13 +23,13 @@ def main():
     # Copied from extract_dts_includes.py
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dts", required=True, help="DTS file")
-    parser.add_argument("-y", "--yaml", nargs='+', required=True,
+    parser.add_argument("-y", "--yaml", nargs="+", required=True,
                         help="YAML file directories, we allow multiple")
     parser.add_argument("-i", "--include",
                         help="path to write header to")
     parser.add_argument("-k", "--keyvalue",
                         help="path to write configuration file to")
-    parser.add_argument("--old-alias-names", action='store_true',
+    parser.add_argument("--old-alias-names", action="store_true",
                         help="Generate aliases also in the old way, without "
                              "compatibility information in their labels")
     args = parser.parse_args()
@@ -48,7 +48,7 @@ def main():
                 #
                 # These are flags for which devices exist.
                 for compat in dev.compats:
-                    print('#define DT_{}_{}\t1'
+                    print("#define DT_{}_{}\t1"
                           .format(str2ident(compat), dev.instance_no[compat]),
                           file=out)
 
