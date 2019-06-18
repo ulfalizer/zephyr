@@ -42,10 +42,15 @@ def main():
                 write_regs(dev, out)
                 write_aliases(dev, out)
 
-                # Generate defines of the form #define DT_<COMPAT>_<INSTANCE> 1
+                # Generate defines of the form
+                #
+                #   #define DT_<COMPAT>_<INSTANCE> 1
+                #
+                # These are flags for which devices exist.
                 for compat in dev.compats:
-                    print('#define DT_{}_{}\t1'.format(str2ident(compat),
-                        dev.instance_no[compat]), file=out)
+                    print('#define DT_{}_{}\t1'
+                          .format(str2ident(compat), dev.instance_no[compat]),
+                          file=out)
 
         # These are derived from /chosen
 
@@ -97,7 +102,7 @@ def dev_ident(dev):
     # Returns the identifier (e.g., macro name) to be used for property in the
     # output
 
-    # TODO: Handle PWM on STM,
+    # TODO: Handle PWM on STM
     # TODO: Better document the rules of how we generate things
 
     ident = "DT"
