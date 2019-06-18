@@ -1,0 +1,13 @@
+title: Interrupt controller with one cell
+version: 1
+
+description:
+
+properties:
+    compatible:
+        constraint: "controller,one-cell"
+        type: string-array
+        generation: define
+
+"#cells":
+  - one

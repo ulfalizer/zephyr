@@ -3,6 +3,7 @@
 / {
 	interrupt-parent-test {
 		controller {
+			compatible = "controller,three-cell";
 			#interrupt-cells = <3>;
 			interrupt-controller;
 		};
@@ -13,14 +14,17 @@
 	};
 	interrupts-extended-test {
 		controller-0 {
+			compatible = "controller,one-cell";
 			#interrupt-cells = <1>;
 			interrupt-controller;
 		};
 		controller-1 {
+			compatible = "controller,two-cell";
 			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 		controller-2 {
+			compatible = "controller,three-cell";
 			#interrupt-cells = <3>;
 			interrupt-controller;
 		};
@@ -36,16 +40,19 @@
 		#size-cells = <0>;
 
 		controller-0 {
+			compatible = "controller,one-cell";
 			#address-cells = <1>;
 			#interrupt-cells = <1>;
 			interrupt-controller;
 		};
 		controller-1 {
+			compatible = "controller,two-cell";
 			#address-cells = <2>;
 			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 		controller-2 {
+			compatible = "controller,three-cell";
 			#address-cells = <3>;
 			#interrupt-cells = <3>;
 			interrupt-controller;
@@ -78,6 +85,7 @@
 		#size-cells = <0>;
 
 		controller {
+			compatible = "controller,two-cell";
 			#address-cells = <0>;
 			#interrupt-cells = <2>;
 		};

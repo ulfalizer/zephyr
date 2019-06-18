@@ -1,0 +1,14 @@
+title: Interrupt controller with two cells
+version: 1
+
+description:
+
+properties:
+    compatible:
+        constraint: "controller,two-cell"
+        type: string-array
+        generation: define
+
+"#cells":
+  - one
+  - two
