@@ -212,6 +212,8 @@ def dev_ident(dev):
 
     if dev.unit_addr is not None:
         ident += "{:X}".format(dev.unit_addr)
+    elif dev.parent.unit_addr is not None:
+        ident += "{:X}_{}".format(dev.parent.unit_addr, str2ident(dev.name))
     else:
         # This is a bit of a hack
         ident += "{}".format(str2ident(dev.name))
