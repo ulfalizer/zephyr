@@ -198,6 +198,10 @@ class Device:
       translated through any 'ranges' properties on parent nodes, or None if
       the node name has no unit-address portion
 
+    label:
+      The text from the 'label' property on the DT node of the Device, or None
+      if the node has no 'label'
+
     aliases:
       A list of aliases for the device. This is fetched from the /aliases node.
 
@@ -363,6 +367,9 @@ class Device:
         self._create_props()
         self._create_regs()
         self._set_instance_no()
+
+        label = node.props.get("label")
+        self.label = None if label is None else label.to_string()
 
     def _init_binding(self):
         # Initializes Device.matching_compat and Device.binding
