@@ -64,11 +64,18 @@ def process_reg(dev, reg):
     # Generate define for register address
     #
     #   #define DT_<DEV_IDENT>_BASE_ADDRESS[_<N>] <ADDR>
+    #   if reg.size:
+    #      Define DT_<DEV_IDENT>_SIZE[_<N>] <SIZE>
     #
     #   if reg-name:
     #      #define DT_<DEV_IDENT>_<REG_NAME>_BASE_ADDRESS DT_<DEV_IDENT>_BASE_ADDRESS[_<N>]
+    #      if reg.size:
+    #         #define DT_<DEV_IDENT>_<REG_NAME>_SIZE DT_<DEV_IDENT>_SIZE[_<N>]
 
     _process_reg_common(dev, reg, "BASE_ADDRESS", reg.addr, "x")
+
+    if reg.size:
+        _process_reg_common(dev, reg, "SIZE", reg.size, "d")
 
 
 def main():
@@ -112,9 +119,12 @@ def main():
 
     if edt.sram_dev:
         out("#define DT_SRAM_BASE_ADDRESS\t" + hex(edt.sram_dev.regs[0].addr))
+        out("#define DT_SRAM_SIZE\t" + str(edt.sram_dev.regs[0].size // 1024))
 
     if edt.ccm_dev:
         out("#define DT_CCM_BASE_ADDRESS\t" + hex(edt.ccm_dev.regs[0].addr))
+        out("#define DT_CCM_SIZE\t" + str(edt.ccm_dev.regs[0].size // 1024))
+
 
     if edt.flash_dev:
         write_flash(edt.flash_dev)
