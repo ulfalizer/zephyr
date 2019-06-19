@@ -147,6 +147,12 @@ class EDT:
             self.devices.append(dev)
             self._node2dev[node] = dev
 
+        for dev in self.devices:
+            # These depend on all Device instances having been created, so we
+            # do them separately
+            dev._create_interrupts()
+            dev._create_gpios()
+
         # TODO: Remove this sorting later? It's there to make it easy to
         # compare output against extract_dts_include.py.
         self.devices.sort(key=lambda dev: dev.name)
@@ -315,13 +321,14 @@ class Device:
     def __init__(self, edt, node):
         "Private constructor. Not meant to be called by clients."
 
+        # Interrupts and GPIOs are initialized separately, because
+        # they depend on all Devices existing
+
         self.edt = edt
         self._node = node
         self._init_binding()
         self._create_props()
         self._create_regs()
-        self._create_interrupts()
-        self._create_gpios()
         self._set_instance_no()
 
         label = node.props.get("label")
