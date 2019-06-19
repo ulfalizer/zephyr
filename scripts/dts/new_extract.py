@@ -31,6 +31,45 @@ def write_dev_aliases(dev, ident, prop_name):
             out("#define {}\t{}".format(alias, ident))
 
 
+def handle_prop(ident, prop_name, prop_val, dev):
+    # Process generation of define for a given property
+    # TODO: Add docs on what and how we generate
+
+    if prop_val is None:
+        return
+
+    if isinstance(prop_val, bool):
+        if prop_val:
+            out('#define {}\t1'.format(ident))
+        else:
+            out('#define {}\t0'.format(ident))
+    elif isinstance(prop_val, str):
+        out('#define {}\t"{}"'.format(ident, prop_val))
+    elif isinstance(prop_val, int):
+        out('#define {}\t{}'.format(ident, prop_val))
+    elif isinstance(prop_val, list):
+        if len(prop_val) == 1:
+            handle_prop(ident, prop_name, prop_val[0], dev)
+        for i in range(len(prop_val)):
+            n_prop_name = "{}_{}".format(prop_name, i)
+            n_ident = "{}_{}".format(ident, i)
+            handle_prop(n_ident, n_prop_name, prop_val[i], dev)
+        return
+    else:
+        print("ERROR: UNHANDLED TYPE is %s" % isinstance(prop_val))
+        return
+
+    # Handle generation of DT_..._ENUM define
+    binding_prop = dev.binding["properties"].get(prop_name)
+    if binding_prop:
+        enum = binding_prop.get('enum')
+        if enum:
+            handle_prop(ident + "_ENUM", prop_name + "_ENUM",
+                        enum.index(prop_val), dev)
+
+    write_dev_aliases(dev, ident, str2ident(prop_name))
+
+
 def _reg_name_ident(dev, reg):
     # Returns the identifier (e.g., macro name) to be used for reg name aliases
 
@@ -112,6 +151,27 @@ def main():
             for compat in dev.compats:
                 out("#define DT_{}_{}\t1"
                     .format(str2ident(compat), dev.instance_no[compat]))
+
+            # TODO see if we need to handle more than bool, int, and strings
+            for prop_name in dev.binding['properties'].keys():
+                if dev.binding['properties'][prop_name].get('generation'):
+                    # TODO: the yaml for these isn't quite regular
+                    if dev.matching_compat in ['gpio-keys', 'gpio-leds']:
+                        continue
+                    # TODO: add support for these properties elsewhere
+                    if prop_name in ['reg', 'interrupts', 'clocks', 'compatible']:
+                        continue
+
+                    prop_type = dev.binding['properties'][prop_name]['type']
+                    category = dev.binding['properties'][prop_name]['category']
+
+                    ident = "{}_{}".format(dev_ident(dev), str2ident(prop_name))
+
+                    prop_val = dev.props.get(prop_name)
+                    handle_prop(ident, prop_name, prop_val, dev)
+
+                    if category == "required" and prop_val == None:
+                        print("WARNING category was required node (%s) prop %s type %s" % (dev.name, prop_name, prop_type))
 
     # These are derived from /chosen
 
