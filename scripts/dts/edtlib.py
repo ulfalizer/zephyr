@@ -415,7 +415,10 @@ class Device:
         node = self._node
 
         for prop_name, options in self.binding["properties"].items():
-            if "generation" not in options:
+            # Don't worry for properties that start with '#' like '#size-cells'
+            # or mapping properties like 'gpio-map' or 'interrupt-map'
+            if "generation" not in options and prop_name[0] != "#" and \
+                not prop_name.endswith('-map'):
                 _warn("{} lacks 'generation' in binding for {!r}"
                       .format(prop_name, node))
 
