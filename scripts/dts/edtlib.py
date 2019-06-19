@@ -394,10 +394,9 @@ class Device:
             if value is not None:
                 self.props[prop_name] = value
                 enum = options.get("enum")
-                if enum is not None:
-                    if value not in enum:
-                        _err("Value ({}) for property ({}) is not in enumerated"
-                             "list {} for node {}".format(value, prop_name, enum, self.name))
+                if enum is not None and value not in enum:
+                    _err("Value ({}) for property ({}) is not in enumerated "
+                         "list {} for node {}".format(value, prop_name, enum, self.name))
 
 
     def _create_regs(self):
@@ -552,7 +551,6 @@ class Interrupt:
       cell values in the interrupt specifier. 'interrupts = <1 2>' might give
       {"irq": 1, "level": 2}, for example.
     """
-
     def __repr__(self):
         fields = []
 
