@@ -48,7 +48,7 @@ class EDT:
         try:
             return self._node2dev[self._dt.get_node(path)]
         except DTError as e:
-            raise EDTError(e)
+            _err(e)
 
     def _create_compat2bindings(self, bindings_dir):
         # Creates self._compat2bindings. This dictionary maps
@@ -167,9 +167,8 @@ class EDT:
             # Value is the path of a node that represents the memory device
             path = chosen.props[prop_name].to_string()
             if not self._dt.has_node(path):
-                raise EDTError(
-                    "{} points to {}, which does not exist"
-                    .format(prop_name, path))
+                _err("{} points to {}, which does not exist"
+                     .format(prop_name, path))
 
             return self._node2dev[self._dt.get_node(path)]
 
@@ -266,7 +265,7 @@ class Device:
         try:
             addr = int(self.name.split("@", 1)[1], 16)
         except ValueError:
-            raise EDTError(self.name + " has non-hex unit address")
+            _err(self.name + " has non-hex unit address")
 
         addr = _translate(addr, self._node)
 
@@ -295,24 +294,22 @@ class Device:
         for controller_node, specifier in _interrupts(self._node):
             controller = self.edt._node2dev[controller_node]
             if not controller.binding:
-                raise EDTError("interrupt controller {!r} for {!r} lacks "
-                               "binding".format(controller_node, self._node))
+                _err("interrupt controller {!r} for {!r} lacks binding"
+                     .format(controller_node, self._node))
 
             cell_names = controller.binding.get("#cells")
             if not cell_names:
-                raise EDTError("binding for interrupt controller {!r} has no "
-                               "#cells array".format(controller_node))
+                _err("binding for interrupt controller {!r} has no #cells array"
+                     .format(controller_node))
 
             if not isinstance(cell_names, list):
-                raise EDTError("binding for interrupt controller {!r} has "
-                               "malformed #cells array"
-                               .format(controller_node))
+                _err("binding for interrupt controller {!r} has malformed "
+                     "#cells array".format(controller_node))
 
             spec_list = to_nums(specifier)
             if len(spec_list) != len(cell_names):
-                raise EDTError("unexpected #cells length in binding for {!r}, "
-                               "{} instead of {}".format(
-                                   len(spec_list), len(cell_names)))
+                _err("unexpected #cells length in binding for {!r}, {} "
+                     "instead of {}".format(len(spec_list), len(cell_names)))
 
             res.append((controller, dict(zip(cell_names, spec_list))))
 
@@ -406,9 +403,8 @@ class Device:
 
             prop_type = options.get("type")
             if not prop_type:
-                raise EDTError(
-                    "{} lacks 'type' in binding for {!r}"
-                    .format(prop_name, node))
+                _err("{} lacks 'type' in binding for {!r}"
+                     .format(prop_name, node))
 
             value = _prop_value(node, prop_name, prop_type,
                                 options.get("category") == "optional")
@@ -442,10 +438,9 @@ class Device:
         if "reg-names" in node.props:
             reg_names = node.props["reg-names"].to_strings()
             if len(reg_names) != len(self.regs):
-                raise EDTError(
-                    "'reg-names' property in {} has {} strings, but there are "
-                    "{} registers".format(node.name, len(reg_names),
-                                          len(self.regs)))
+                _err("'reg-names' property in {} has {} strings, but there "
+                     "are {} registers"
+                     .format(node.name, len(reg_names), len(self.regs)))
 
             for reg, name in zip(self.regs, reg_names):
                 reg.name = name
@@ -754,18 +749,18 @@ def _interrupts(node):
         while raw:
             if len(raw) < 4:
                 # Not enough room for phandle
-                raise EDTError("bad value for " + repr(prop))
+                _err("bad value for " + repr(prop))
             phandle = to_num(raw[:4])
             raw = raw[4:]
 
             # Could also be a nexus (with interrupt-map = ...)
             iparent = node.dt.phandle2node.get(phandle)
             if not iparent:
-                raise EDTError("bad phandle in " + repr(prop))
+                _err("bad phandle in " + repr(prop))
 
             interrupt_cells = _interrupt_cells(iparent)
             if len(raw) < 4*interrupt_cells:
-                raise EDTError("missing data after phandle in " + repr(prop))
+                _err("missing data after phandle in " + repr(prop))
 
             res.append(_map_interrupt(node, iparent, raw[:4*interrupt_cells]))
             raw = raw[4*interrupt_cells:]
@@ -798,8 +793,8 @@ def _map_interrupt(child, parent, child_spec):
 
         address_cells = node.props.get("#address-cells")
         if not address_cells:
-            raise EDTError("missing #address-cells on {!r} (while handling "
-                           "interrupt-map)".format(node))
+            _err("missing #address-cells on {!r} (while handling interrupt-map)"
+                 .format(node))
         return address_cells.to_num()
 
     def spec_len_fn(node):
@@ -845,17 +840,17 @@ def _gpios_from_prop(prop):
     while raw:
         if len(raw) < 4:
             # Not enough room for phandle
-            raise EDTError("bad value for " + repr(prop))
+            _err("bad value for " + repr(prop))
         phandle = to_num(raw[:4])
         raw = raw[4:]
 
         controller = prop.node.dt.phandle2node.get(phandle)
         if not controller:
-            raise EDTError("bad phandle in " + repr(prop))
+            _err("bad phandle in " + repr(prop))
 
         gpio_cells = _gpio_cells(controller)
         if len(raw) < 4*gpio_cells:
-            raise EDTError("missing data after phandle in " + repr(prop))
+            _err("missing data after phandle in " + repr(prop))
 
         res.append(_map_gpio(prop.node, controller, raw[:4*gpio_cells]))
         raw = raw[4*gpio_cells:]
@@ -886,26 +881,26 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
     raw = map_prop.value
     while raw:
         if len(raw) < len(child_spec):
-            raise EDTError("bad value for {!r}, missing/truncated child "
-                           "specifier".format(map_prop))
+            _err("bad value for {!r}, missing/truncated child specifier"
+                 .format(map_prop))
         child_spec_entry = raw[:len(child_spec)]
         raw = raw[len(child_spec_entry):]
 
         if len(raw) < 4:
-            raise EDTError("bad value for {!r}, missing/truncated phandle"
-                           .format(map_prop))
+            _err("bad value for {!r}, missing/truncated phandle"
+                 .format(map_prop))
         phandle = to_num(raw[:4])
         raw = raw[4:]
 
         # Parent specified in *-map
         map_parent = parent.dt.phandle2node.get(phandle)
         if not map_parent:
-            raise EDTError("bad phandle in " + repr(map_prop))
+            _err("bad phandle in " + repr(map_prop))
 
         map_parent_spec_len = spec_len_fn(map_parent)
         if len(raw) < map_parent_spec_len:
-            raise EDTError("bad value for {!r}, missing/truncated parent "
-                           "specifier".format(map_prop))
+            _err("bad value for {!r}, missing/truncated parent specifier"
+                 .format(map_prop))
         parent_spec = raw[:map_parent_spec_len]
         raw = raw[map_parent_spec_len:]
 
@@ -919,8 +914,8 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
             return _map(prefix, parent, map_parent, parent_spec, spec_len_fn)
 
     # TODO: Is raising an error the right thing to do here?
-    raise EDTError("child specifier for {!r} ({}) does not appear in {!r}"
-                   .format(child, child_spec, map_prop))
+    _err("child specifier for {!r} ({}) does not appear in {!r}"
+         .format(child, child_spec, map_prop))
 
 
 def _mask(prefix, child, parent, child_spec):
@@ -933,9 +928,8 @@ def _mask(prefix, child, parent, child_spec):
 
     mask = mask_prop.value
     if len(mask) != len(child_spec):
-        raise EDTError("{!r}: expected '{}-mask' in {!r} to be {} bytes, is "
-                       "{} bytes".format(
-                           child, prefix, parent, len(child_spec), len(mask)))
+        _err("{!r}: expected '{}-mask' in {!r} to be {} bytes, is {} bytes"
+             .format(child, prefix, parent, len(child_spec), len(mask)))
 
     return _and(child_spec, mask)
 
@@ -950,10 +944,8 @@ def _pass_thru(prefix, child, parent, child_spec, parent_spec):
 
     pass_thru = pass_thru_prop.value
     if len(pass_thru) != len(child_spec):
-        raise EDTError("{!r}: expected '{}-map-pass-thru' in {!r} to be {} "
-                       "bytes, is {} bytes".format(
-                           child, prefix, parent, len(child_spec),
-                           len(pass_thru)))
+        _err("{!r}: expected '{}-map-pass-thru' in {!r} to be {} bytes, is {} bytes"
+             .format(child, prefix, parent, len(child_spec), len(pass_thru)))
 
     res = _or(_and(child_spec, pass_thru),
               _and(parent_spec, _not(pass_thru)))
@@ -974,7 +966,7 @@ def _raw_unit_addr(node):
     try:
         child_unit_addr = int(node.unit_addr, 16)
     except ValueError:
-        raise EDTError(repr(node) + " has non-numeric unit address")
+        _err(repr(node) + " has non-numeric unit address")
 
     return child_unit_addr.to_bytes(4*_address_cells(node), "big")
 
@@ -1011,7 +1003,7 @@ def _interrupt_cells(node):
     # 'node' has no #interrupt-cells property
 
     if "#interrupt-cells" not in node.props:
-        raise EDTError("{} lacks #interrupt-cells".format(node.path))
+        _err("{} lacks #interrupt-cells".format(node.path))
     return node.props["#interrupt-cells"].to_num()
 
 
@@ -1019,7 +1011,7 @@ def _gpio_cells(node):
     # TODO: have a _required_prop(node, "blah") or similar?
 
     if "#gpio-cells" not in node.props:
-        raise EDTError("{!r} lacks #gpio-cells".format(node))
+        _err("{!r} lacks #gpio-cells".format(node))
     return node.props["#gpio-cells"].to_num()
 
 
@@ -1039,11 +1031,14 @@ def _slice(node, prop_name, size):
 
     raw = node.props[prop_name].value
     if len(raw) % size:
-        raise EDTError(
-            "'{}' property in {} has length {}, which is not evenly divisible "
-            "by {}".format(prop_name, len(raw), size))
+        _err("'{}' property in {} has length {}, which is not evenly "
+             "divisible by {}".format(prop_name, len(raw), size))
 
     return [raw[i:i + size] for i in range(0, len(raw), size)]
+
+
+def _err(msg):
+    raise EDTError(msg)
 
 
 def _warn(msg):
