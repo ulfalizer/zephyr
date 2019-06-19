@@ -202,6 +202,10 @@ class Device:
       The text from the 'label' property on the DT node of the Device, or None
       if the node has no 'label'
 
+    read_only:
+      True if the DT node of the Device has a 'read-only' property, and False
+      otherwise
+
     aliases:
       A list of aliases for the device. This is fetched from the /aliases node.
 
@@ -370,6 +374,8 @@ class Device:
 
         label = node.props.get("label")
         self.label = None if label is None else label.to_string()
+
+        self.read_only = "read-only" in node.props
 
     def _init_binding(self):
         # Initializes Device.matching_compat and Device.binding
