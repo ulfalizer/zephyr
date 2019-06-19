@@ -35,6 +35,7 @@ def main():
         if dev.enabled and dev.binding:
             write_regs(dev)
             write_irqs(dev)
+            write_gpios(dev)
             write_props(dev)
             write_bus(dev)
 
@@ -339,6 +340,30 @@ def write_irqs(dev):
                 # TODO: See how to handle this in a common way, will
                 # be similar to reg-name handling.
                 out_dev(dev, irq_ident_name, dev_ident(dev) + "_" + irq_ident)
+
+
+def write_gpios(dev):
+    # Writes gpio controller data for the gpios in dev's 'gpios' property
+
+    for gpio_name, gpios in dev.gpios.items():
+        for gpio_i, (gpio_ctrl, gpio_cells) in enumerate(gpios):
+
+            gpio_ctrl_ident = "GPIOS_CONTROLLER"
+            if gpio_name:
+                gpio_ctrl_ident = str2ident(gpio_name) + "_" + gpio_ctrl_ident
+            if len(gpios) > 1:
+                gpio_ctrl_ident += "_{}".format(gpio_i)
+
+            out_dev(dev, gpio_ctrl_ident, '"{}"'.format(gpio_ctrl.label))
+
+            for cell, val in gpio_cells.items():
+                gpio_cell_ident = "GPIOS_{}".format(str2ident(cell))
+                if gpio_name:
+                    gpio_ctrl_ident = str2ident(gpio_name) + "_" + gpio_cell_ident
+                if len(gpios) > 1:
+                    gpio_cell_ident += "_{}".format(gpio_i)
+
+                out_dev(dev, gpio_cell_ident, val)
 
 
 def str2ident(s):
