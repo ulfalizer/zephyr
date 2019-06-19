@@ -110,11 +110,6 @@
 		};
 	};
 	gpio-test {
-		controller-0 {
-			compatible = "gpio,one-cell";
-			#gpio-cells = <1>;
-			gpio-controller;
-		};
 		controller-1 {
 			compatible = "gpio,two-cell";
 			#gpio-cells = <2>;
@@ -125,6 +120,13 @@
 			         &{/gpio-test/controller-1} 2 3>;
 			foo-gpios = <&{/gpio-test/controller-1} 4 5>;
 			bar-gpios = <&{/gpio-test/controller-1} 6 7>;
+		};
+		// Putting the controller last gives us some coverage for
+		// ordering issues during initialization
+		controller-0 {
+			compatible = "gpio,one-cell";
+			#gpio-cells = <1>;
+			gpio-controller;
 		};
 	};
 };
