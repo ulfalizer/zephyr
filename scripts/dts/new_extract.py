@@ -237,6 +237,16 @@ def write_flash_partition(partition_dev):
         out("#define DT_FLASH_AREA_{}_OFFSET_{} {}".format(label, i, reg.addr))
         out("#define DT_FLASH_AREA_{}_SIZE_{} {}".format(label, i, reg.size))
 
+    # Add aliases that points to the first sector
+    #
+    # TODO: Could we get rid of this? Code could just refer to sector _0 where
+    # needed instead.
+
+    out("#define DT_FLASH_AREA_{0}_OFFSET\tDT_FLASH_AREA_{0}_OFFSET_0".format(
+            label))
+    out("#define DT_FLASH_AREA_{0}_SIZE\tDT_FLASH_AREA_{0}_SIZE_0".format(
+            label))
+
 
 def out(s):
     # TODO: This is just for writing the header. Will get a .conf file later as
