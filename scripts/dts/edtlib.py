@@ -431,6 +431,12 @@ class Device:
                                 options.get("category") == "optional")
             if value is not None:
                 self.props[prop_name] = value
+                enum = options.get("enum")
+                if enum is not None:
+                    if value not in enum:
+                        _err("Value ({}) for property ({}) is not in enumerated"
+                             "list {} for node {}".format(value, prop_name, enum, self.name))
+
 
     def _create_regs(self):
         # Initializes self.regs with a list of Register instances
