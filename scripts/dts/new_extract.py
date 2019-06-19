@@ -20,6 +20,8 @@ def str2ident(s):
 
 
 def main():
+    global _out
+
     # Copied from extract_dts_includes.py
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dts", required=True, help="DTS file")
@@ -36,40 +38,36 @@ def main():
 
     edt = edtlib.EDT(args.dts, args.yaml[0])
 
-    with open(args.keyvalue + "-new", "w") as out:
-        for dev in edt.devices:
-            if dev.enabled and dev.binding:
-                write_regs(dev, out)
-                write_aliases(dev, out)
+    _out = open(args.keyvalue + "-new", "w")
 
-                # Generate defines of the form
-                #
-                #   #define DT_<COMPAT>_<INSTANCE> 1
-                #
-                # These are flags for which devices exist.
-                for compat in dev.compats:
-                    print("#define DT_{}_{}\t1"
-                          .format(str2ident(compat), dev.instance_no[compat]),
-                          file=out)
+    for dev in edt.devices:
+        if dev.enabled and dev.binding:
+            write_regs(dev, out)
+            write_aliases(dev, out)
 
-        # These are derived from /chosen
+            # Generate defines of the form
+            #
+            #   #define DT_<COMPAT>_<INSTANCE> 1
+            #
+            # These are flags for which devices exist.
+            for compat in dev.compats:
+                out("#define DT_{}_{}\t1"
+                    .format(str2ident(compat), dev.instance_no[compat]))
 
-        # TODO: Check that regs[0] exists below?
+    # These are derived from /chosen
 
-        if edt.sram_dev:
-            print("#define DT_SRAM_BASE_ADDRESS\t"
-                      + hex(edt.sram_dev.regs[0].addr),
-                  file=out)
+    # TODO: Check that regs[0] exists below?
 
-        if edt.ccm_dev:
-            print("#define DT_CCM_BASE_ADDRESS\t"
-                      + hex(edt.ccm_dev.regs[0].addr),
-                  file=out)
+    if edt.sram_dev:
+        out("#define DT_SRAM_BASE_ADDRESS\t" + hex(edt.sram_dev.regs[0].addr))
+
+    if edt.ccm_dev:
+        out("#define DT_CCM_BASE_ADDRESS\t" + hex(edt.ccm_dev.regs[0].addr))
 
 
 def write_regs(dev, out):
     for reg in dev.regs:
-        print("#define {}\t0x{:x}".format(reg_ident(reg), reg.addr), file=out)
+        out("#define {}\t0x{:x}".format(reg_ident(reg), reg.addr))
 
 
 def write_aliases(dev, out):
@@ -79,7 +77,7 @@ def write_aliases(dev, out):
             # Avoid writing aliases that overlap with the base identifier for
             # the register
             if alias != ident:
-                print("#define {}\t{}".format(alias, ident), file=out)
+                out("#define {}\t{}".format(alias, ident))
 
 
 def reg_ident(reg):
@@ -199,6 +197,13 @@ def reg_name_alias(reg):
     # reg_aliases() helper. Returns an alias based on 'reg's name.
     return "DT_{}_{:X}_{}_BASE_ADDRESS".format(
         str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
+
+
+def out(s):
+    # TODO: This is just for writing the header. Will get a .conf file later as
+    # well.
+
+    print(s, file=_out)
 
 
 if __name__ == "__main__":
