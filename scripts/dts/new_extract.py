@@ -67,6 +67,12 @@ def main():
     if edt.flash_dev:
         write_flash(edt.flash_dev)
 
+    for dev in edt.devices:
+        # TODO: Feels a bit yanky to handle this separately from
+        # zephyr,flash-dev
+        if dev.name.startswith("partition@"):
+            write_flash_partition(dev)
+
 
 def write_regs(dev):
     for reg in dev.regs:
@@ -215,6 +221,17 @@ def write_flash(flash_dev):
     out("#define DT_FLASH_BASE_ADDRESS\t0x{:x}".format(reg.addr))
     if reg.size is not None:
         out("#define DT_FLASH_SIZE\t{}".format(reg.size//1024))
+
+
+def write_flash_partition(partition_dev):
+    if partition_dev.label is None:
+        _err("missing 'label' property on {!r}".format(partition_dev))
+
+    label = str2ident(partition_dev.label)
+
+    out("#define DT_FLASH_AREA_{0}_LABEL\t{0}".format(label))
+    out("#define DT_FLASH_AREA_{}_READ_ONLY\t{}".format(
+            label, 1 if partition_dev.read_only else 0))
 
 
 def out(s):
