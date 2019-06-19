@@ -322,7 +322,8 @@ class Device:
             spec_list = to_nums(specifier)
             if len(spec_list) != len(cell_names):
                 _err("unexpected #cells length in binding for {!r}, {} "
-                     "instead of {}".format(len(spec_list), len(cell_names)))
+                     "instead of {}".format(controller_node, len(spec_list),
+                     len(cell_names)))
 
             res.append((controller, dict(zip(cell_names, spec_list))))
 
