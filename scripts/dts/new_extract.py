@@ -233,6 +233,10 @@ def write_flash_partition(partition_dev):
     out("#define DT_FLASH_AREA_{}_READ_ONLY\t{}".format(
             label, 1 if partition_dev.read_only else 0))
 
+    for i, reg in enumerate(partition_dev.regs):
+        out("#define DT_FLASH_AREA_{}_OFFSET_{} {}".format(label, i, reg.addr))
+        out("#define DT_FLASH_AREA_{}_SIZE_{} {}".format(label, i, reg.size))
+
 
 def out(s):
     # TODO: This is just for writing the header. Will get a .conf file later as
