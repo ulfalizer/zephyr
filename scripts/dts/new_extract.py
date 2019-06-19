@@ -143,6 +143,17 @@ def main():
             for reg in dev.regs:
                 process_reg(dev, reg)
 
+            if dev.bus:
+                # Generate defines of the form
+                #
+                #   #define DT_<DEV_IDENT>_BUS_NAME <BUS LABEL>
+                #
+                bus_name = str2ident(dev.parent.props['label'])
+                ident = "{}_BUS_NAME".format(dev_ident(dev))
+                out('#define {}\t"{}"'.format(ident, bus_name))
+                write_dev_aliases(dev, ident, "BUS_NAME")
+
+
             # Generate defines of the form
             #
             #   #define DT_<COMPAT>_<INSTANCE> 1
@@ -151,6 +162,16 @@ def main():
             for compat in dev.compats:
                 out("#define DT_{}_{}\t1"
                     .format(str2ident(compat), dev.instance_no[compat]))
+                if dev.bus:
+                    # Generate defines of the form
+                    #
+                    #   #define DT_<COMPAT>_BUS_<BUS TYPE> 1
+                    #
+                    bus_type = "BUS_{}".format(str2ident(dev.bus))
+                    indent = "DT_{}_{}".format(str2ident(compat), bus_type)
+                    out("#define {}\t1".format(indent))
+                    if compat == dev.matching_compat:
+                        write_dev_aliases(dev, indent, bus_type)
 
             # TODO see if we need to handle more than bool, int, and strings
             for prop_name in dev.binding['properties'].keys():
