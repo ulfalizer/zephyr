@@ -3,7 +3,7 @@
 / {
 	interrupt-parent-test {
 		controller {
-			compatible = "controller,three-cell";
+			compatible = "interrupt,three-cell";
 			#interrupt-cells = <3>;
 			interrupt-controller;
 		};
@@ -15,17 +15,17 @@
 	};
 	interrupts-extended-test {
 		controller-0 {
-			compatible = "controller,one-cell";
+			compatible = "interrupt,one-cell";
 			#interrupt-cells = <1>;
 			interrupt-controller;
 		};
 		controller-1 {
-			compatible = "controller,two-cell";
+			compatible = "interrupt,two-cell";
 			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 		controller-2 {
-			compatible = "controller,three-cell";
+			compatible = "interrupt,three-cell";
 			#interrupt-cells = <3>;
 			interrupt-controller;
 		};
@@ -41,19 +41,19 @@
 		#size-cells = <0>;
 
 		controller-0 {
-			compatible = "controller,one-cell";
+			compatible = "interrupt,one-cell";
 			#address-cells = <1>;
 			#interrupt-cells = <1>;
 			interrupt-controller;
 		};
 		controller-1 {
-			compatible = "controller,two-cell";
+			compatible = "interrupt,two-cell";
 			#address-cells = <2>;
 			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 		controller-2 {
-			compatible = "controller,three-cell";
+			compatible = "interrupt,three-cell";
 			#address-cells = <3>;
 			#interrupt-cells = <3>;
 			interrupt-controller;
@@ -86,7 +86,7 @@
 		#size-cells = <0>;
 
 		controller {
-			compatible = "controller,two-cell";
+			compatible = "interrupt,two-cell";
 			#address-cells = <0>;
 			#interrupt-cells = <2>;
 		};
@@ -107,6 +107,24 @@
 			reg = <0x7 0xE>;
 			interrupt-parent = <&{/interrupt-map-bitops-test/nexus}>;
 			interrupts = <0x7 0xE>;
+		};
+	};
+	gpio-test {
+		controller-0 {
+			compatible = "gpio,one-cell";
+			#gpio-cells = <1>;
+			gpio-controller;
+		};
+		controller-1 {
+			compatible = "gpio,two-cell";
+			#gpio-cells = <2>;
+			gpio-controller;
+		};
+		node {
+			gpios = <&{/gpio-test/controller-0} 1
+			         &{/gpio-test/controller-1} 2 3>;
+			foo-gpios = <&{/gpio-test/controller-1} 4 5>;
+			bar-gpios = <&{/gpio-test/controller-1} 6 7>;
 		};
 	};
 };

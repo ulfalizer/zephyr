@@ -290,17 +290,6 @@ class Device:
         return [alias for alias, node in self._node.dt.alias2node.items()
                 if node is self._node]
 
-    def gpios(self):
-        "See the class docstring"
-
-        res = {}
-
-        for prefix, gpios in _gpios(self._node).items():
-            res[prefix] = [(self.edt._node2dev[controller], to_nums(data))
-                           for controller, data in gpios]
-
-        return res
-
     @property
     def bus(self):
         "See the class docstring"
@@ -332,6 +321,7 @@ class Device:
         self._create_props()
         self._create_regs()
         self._create_interrupts()
+        self._create_gpios()
         self._set_instance_no()
 
         label = node.props.get("label")
@@ -398,7 +388,6 @@ class Device:
                     _err("Value ({}) for property ({}) is not in enumerated "
                          "list {} for node {}".format(value, prop_name, enum, self.name))
 
-
     def _create_regs(self):
         # Initializes self.regs with a list of Register instances
 
@@ -445,29 +434,11 @@ class Device:
 
         for controller_node, spec in _interrupts(node):
             controller = self.edt._node2dev[controller_node]
-            if not controller.binding:
-                _err("interrupt controller {!r} for {!r} lacks binding"
-                     .format(controller_node, self._node))
-
-            cell_names = controller.binding.get("#cells")
-            if not cell_names:
-                _err("binding for interrupt controller {!r} has no #cells array"
-                     .format(controller_node))
-
-            if not isinstance(cell_names, list):
-                _err("binding for interrupt controller {!r} has malformed "
-                     "#cells array".format(controller_node))
-
-            spec_list = to_nums(spec)
-            if len(spec_list) != len(cell_names):
-                _err("unexpected #cells length in binding for {!r}, {} "
-                     "instead of {}".format(
-                         controller_node, len(spec_list), len(cell_names)))
 
             interrupt = Interrupt()
             interrupt.dev = self
             interrupt.controller = controller
-            interrupt.cells = dict(zip(cell_names, spec_list))
+            interrupt.cells = self._named_cells(controller, spec, "interrupt")
 
             self.interrupts.append(interrupt)
 
@@ -484,6 +455,48 @@ class Device:
         else:
             for interrupt in self.interrupts:
                 interrupt.name = None
+
+    def _create_gpios(self):
+        # Initializes self.gpios
+
+        self.gpios = {}
+
+        for prefix, gpios in _gpios(self._node).items():
+            gpio_res = []
+            for controller_node, spec in gpios:
+                controller = self.edt._node2dev[controller_node]
+
+                gpio_res.append((controller,
+                                 self._named_cells(controller, spec, "GPIO")))
+
+            self.gpios[prefix] = gpio_res
+
+    def _named_cells(self, controller, spec, controller_s):
+        # _create_{interrupts,gpios}() helper. Returns a dictionary that maps
+        # #cell names given in the binding for 'controller' to cell values.
+        # 'spec' is the raw interrupt/GPIO data, and 'controller_s' a string
+        # that gives the context (for error messages).
+
+        if not controller.binding:
+            _err("{} controller {!r} for {!r} lacks binding"
+                 .format(controller_s, controller._node, self._node))
+
+        cell_names = controller.binding.get("#cells")
+        if not cell_names:
+            _err("binding for {} controller {!r} has no #cells array"
+                 .format(controller_s, controller._node))
+
+        if not isinstance(cell_names, list):
+            _err("binding for {} controller {!r} has malformed #cells array"
+                 .format(controller_s, controller._node))
+
+        spec_list = to_nums(spec)
+        if len(spec_list) != len(cell_names):
+            _err("unexpected #cells length in binding for {!r} - {} instead "
+                 "of {}".format(controller._node, len(cell_names),
+                                len(spec_list)))
+
+        return dict(zip(cell_names, spec_list))
 
     def _set_instance_no(self):
         # Initializes self.instance_no
@@ -901,7 +914,7 @@ def _gpios(node):
 
 
 def _gpios_from_prop(prop):
-    # gpios() helper. Returns a list of (<controller>, <data>) GPIO
+    # gpios() helper. Returns a list of (<controller>, <spec>) GPIO
     # specifications parsed from 'prop'.
 
     raw = prop.value

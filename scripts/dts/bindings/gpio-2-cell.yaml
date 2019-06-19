@@ -1,13 +1,14 @@
-title: Interrupt controller with one cell
+title: GPIO controller with two cells
 version: 1
 
 description:
 
 properties:
     compatible:
-        constraint: "controller,one-cell"
+        constraint: "gpio,two-cell"
         type: string-array
         generation: define
 
 "#cells":
   - one
+  - two

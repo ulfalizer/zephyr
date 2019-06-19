@@ -38,4 +38,11 @@ verify_eq(str(edt.get_dev("/interrupt-map-test/node@1").interrupts),
 verify_eq(str(edt.get_dev("/interrupt-map-bitops-test/node@70000000E").interrupts),
           "[<Interrupt, target: <Device controller, 0 regs>, cells: {'one': 3, 'two': 2}>]")
 
+#
+# Test GPIOS
+#
+
+verify_eq(str(edt.get_dev("/gpio-test/node").gpios),
+          "{'': [(<Device controller-0, 0 regs>, {'one': 1}), (<Device controller-1, 0 regs>, {'one': 2, 'two': 3})], 'foo': [(<Device controller-1, 0 regs>, {'one': 4, 'two': 5})], 'bar': [(<Device controller-1, 0 regs>, {'one': 6, 'two': 7})]}")
+
 print("all tests passed")

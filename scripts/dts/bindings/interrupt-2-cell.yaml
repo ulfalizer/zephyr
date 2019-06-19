@@ -1,15 +1,14 @@
-title: Interrupt controller with three cells
+title: Interrupt controller with two cells
 version: 1
 
 description:
 
 properties:
     compatible:
-        constraint: "controller,three-cell"
+        constraint: "interrupt,two-cell"
         type: string-array
         generation: define
 
 "#cells":
   - one
   - two
-  - three
