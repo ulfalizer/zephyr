@@ -35,6 +35,7 @@ def main():
         if dev.enabled and dev.binding:
             write_regs(dev)
             write_aliases(dev)
+            write_props(dev)
 
             # Generate defines of the form
             #
@@ -66,7 +67,7 @@ def main():
         write_flash(edt.flash_dev)
 
     for dev in edt.devices:
-        # TODO: Feels a bit yanky to handle this separately from
+        # TODO: Feels a bit janky to handle this separately from
         # zephyr,flash-dev
         if dev.name.startswith("partition@"):
             write_flash_partition(dev)
@@ -87,6 +88,42 @@ def write_aliases(dev):
             # the register
             if alias != ident:
                 out("#define {}\t{}".format(alias, ident))
+
+
+def write_props(dev):
+    # Writes any properties defined in the "properties" section of the binding
+    # for the device
+
+    # TODO: The YAML for these isn't quite regular
+    if dev.matching_compat in {"gpio-keys", "gpio-leds"}:
+        return
+
+    for name, val in dev.props.items():
+        # Skip #size-cell and other property starting with #. Also skip mapping
+        # properties like "gpio-map".
+        if name[0] == "#" or name.endswith("-map"):
+            continue
+
+        # TODO: Add support for some of these properties elsewhere
+        if name in {"reg", "interrupts", "clocks", "compatible"}:
+            continue
+
+        ident = "{}_{}".format(dev_ident(dev), str2ident(name))
+
+        if isinstance(val, bool):
+            out("#define {}\t{}".format(ident, 1 if val else 0))
+        elif isinstance(val, str):
+            out('#define {}\t"{}"'.format(ident, val))
+        elif isinstance(val, int):
+            out("#define {}\t{}".format(ident, val))
+        elif isinstance(val, list):
+            for i, elm in enumerate(val):
+                if isinstance(elm, str):
+                    elm = '"{}"'.format(elm)
+                out("#define {}_{}\t{}".format(ident, i, elm))
+        else:
+            # Internal error
+            assert False
 
 
 def reg_addr_ident(reg):
