@@ -262,7 +262,7 @@ def dev_path_aliases(dev):
 
     compat_s = str2ident(dev.matching_compat)
 
-    return ["DT_{}_{}".format(compat_s, str2ident(alias))
+    return ["DT_ALIAS_{}".format(str2ident(alias))
             for alias in dev.aliases]
 
 
@@ -274,7 +274,7 @@ def dev_instance_aliases(dev):
     # This is a list since a device can have multiple 'compatible' strings,
     # each with their own instance number.
 
-    return ["DT_{}_{}".format(str2ident(compat), dev.instance_no[compat])
+    return ["DT_INST_{}_{}".format(dev.instance_no[compat], str2ident(compat))
             for compat in dev.compats]
 
 
