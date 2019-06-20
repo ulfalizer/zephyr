@@ -42,22 +42,22 @@ def main():
             #
             # These are flags for which devices exist.
             for compat in dev.compats:
-                out("DT_{}_{}\t1"
-                    .format(str2ident(compat), dev.instance_no[compat]))
+                out("DT_{}_{}"
+                    .format(str2ident(compat), dev.instance_no[compat]), 1)
 
     # These are derived from /chosen
 
     if edt.sram_dev:
         # TODO: Check that regs[0] exists
         reg = edt.sram_dev.regs[0]
-        out("DT_SRAM_BASE_ADDRESS\t0x{:x}".format(reg.addr))
-        out("DT_SRAM_SIZE\t{}".format(reg.size//1024))
+        out("DT_SRAM_BASE_ADDRESS", hex(reg.addr))
+        out("DT_SRAM_SIZE", reg.size//1024)
 
     if edt.ccm_dev:
         # TODO: Check that regs[0] exists
         reg = edt.ccm_dev.regs[0]
-        out("DT_CCM_BASE_ADDRESS\t0x{:x}".format(reg.addr))
-        out("DT_CCM_SIZE\t{}".format(reg.size//1024))
+        out("DT_CCM_BASE_ADDRESS", hex(reg.addr))
+        out("DT_CCM_SIZE", reg.size//1024)
 
     # NOTE: These defines aren't used by the code and just used by
     # the kconfig build system, we can remove them in the future
@@ -84,9 +84,9 @@ def write_regs(dev):
     # Writes address/size output for the registers in dev's 'reg' property
 
     for reg in dev.regs:
-        out("{}\t0x{:x}".format(reg_addr_ident(reg), reg.addr))
+        out(reg_addr_ident(reg), hex(reg.addr))
         if reg.size is not None:
-            out("{}\t{}".format(reg_size_ident(reg), reg.size))
+            out(reg_size_ident(reg), reg.size)
 
     # Write aliases, in a separate block after the addr/size definitions
     for reg in dev.regs:
@@ -96,7 +96,7 @@ def write_regs(dev):
             # Avoid writing aliases that equal the identifier.
             # TODO: Get rid of this?
             if alias != ident:
-                out("{}\t{}".format(alias, ident))
+                out(alias, ident)
 
         # Write size aliases
         ident = reg_size_ident(reg)
@@ -104,7 +104,7 @@ def write_regs(dev):
             # Avoid writing aliases that equal the identifier.
             # TODO: Get rid of this?
             if alias != ident:
-                out("{}\t{}".format(alias, ident))
+                out(alias, ident)
 
 
 def write_props(dev):
@@ -128,16 +128,16 @@ def write_props(dev):
         ident = "{}_{}".format(dev_ident(dev), str2ident(name))
 
         if isinstance(val, bool):
-            out("{}\t{}".format(ident, 1 if val else 0))
+            out(ident, 1 if val else 0)
         elif isinstance(val, str):
-            out('{}\t"{}"'.format(ident, val))
+            out(ident, '"{}"'.format(val))
         elif isinstance(val, int):
-            out("{}\t{}".format(ident, val))
+            out(ident, val)
         elif isinstance(val, list):
             for i, elm in enumerate(val):
                 if isinstance(elm, str):
                     elm = '"{}"'.format(elm)
-                out("{}_{}\t{}".format(ident, i, elm))
+                out("{}_{}".format(ident, i), elm)
         else:
             # Internal error
             assert False
@@ -288,9 +288,9 @@ def write_flash(flash_dev):
 
     reg = flash_dev.regs[0]
 
-    out("DT_FLASH_BASE_ADDRESS\t0x{:x}".format(reg.addr))
+    out("DT_FLASH_BASE_ADDRESS", hex(reg.addr))
     if reg.size is not None:
-        out("DT_FLASH_SIZE\t{}".format(reg.size//1024))
+        out("DT_FLASH_SIZE", reg.size//1024)
 
 
 def write_flash_partition(partition_dev):
@@ -299,23 +299,23 @@ def write_flash_partition(partition_dev):
 
     label = str2ident(partition_dev.label)
 
-    out("DT_FLASH_AREA_{0}_LABEL\t{0}".format(label))
-    out("DT_FLASH_AREA_{}_READ_ONLY\t{}".format(
-            label, 1 if partition_dev.read_only else 0))
+    out("DT_FLASH_AREA_{}_LABEL".format(label), label)
+    out("DT_FLASH_AREA_{}_READ_ONLY".format(label),
+            1 if partition_dev.read_only else 0)
 
     for i, reg in enumerate(partition_dev.regs):
-        out("DT_FLASH_AREA_{}_OFFSET_{} {}".format(label, i, reg.addr))
-        out("DT_FLASH_AREA_{}_SIZE_{} {}".format(label, i, reg.size))
+        out("DT_FLASH_AREA_{}_OFFSET_{}".format(label, i), reg.addr)
+        out("DT_FLASH_AREA_{}_SIZE_{}".format(label, i), reg.size)
 
     # Add aliases that points to the first sector
     #
     # TODO: Could we get rid of this? Code could just refer to sector _0 where
     # needed instead.
 
-    out("DT_FLASH_AREA_{0}_OFFSET\tDT_FLASH_AREA_{0}_OFFSET_0".format(
-            label))
-    out("DT_FLASH_AREA_{0}_SIZE\tDT_FLASH_AREA_{0}_SIZE_0".format(
-            label))
+    out("DT_FLASH_AREA_{}_OFFSET".format(label),
+            "DT_FLASH_AREA_{0}_OFFSET_0".format(label))
+    out("DT_FLASH_AREA_{}_SIZE".format(label),
+            "DT_FLASH_AREA_{0}_SIZE_0".format(label))
 
 
 def write_label(ident, dev):
@@ -331,7 +331,7 @@ def write_label(ident, dev):
     if dev.label is None:
         err("missing 'label' property on {!r}".format(dev))
 
-    out('{}\t"{}"'.format(ident, dev.label))
+    out(ident, '"{}"'.format(dev.label))
 
 
 def str2ident(s):
@@ -343,11 +343,11 @@ def str2ident(s):
             .upper()
 
 
-def out(s):
+def out(s, t):
     # TODO: This is just for writing the header. Will get a .conf file later as
     # well.
 
-    print("#define {}".format(s), file=_out)
+    print("#define {}\t{}".format(s, t), file=_out)
 
 
 def err(s):
