@@ -59,6 +59,10 @@ def main():
         out("#define DT_CCM_BASE_ADDRESS\t0x{:x}".format(reg.addr))
         out("#define DT_CCM_SIZE\t{}".format(reg.size//1024))
 
+    # NOTE: These defines aren't used by the code and just used by
+    # the kconfig build system, we can remove them in the future
+    # if we provide a function in kconfigfunctions.py to get
+    # the same info
     write_label("DT_UART_CONSOLE_ON_DEV_NAME", edt.console_dev)
     write_label("DT_UART_SHELL_ON_DEV_NAME",   edt.shell_uart_dev)
     write_label("DT_BT_UART_ON_DEV_NAME",      edt.bt_uart_dev)
