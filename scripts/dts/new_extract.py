@@ -239,7 +239,15 @@ def dev_path_aliases(dev):
 
     compat_s = str2ident(dev.matching_compat)
 
-    return ["ALIAS_{}".format(str2ident(alias)) for alias in dev.aliases]
+    aliases = []
+    for alias in dev.aliases:
+        aliases.append("ALIAS_{}".format(str2ident(alias)))
+
+        # TODO: See if we can remove or deprecate this form
+        aliases.append("{}_{}".format(compat_s, str2ident(alias)))
+
+    return aliases
+
 
 
 def dev_instance_aliases(dev):
