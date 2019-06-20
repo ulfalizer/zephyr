@@ -77,6 +77,8 @@ def main():
 
 
 def write_regs(dev):
+    # Writes address/size output for the registers in dev's 'reg' property
+
     for reg in dev.regs:
         out("#define {}\t0x{:x}".format(reg_addr_ident(reg), reg.addr))
         if reg.size is not None:
