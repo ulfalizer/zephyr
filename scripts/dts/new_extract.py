@@ -75,6 +75,8 @@ def main():
 def write_regs(dev):
     for reg in dev.regs:
         out("#define {}\t0x{:x}".format(reg_addr_ident(reg), reg.addr))
+        if reg.size is not None:
+            out("#define {}\t{}".format(reg_size_ident(reg), reg.size))
 
 
 def write_aliases(dev):
@@ -94,6 +96,15 @@ def reg_addr_ident(reg):
     dev = reg.dev
 
     return "{}_BASE_ADDRESS_{}".format(dev_ident(dev), dev.regs.index(reg))
+
+
+def reg_size_ident(reg):
+    # Returns the identifier (e.g., macro name) to be used for the size of
+    # 'reg' in the output
+
+    dev = reg.dev
+
+    return "{}_SIZE_{}".format(dev_ident(dev), dev.regs.index(reg))
 
 
 def dev_ident(dev):
