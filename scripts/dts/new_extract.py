@@ -87,7 +87,7 @@ def write_regs(dev):
 def write_aliases(dev):
     for reg in dev.regs:
         ident = reg_addr_ident(reg)
-        for alias in reg_aliases(reg):
+        for alias in reg_addr_aliases(reg):
             # Avoid writing aliases that overlap with the base identifier for
             # the register
             if alias != ident:
@@ -148,25 +148,38 @@ def reg_size_ident(reg):
     return "{}_SIZE_{}".format(dev_ident(dev), dev.regs.index(reg))
 
 
+def reg_addr_aliases(reg):
+    # Returns a list of aliases for the address of 'reg'
+
+    return [alias + "_BASE_ADDRESS" for alias in reg_aliases(reg)]
+
+
+def reg_size_aliases(reg):
+    # Returns a list of aliases for the size of 'reg'
+
+    return [alias + "_SIZE" for alias in reg_aliases(reg)]
+
+
 def reg_aliases(reg):
-    # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
-    # output. TODO: give example output
+    # Returns a list of aliases for the Register 'reg', used e.g. when building
+    # macro names
 
     dev = reg.dev
 
     aliases = []
 
-    for dev_alias in dev_aliases(dev):
-        alias = dev_alias + "_BASE_ADDRESS"
+    # Register aliases are based on device aliases
+    for alias in dev_aliases(dev):
         if len(dev.regs) > 1:
             alias += "_" + str(dev.regs.index(reg))
         aliases.append(alias)
 
         if reg.name:
-            aliases.append("{}_{}_BASE_ADDRESS".format(
+            aliases.append("{}_{}".format(
                 dev_alias, str2ident(reg.name)))
 
     if reg.name:
+        # TODO: Is this needed?
         aliases.append(reg_name_alias(reg))
 
     return aliases
@@ -177,7 +190,7 @@ def reg_name_alias(reg):
     # TODO: Is this needed?
 
     dev = reg.dev
-    return "DT_{}_{:X}_{}_BASE_ADDRESS".format(
+    return "DT_{}_{:X}_{}".format(
         str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
 
 
