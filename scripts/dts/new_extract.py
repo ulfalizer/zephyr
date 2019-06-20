@@ -48,13 +48,17 @@ def main():
 
     # These are derived from /chosen
 
-    # TODO: Check that regs[0] exists below?
-
     if edt.sram_dev:
-        out("#define DT_SRAM_BASE_ADDRESS\t" + hex(edt.sram_dev.regs[0].addr))
+        # TODO: Check that regs[0] exists
+        reg = edt.sram_dev.regs[0]
+        out("#define DT_SRAM_BASE_ADDRESS\t0x{:x}".format(reg.addr))
+        out("#define DT_SRAM_SIZE\t{}".format(reg.size//1024))
 
     if edt.ccm_dev:
-        out("#define DT_CCM_BASE_ADDRESS\t" + hex(edt.ccm_dev.regs[0].addr))
+        # TODO: Check that regs[0] exists
+        reg = edt.ccm_dev.regs[0]
+        out("#define DT_CCM_BASE_ADDRESS\t0x{:x}".format(reg.addr))
+        out("#define DT_CCM_SIZE\t{}".format(reg.size//1024))
 
     write_label("DT_UART_CONSOLE_LABEL", edt.console_dev)
     write_label("DT_UART_SHELL_LABEL",   edt.shell_uart_dev)
