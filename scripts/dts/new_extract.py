@@ -64,6 +64,13 @@ def main():
     if edt.ccm_dev:
         out("#define DT_CCM_BASE_ADDRESS\t" + hex(edt.ccm_dev.regs[0].addr))
 
+    write_label("DT_UART_CONSOLE_LABEL", edt.console_dev)
+    write_label("DT_UART_SHELL_LABEL",   edt.shell_uart_dev)
+    write_label("DT_BT_UART_LABEL",      edt.bt_uart_dev)
+    write_label("DT_UART_PIPE_LABEL",    edt.uart_pipe_dev)
+    write_label("DT_BT_MONITOR_LABEL",   edt.bt_mon_uart_dev)
+    write_label("DT_UART_MCUMGR_LABEL",  edt.uart_mcumgr_dev)
+
     if edt.flash_dev:
         write_flash(edt.flash_dev)
 
@@ -247,6 +254,22 @@ def write_flash_partition(partition_dev):
             label))
     out("#define DT_FLASH_AREA_{0}_SIZE\tDT_FLASH_AREA_{0}_SIZE_0".format(
             label))
+
+
+def write_label(ident, dev):
+    # Helper function. Writes '#define <ident> <label>', where <label>
+    # is the value of the 'label' property from 'dev'. Does nothing if
+    # 'dev' is None.
+    #
+    # Errors out if 'dev' exists but has no label.
+
+    if not dev:
+        return
+
+    if dev.label is None:
+        _err("missing 'label' property on {!r}".format(dev))
+
+    out('#define {}\t"{}"'.format(ident, dev.label))
 
 
 def out(s):

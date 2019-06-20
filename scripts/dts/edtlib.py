@@ -36,6 +36,18 @@ class EDT:
     flash_dev:
       The Device instance for the device chosen by the 'zephyr,flash' property
       on the /chosen node, or None if missing
+
+    console_dev:
+    shell_uart_dev:
+    bt_uart_dev:
+    uart_pipe_dev:
+    bt_mon_uart_dev:
+    uart_mcumgr_dev:
+      The Device instance for the corresponding 'zephyr,<name>' property on
+      the /chosen node, or None if missing.
+
+      For example, uart_pipe_dev corresponds to zephyr,uart-pipe, and
+      uart_mcumgr_dev to zephyr,uart_mcumgr.
     """
     def __init__(self, dts, bindings_dir):
         self._dt = DT(dts)
@@ -164,6 +176,13 @@ class EDT:
         self.sram_dev = self._chosen_dev("zephyr,sram")
         self.ccm_dev = self._chosen_dev("zephyr,ccm")
         self.flash_dev = self._chosen_dev("zephyr,flash")
+
+        self.console_dev     = self._chosen_dev("zephyr,console")
+        self.shell_uart_dev  = self._chosen_dev("zephyr,shell-uart")
+        self.bt_uart_dev     = self._chosen_dev("zephyr,bt-uart")
+        self.uart_pipe_dev   = self._chosen_dev("zephyr,uart-pipe")
+        self.bt_mon_uart_dev = self._chosen_dev("zephyr,bt-mon-uart")
+        self.uart_mcumgr_dev = self._chosen_dev("zephyr,uart-mcumgr")
 
     def _chosen_dev(self, prop_name):
         # _parse_chosen() helper. Returns the device pointed to by prop_name in
