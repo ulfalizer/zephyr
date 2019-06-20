@@ -26,17 +26,8 @@ class EDT:
       A list of Device instances for the devices.
 
     sram_dev:
-      The Device instance for the device chosen by the 'zephyr,sram' property
-      on the /chosen node, or None if missing
-
     ccm_dev:
-      The Device instance for the device chosen by the 'zephyr,ccm' property on
-      the /chosen node, or None if missing
-
     flash_dev:
-      The Device instance for the device chosen by the 'zephyr,flash' property
-      on the /chosen node, or None if missing
-
     console_dev:
     shell_uart_dev:
     bt_uart_dev:
