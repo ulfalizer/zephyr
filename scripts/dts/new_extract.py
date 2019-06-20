@@ -10,15 +10,6 @@ import sys
 import edtlib
 
 
-def str2ident(s):
-    # Change ,-@/ to _ and uppercase
-    return s.replace("-", "_") \
-            .replace(",", "_") \
-            .replace("@", "_") \
-            .replace("/", "_") \
-            .upper()
-
-
 def main():
     global _out
 
@@ -270,6 +261,15 @@ def write_label(ident, dev):
         err("missing 'label' property on {!r}".format(dev))
 
     out('#define {}\t"{}"'.format(ident, dev.label))
+
+
+def str2ident(s):
+    # Change ,-@/ to _ and uppercase
+    return s.replace("-", "_") \
+            .replace(",", "_") \
+            .replace("@", "_") \
+            .replace("/", "_") \
+            .upper()
 
 
 def out(s):
