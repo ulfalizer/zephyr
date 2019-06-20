@@ -37,8 +37,8 @@ class EDT:
       The Device instance for the corresponding 'zephyr,<name>' property on
       the /chosen node, or None if missing.
 
-      For example, uart_pipe_dev corresponds to zephyr,uart-pipe, and
-      uart_mcumgr_dev to zephyr,uart_mcumgr.
+      For example, uart_pipe_dev corresponds to 'zephyr,uart-pipe', and
+      uart_mcumgr_dev to 'zephyr,uart_mcumgr'.
     """
     def __init__(self, dts, bindings_dir):
         self._dt = DT(dts)
