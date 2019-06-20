@@ -34,8 +34,6 @@ def main():
     for dev in edt.devices:
         if dev.enabled and dev.binding:
             write_regs(dev)
-            write_reg_aliases(dev)
-
             write_props(dev)
 
             # Generate defines of the form
@@ -84,8 +82,7 @@ def write_regs(dev):
         if reg.size is not None:
             out("#define {}\t{}".format(reg_size_ident(reg), reg.size))
 
-
-def write_reg_aliases(dev):
+    # Write aliases, in a separate block after the addr/size definitions
     for reg in dev.regs:
         # Write address aliases
         ident = reg_addr_ident(reg)
