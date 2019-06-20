@@ -74,12 +74,12 @@ def main():
 
 def write_regs(dev):
     for reg in dev.regs:
-        out("#define {}\t0x{:x}".format(reg_ident(reg), reg.addr))
+        out("#define {}\t0x{:x}".format(reg_addr_ident(reg), reg.addr))
 
 
 def write_aliases(dev):
     for reg in dev.regs:
-        ident = reg_ident(reg)
+        ident = reg_addr_ident(reg)
         for alias in reg_aliases(reg):
             # Avoid writing aliases that overlap with the base identifier for
             # the register
@@ -87,25 +87,18 @@ def write_aliases(dev):
                 out("#define {}\t{}".format(alias, ident))
 
 
-def reg_ident(reg):
-    # Returns the identifier (e.g., macro name) to be used for 'reg' in the
-    # output
+def reg_addr_ident(reg):
+    # Returns the identifier (e.g., macro name) to be used for the address of
+    # 'reg' in the output
 
     dev = reg.dev
 
-    ident = dev_ident(dev) + "_BASE_ADDRESS"
-
-    # TODO: Could the index always be added later, even if there's
-    # just a single register? Might streamline things.
-    if len(dev.regs) > 1:
-        ident += "_" + str(dev.regs.index(reg))
-
-    return ident
+    return "{}_BASE_ADDRESS_{}".format(dev_ident(dev), dev.regs.index(reg))
 
 
 def dev_ident(dev):
-    # Returns the identifier (e.g., macro name) to be used for property in the
-    # output
+    # Returns an identifier for the Device 'dev'. Used when building e.g. macro
+    # names.
 
     # TODO: Handle PWM on STM
     # TODO: Better document the rules of how we generate things
@@ -135,7 +128,6 @@ def reg_aliases(reg):
     # output. TODO: give example output
 
     aliases = reg_path_aliases(reg) + reg_instance_aliases(reg)
-
     if reg.name:
         aliases.append(reg_name_alias(reg))
     return aliases
