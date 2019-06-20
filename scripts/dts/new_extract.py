@@ -148,6 +148,39 @@ def reg_size_ident(reg):
     return "{}_SIZE_{}".format(dev_ident(dev), dev.regs.index(reg))
 
 
+def reg_aliases(reg):
+    # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
+    # output. TODO: give example output
+
+    dev = reg.dev
+
+    aliases = []
+
+    for dev_alias in dev_aliases(dev):
+        alias = dev_alias + "_BASE_ADDRESS"
+        if len(dev.regs) > 1:
+            alias += "_" + str(dev.regs.index(reg))
+        aliases.append(alias)
+
+        if reg.name:
+            aliases.append("{}_{}_BASE_ADDRESS".format(
+                dev_alias, str2ident(reg.name)))
+
+    if reg.name:
+        aliases.append(reg_name_alias(reg))
+
+    return aliases
+
+
+def reg_name_alias(reg):
+    # reg_aliases() helper. Returns an alias based on 'reg's name.
+    # TODO: Is this needed?
+
+    dev = reg.dev
+    return "DT_{}_{:X}_{}_BASE_ADDRESS".format(
+        str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
+
+
 def dev_ident(dev):
     # Returns an identifier for the Device 'dev'. Used when building e.g. macro
     # names.
@@ -173,30 +206,6 @@ def dev_ident(dev):
         ident += "_{}".format(str2ident(dev.name))
 
     return ident
-
-
-def reg_aliases(reg):
-    # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
-    # output. TODO: give example output
-
-    dev = reg.dev
-
-    aliases = []
-
-    for dev_alias in dev_aliases(dev):
-        alias = dev_alias + "_BASE_ADDRESS"
-        if len(dev.regs) > 1:
-            alias += "_" + str(dev.regs.index(reg))
-        aliases.append(alias)
-
-        if reg.name:
-            aliases.append("{}_{}_BASE_ADDRESS".format(
-                dev_alias, str2ident(reg.name)))
-
-    if reg.name:
-        aliases.append(reg_name_alias(reg))
-
-    return aliases
 
 
 def dev_aliases(dev):
@@ -230,15 +239,6 @@ def dev_instance_aliases(dev):
 
     return ["DT_{}_{}".format(str2ident(compat), dev.instance_no[compat])
             for compat in dev.compats]
-
-
-def reg_name_alias(reg):
-    # reg_aliases() helper. Returns an alias based on 'reg's name.
-    # TODO: Is this needed?
-
-    dev = reg.dev
-    return "DT_{}_{:X}_{}_BASE_ADDRESS".format(
-        str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
 
 
 def write_flash(flash_dev):
