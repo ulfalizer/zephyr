@@ -221,8 +221,8 @@ def write_flash(flash_dev):
     # property in /chosen
 
     if len(flash_dev.regs) != 1:
-        _err("Expected zephyr,flash to have a single register, has {}"
-             .format(len(flash_dev.regs)))
+        err("Expected zephyr,flash to have a single register, has {}"
+            .format(len(flash_dev.regs)))
 
     reg = flash_dev.regs[0]
 
@@ -233,7 +233,7 @@ def write_flash(flash_dev):
 
 def write_flash_partition(partition_dev):
     if partition_dev.label is None:
-        _err("missing 'label' property on {!r}".format(partition_dev))
+        err("missing 'label' property on {!r}".format(partition_dev))
 
     label = str2ident(partition_dev.label)
 
@@ -267,7 +267,7 @@ def write_label(ident, dev):
         return
 
     if dev.label is None:
-        _err("missing 'label' property on {!r}".format(dev))
+        err("missing 'label' property on {!r}".format(dev))
 
     out('#define {}\t"{}"'.format(ident, dev.label))
 
@@ -279,7 +279,7 @@ def out(s):
     print(s, file=_out)
 
 
-def _err(s):
+def err(s):
     raise Exception(s)
 
 
