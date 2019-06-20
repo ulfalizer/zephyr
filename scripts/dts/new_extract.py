@@ -59,12 +59,12 @@ def main():
         out("#define DT_CCM_BASE_ADDRESS\t0x{:x}".format(reg.addr))
         out("#define DT_CCM_SIZE\t{}".format(reg.size//1024))
 
-    write_label("DT_UART_CONSOLE_LABEL", edt.console_dev)
-    write_label("DT_UART_SHELL_LABEL",   edt.shell_uart_dev)
-    write_label("DT_BT_UART_LABEL",      edt.bt_uart_dev)
-    write_label("DT_UART_PIPE_LABEL",    edt.uart_pipe_dev)
-    write_label("DT_BT_MONITOR_LABEL",   edt.bt_mon_uart_dev)
-    write_label("DT_UART_MCUMGR_LABEL",  edt.uart_mcumgr_dev)
+    write_label("DT_UART_CONSOLE_ON_DEV_NAME", edt.console_dev)
+    write_label("DT_UART_SHELL_ON_DEV_NAME",   edt.shell_uart_dev)
+    write_label("DT_BT_UART_ON_DEV_NAME",      edt.bt_uart_dev)
+    write_label("DT_UART_PIPE_ON_DEV_NAME",    edt.uart_pipe_dev)
+    write_label("DT_BT_MONITOR_ON_DEV_NAME",   edt.bt_mon_uart_dev)
+    write_label("DT_UART_MCUMGR_ON_DEV_NAME",  edt.uart_mcumgr_dev)
 
     if edt.flash_dev:
         write_flash(edt.flash_dev)
