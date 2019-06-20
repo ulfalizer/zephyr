@@ -23,7 +23,7 @@ class EDT:
     These attributes are available on EDT instances:
 
     devices:
-      A list of Device instances for the devices.
+      A list of Device instances for the devices
 
     sram_dev:
     ccm_dev:
