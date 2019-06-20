@@ -34,7 +34,8 @@ def main():
     for dev in edt.devices:
         if dev.enabled and dev.binding:
             write_regs(dev)
-            write_aliases(dev)
+            write_reg_aliases(dev)
+
             write_props(dev)
 
             # Generate defines of the form
@@ -84,12 +85,21 @@ def write_regs(dev):
             out("#define {}\t{}".format(reg_size_ident(reg), reg.size))
 
 
-def write_aliases(dev):
+def write_reg_aliases(dev):
     for reg in dev.regs:
+        # Write address aliases
         ident = reg_addr_ident(reg)
         for alias in reg_addr_aliases(reg):
-            # Avoid writing aliases that overlap with the base identifier for
-            # the register
+            # Avoid writing aliases that equal the identifier.
+            # TODO: Get rid of this?
+            if alias != ident:
+                out("#define {}\t{}".format(alias, ident))
+
+        # Write size aliases
+        ident = reg_size_ident(reg)
+        for alias in reg_size_aliases(reg):
+            # Avoid writing aliases that equal the identifier.
+            # TODO: Get rid of this?
             if alias != ident:
                 out("#define {}\t{}".format(alias, ident))
 
