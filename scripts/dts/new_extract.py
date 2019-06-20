@@ -149,7 +149,13 @@ def reg_addr_ident(reg):
 
     dev = reg.dev
 
-    return "{}_BASE_ADDRESS_{}".format(dev_ident(dev), dev.regs.index(reg))
+    # NOTE: to maintain compat wit the old script we special case if there's
+    # only a single register (we drop the '_0').
+    if len(dev.regs) > 1:
+        return "{}_BASE_ADDRESS_{}".format(dev_ident(dev), dev.regs.index(reg))
+    else:
+        return "{}_BASE_ADDRESS".format(dev_ident(dev))
+
 
 
 def reg_size_ident(reg):
@@ -158,7 +164,12 @@ def reg_size_ident(reg):
 
     dev = reg.dev
 
-    return "{}_SIZE_{}".format(dev_ident(dev), dev.regs.index(reg))
+    # NOTE: to maintain compat wit the old script we special case if there's
+    # only a single register (we drop the '_0').
+    if len(dev.regs) > 1:
+        return "{}_SIZE_{}".format(dev_ident(dev), dev.regs.index(reg))
+    else:
+        return "{}_SIZE".format(dev_ident(dev))
 
 
 def reg_addr_aliases(reg):
