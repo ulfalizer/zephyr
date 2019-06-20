@@ -164,10 +164,9 @@ class EDT:
         # Extracts information from the device tree's /chosen node. 'dt' is the
         # dtlib.DT instance for the device tree.
 
-        self.sram_dev = self._chosen_dev("zephyr,sram")
-        self.ccm_dev = self._chosen_dev("zephyr,ccm")
-        self.flash_dev = self._chosen_dev("zephyr,flash")
-
+        self.sram_dev        = self._chosen_dev("zephyr,sram")
+        self.ccm_dev         = self._chosen_dev("zephyr,ccm")
+        self.flash_dev       = self._chosen_dev("zephyr,flash")
         self.console_dev     = self._chosen_dev("zephyr,console")
         self.shell_uart_dev  = self._chosen_dev("zephyr,shell-uart")
         self.bt_uart_dev     = self._chosen_dev("zephyr,bt-uart")
