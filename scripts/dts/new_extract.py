@@ -179,72 +179,62 @@ def reg_aliases(reg):
     # Returns a list of aliases (e.g., macro names) to be used for 'reg' in the
     # output. TODO: give example output
 
-    aliases = reg_path_aliases(reg) + reg_instance_aliases(reg)
-    if reg.name:
-        aliases.append(reg_name_alias(reg))
-    return aliases
-
-
-def reg_path_aliases(reg):
-    # reg_aliases() helper. Returns a list of aliases for 'reg' based on the
-    # aliases registered for the register's device, in the /aliases node.
-    #
-    # Generates: DT_<COMPAT>_<ALIAS>_<PROP>
-
     dev = reg.dev
 
     aliases = []
 
-    for dev_alias in dev.aliases:
-        alias = "DT_{}_{}_BASE_ADDRESS".format(
-            str2ident(dev.matching_compat), str2ident(dev_alias))
-
+    for dev_alias in dev_aliases(dev):
+        alias = dev_alias + "_BASE_ADDRESS"
         if len(dev.regs) > 1:
             alias += "_" + str(dev.regs.index(reg))
-
         aliases.append(alias)
 
         if reg.name:
-            aliases.append("DT_{}_{}_{}_BASE_ADDRESS".format(
-                str2ident(dev.matching_compat), str2ident(dev_alias),
-                str2ident(reg.name)))
+            aliases.append("{}_{}_BASE_ADDRESS".format(
+                dev_alias, str2ident(reg.name)))
+
+    if reg.name:
+        aliases.append(reg_name_alias(reg))
 
     return aliases
 
 
-def reg_instance_aliases(reg):
-    # reg_aliases() helper. Returns a list of aliases for 'reg' based on the
-    # instance number(s) of the register's device (based on how many instances
-    # of that particular device there are).
+def dev_aliases(dev):
+    # Returns a list of aliases for the Device 'dev', used e.g. when building
+    # macro names
+
+    return dev_path_aliases(dev) + dev_instance_aliases(dev)
+
+
+def dev_path_aliases(dev):
+    # Returns a list of aliases for the Device 'dev', based on the aliases
+    # registered for the device, in the /aliases node. Used when building e.g.
+    # macro names.
+
+    if dev.matching_compat is None:
+        return []
+
+    compat_s = str2ident(dev.matching_compat)
+
+    return ["DT_{}_{}".format(compat_s, str2ident(alias))
+            for alias in dev.aliases]
+
+
+def dev_instance_aliases(dev):
+    # Returns a list of aliases for the Device 'dev', based on the instance
+    # number of the device (based on how many instances of that particular
+    # device there are).
     #
     # This is a list since a device can have multiple 'compatible' strings,
     # each with their own instance number.
-    #
-    # Generates: DT_<COMPAT>_<INSTANCE>_<PROP>
 
-    dev = reg.dev
-
-    idents = []
-
-    for compat in dev.compats:
-        ident = "DT_{}_{}_BASE_ADDRESS".format(
-            str2ident(compat), dev.instance_no[compat])
-
-        if len(dev.regs) > 1:
-            ident += "_" + str(dev.regs.index(reg))
-
-        idents.append(ident)
-
-        if reg.name:
-            idents.append("DT_{}_{}_{}_BASE_ADDRESS".format(
-                str2ident(dev.matching_compat), dev.instance_no[compat],
-                str2ident(reg.name)))
-
-    return idents
+    return ["DT_{}_{}".format(str2ident(compat), dev.instance_no[compat])
+            for compat in dev.compats]
 
 
 def reg_name_alias(reg):
     # reg_aliases() helper. Returns an alias based on 'reg's name.
+    # TODO: Is this needed?
 
     dev = reg.dev
     return "DT_{}_{:X}_{}_BASE_ADDRESS".format(
