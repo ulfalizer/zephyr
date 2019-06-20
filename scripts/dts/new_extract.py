@@ -34,6 +34,7 @@ def main():
     for dev in edt.devices:
         if dev.enabled and dev.binding:
             write_regs(dev)
+            write_irqs(dev)
             write_props(dev)
             write_bus(dev)
 
@@ -307,6 +308,32 @@ def write_label(ident, dev):
         err("missing 'label' property on {!r}".format(dev))
 
     out(ident, '"{}"'.format(dev.label))
+
+def write_irqs(dev):
+    # Writes irq num and data for the interrupts in dev's 'interrupt' property
+
+    for irq_idx in range(len(dev.interrupts)):
+
+        # We ignore controller right now
+        irq = dev.interrupts[irq_idx].cells
+
+        for cell_name in irq:
+            irq_ident = "IRQ_{:d}".format(irq_idx)
+            if cell_name != "irq":
+                irq_ident = "{}_{}".format(irq_ident, str2ident(cell_name))
+
+            out_dev(dev, irq_ident, irq[cell_name])
+
+            irq_name = dev.interrupts[irq_idx].name
+            ident_with_dev = dev_ident(dev) + "_" + irq_ident
+            if irq_name:
+                irq_ident_name = "IRQ_{}".format(str2ident(irq_name))
+                if cell_name != "irq":
+                    irq_ident_name = "{}_{}".format(irq_ident_name, str2ident(cell_name))
+
+                # TODO: See how to handle this in a common way, will
+                # be similar to reg-name handling.
+                out_dev(dev, irq_ident_name, ident_with_dev)
 
 
 def str2ident(s):
