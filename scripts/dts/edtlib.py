@@ -350,6 +350,11 @@ class Device:
         if "compatible" not in self._node.props:
             self.compats = []
             self.matching_compat = self.binding = None
+            if self.parent and self.parent.binding:
+                parent_binding = self.parent.binding
+                if 'sub-node' in parent_binding:
+                    self.binding = parent_binding['sub-node']
+                    self.matching_compat = self.parent.matching_compat
             return
 
         # This relies on the parent of the Device having already been
