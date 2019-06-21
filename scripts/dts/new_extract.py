@@ -107,26 +107,26 @@ def write_props(dev):
         if prop.name in {"reg", "interrupts", "clocks", "compatible"}:
             continue
 
-        ident = "{}_{}".format(dev_ident(dev), str2ident(prop.name))
+        ident = str2ident(prop.name)
 
         if isinstance(prop.val, bool):
-            out(ident, 1 if prop.val else 0)
+            out_dev(dev, ident, 1 if prop.val else 0)
         elif isinstance(prop.val, str):
-            out(ident, '"{}"'.format(prop.val))
+            out_dev(dev, ident, '"{}"'.format(prop.val))
         elif isinstance(prop.val, int):
-            out(ident, prop.val)
+            out_dev(dev, ident, prop.val)
         elif isinstance(prop.val, list):
             for i, elm in enumerate(prop.val):
                 if isinstance(elm, str):
                     elm = '"{}"'.format(elm)
-                out("{}_{}".format(ident, i), elm)
+                out_dev(dev, "{}_{}".format(ident, i), elm)
         else:
             # Internal error
             assert False
 
         # Generate DT_..._ENUM if there's an 'enum:' key in the binding
         if prop.enum_index is not None:
-            out(ident + "_ENUM", prop.enum_index)
+            out_dev(dev, ident + "_ENUM", prop.enum_index)
 
 
 def reg_addr_ident(reg):
@@ -307,9 +307,7 @@ def out_alias(ident, target):
     # TODO: This is just for writing the header. Will get a .conf file later as
     # well.
 
-    # TODO: Make this check unnecessary?
-    if ident != target:
-        print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
+    print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
 
 
 def out_dev(dev, ident, val):
