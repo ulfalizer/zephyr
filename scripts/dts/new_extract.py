@@ -85,6 +85,11 @@ def main():
     if edt.flash_dev:
         write_flash(edt.flash_dev)
 
+    # TODO: decide how we expose chosen
+    # Generate DT_CHOSEN_<CHOSEN PROP> 1
+    for cp in edt._dt.get_node("/chosen").props:
+        out("CHOSEN_{}".format(str2ident(cp)), 1)
+
     for dev in edt.devices:
         # TODO: Feels a bit janky to handle this separately from
         # zephyr,flash-dev
