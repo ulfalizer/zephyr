@@ -95,18 +95,17 @@ def write_props(dev):
     # Writes any properties defined in the "properties" section of the binding
     # for the device
 
-    # TODO: The YAML for these isn't quite regular
-    if dev.matching_compat in {"gpio-keys", "gpio-leds"}:
-        return
-
     for prop in dev.props:
         # Skip #size-cell and other property starting with #. Also skip mapping
         # properties like "gpio-map".
         if prop.name[0] == "#" or prop.name.endswith("-map"):
             continue
 
+        # skip properties that we handle elsewhere
+        if prop.name in {"reg", "interrupts"} or prop.name.endswith("gpios"):
+            continue
         # TODO: Add support for some of these properties elsewhere
-        if prop.name in {"reg", "interrupts", "clocks", "compatible"}:
+        if prop.name in {"clocks", "compatible"}:
             continue
 
         ident = str2ident(prop.name)
