@@ -358,7 +358,7 @@ def write_gpios(dev):
             for cell, val in gpio_cells.items():
                 gpio_cell_ident = "GPIOS_{}".format(str2ident(cell))
                 if gpio_name:
-                    gpio_ctrl_ident = str2ident(gpio_name) + "_" + gpio_cell_ident
+                    gpio_cell_ident = str2ident(gpio_name) + "_" + gpio_cell_ident
                 if len(gpios) > 1:
                     gpio_cell_ident += "_{}".format(gpio_i)
 
