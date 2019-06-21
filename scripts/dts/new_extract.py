@@ -336,9 +336,7 @@ def write_irqs(dev):
                 if cell_name != "irq":
                     irq_ident_name += "_" + str2ident(cell_name)
 
-                # TODO: See how to handle this in a common way, will
-                # be similar to reg-name handling.
-                out_dev(dev, irq_ident_name, dev_ident(dev) + "_" + irq_ident)
+                out_dev_aliases(dev, irq_ident_name, irq_ident)
 
 
 def write_gpios(dev):
@@ -374,6 +372,25 @@ def str2ident(s):
             .upper()
 
 
+def out_dev(dev, ident, val):
+    # Writes an <ident>=<val> assignment, along with aliases for <ident> based
+    # on 'dev'
+
+    # Write assignment and aliases
+    out(dev_ident(dev) + "_" + ident, val)
+    out_dev_aliases(dev, ident, ident)
+
+
+def out_dev_aliases(dev, ident, target):
+    # Writes aliases for 'target', based on 'dev' and 'ident'. The device
+    # prefix is automatically added to 'target'.
+    # TODO: Give example
+
+    target = dev_ident(dev) + "_" + target
+    for dev_alias in dev_aliases(dev):
+        out_alias(dev_alias + "_" + ident, target)
+
+
 def out(ident, val):
     # TODO: This is just for writing the header. Will get a .conf file later as
     # well.
@@ -386,19 +403,6 @@ def out_alias(ident, target):
     # well.
 
     print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
-
-
-def out_dev(dev, ident, val):
-    # TODO: Document
-
-    ident_with_dev = dev_ident(dev) + "_" + ident
-
-    # Write main entry
-    out(ident_with_dev, val)
-
-    # Write aliases that point to it
-    for dev_alias in dev_aliases(dev):
-        out_alias(dev_alias + "_" + ident, ident_with_dev)
 
 
 def err(s):
