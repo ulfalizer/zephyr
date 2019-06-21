@@ -35,6 +35,7 @@ def main():
         if dev.enabled and dev.binding:
             write_regs(dev)
             write_props(dev)
+            write_bus(dev)
 
             # Generate defines of the form
             #
@@ -42,8 +43,7 @@ def main():
             #
             # These are flags for which devices exist.
             for compat in dev.compats:
-                out("{}_{}"
-                    .format(str2ident(compat), dev.instance_no[compat]), 1)
+                out("{}_{}".format(str2ident(compat), dev.instance_no[compat]), 1)
 
     # These are derived from /chosen
 
@@ -127,6 +127,26 @@ def write_props(dev):
         # Generate DT_..._ENUM if there's an 'enum:' key in the binding
         if prop.enum_index is not None:
             out_dev(dev, ident + "_ENUM", prop.enum_index)
+
+
+def write_bus(dev):
+    # Generate bus-related #defines
+
+    if not dev.bus:
+        return
+
+    if dev.parent.label is None:
+        _err("Missing 'label' property on {!r}".format(dev.parent))
+    # #define DT_<DEV-IDENT>_BUS_NAME <BUS-LABEL>
+    out_dev(dev, "BUS_NAME", '"{}"'.format(str2ident(dev.parent.label)))
+
+    for compat in dev.compats:
+        ident = "{}_BUS_{}".format(str2ident(compat), str2ident(dev.bus))
+        # #define DT_<COMPAT>_BUS_<BUS TYPE> 1
+        out(ident, 1)
+        if compat == dev.matching_compat:
+            # TODO
+            pass
 
 
 def reg_addr_ident(reg):
