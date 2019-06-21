@@ -317,6 +317,7 @@ def write_label(ident, dev):
 
     out(ident, '"{}"'.format(dev.label))
 
+
 def write_irqs(dev):
     # Writes IRQ num and data for the interrupts in dev's 'interrupt' property
 
