@@ -115,32 +115,36 @@ def write_props(dev):
     if dev.matching_compat in {"gpio-keys", "gpio-leds"}:
         return
 
-    for name, val in dev.props.items():
+    for prop in dev.props:
         # Skip #size-cell and other property starting with #. Also skip mapping
         # properties like "gpio-map".
-        if name[0] == "#" or name.endswith("-map"):
+        if prop.name[0] == "#" or prop.name.endswith("-map"):
             continue
 
         # TODO: Add support for some of these properties elsewhere
-        if name in {"reg", "interrupts", "clocks", "compatible"}:
+        if prop.name in {"reg", "interrupts", "clocks", "compatible"}:
             continue
 
-        ident = "{}_{}".format(dev_ident(dev), str2ident(name))
+        ident = "{}_{}".format(dev_ident(dev), str2ident(prop.name))
 
-        if isinstance(val, bool):
-            out(ident, 1 if val else 0)
-        elif isinstance(val, str):
-            out(ident, '"{}"'.format(val))
-        elif isinstance(val, int):
-            out(ident, val)
-        elif isinstance(val, list):
-            for i, elm in enumerate(val):
+        if isinstance(prop.val, bool):
+            out(ident, 1 if prop.val else 0)
+        elif isinstance(prop.val, str):
+            out(ident, '"{}"'.format(prop.val))
+        elif isinstance(prop.val, int):
+            out(ident, prop.val)
+        elif isinstance(prop.val, list):
+            for i, elm in enumerate(prop.val):
                 if isinstance(elm, str):
                     elm = '"{}"'.format(elm)
                 out("{}_{}".format(ident, i), elm)
         else:
             # Internal error
             assert False
+
+        # Generate DT_..._ENUM if there's an 'enum:' key in the binding
+        if prop.enum_index is not None:
+            out(ident + "_ENUM", prop.enum_index)
 
 
 def reg_addr_ident(reg):
@@ -343,11 +347,11 @@ def str2ident(s):
             .upper()
 
 
-def out(s, t):
+def out(ident, val):
     # TODO: This is just for writing the header. Will get a .conf file later as
     # well.
 
-    print("#define {}\t{}".format(s, t), file=_out)
+    print("#define {}\t{}".format(ident, val), file=_out)
 
 
 def err(s):

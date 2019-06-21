@@ -232,9 +232,8 @@ class Device:
       (plain Python lists, dicts, etc.), or None if the device has no binding.
 
     props:
-      A dictionary that maps (the names of) properties mentioned in the
-      'properties' section of the binding to their values. The 'type' key in
-      the binding determines the form of the value.
+      A list of Property instances for the DT properties on the device that are
+      mentioned in 'properties:' in the binding
 
     regs:
       A list of Register instances for the device's registers
@@ -375,7 +374,7 @@ class Device:
     def _create_props(self):
         # Creates self.props. See the class docstring.
 
-        self.props = {}
+        self.props = []
 
         if not self.binding or "properties" not in self.binding:
             return
@@ -395,14 +394,28 @@ class Device:
                 _err("{} lacks 'type' in binding for {!r}"
                      .format(prop_name, node))
 
-            value = _prop_value(node, prop_name, prop_type,
-                                options.get("category") == "optional")
-            if value is not None:
-                self.props[prop_name] = value
-                enum = options.get("enum")
-                if enum is not None and value not in enum:
+            val = _prop_val(node, prop_name, prop_type,
+                            options.get("category") == "optional")
+            if val is None:
+                # 'category: optional' property that wasn't there
+                continue
+
+            prop = Property()
+            prop.dev = self
+            prop.name = prop_name
+            prop.val = val
+            enum = options.get("enum")
+            if enum is None:
+                prop.enum_index = None
+            else:
+                if val not in enum:
                     _err("Value ({}) for property ({}) is not in enumerated "
-                         "list {} for node {}".format(value, prop_name, enum, self.name))
+                         "list {} for node {}".format(
+                             val, prop_name, enum, self.name))
+
+                prop.enum_index = enum.index(val)
+
+            self.props.append(prop)
 
     def _create_regs(self):
         # Initializes self.regs with a list of Register instances
@@ -573,7 +586,9 @@ class Interrupt:
       None if there is no 'interrupt-names' property
 
     controller:
-      The Device instance for the controller the interrupt gets sent to
+      The Device instance for the controller the interrupt gets sent to. Any
+      'interrupt-map' is taken into account, so that this is the final
+      controller node.
 
     cells:
       A dictionary that maps names from the #cells portion of the binding to
@@ -590,6 +605,39 @@ class Interrupt:
         fields.append("cells: {}".format(self.cells))
 
         return "<Interrupt, {}>".format(", ".join(fields))
+
+
+class Property:
+    """
+    Represents a property on a Device, as set in its DT node and with
+    additional info from the 'properties:' section of the binding.
+
+    Only properties mentioned in 'properties:' get created.
+
+    These attributes are available on Property instances:
+
+    dev:
+      The Device instance the property is on
+
+    name:
+      The name of the property
+
+    val:
+      The value of the property, with the format determined by the 'type:'
+      key from the binding
+
+    enum_index:
+      The index of the property's value in the 'enum:' list in the binding, or
+      None if the binding has no 'enum:'
+    """
+    def __repr__(self):
+        fields = ["name: " + self.name,
+                  "value: " + self.val]
+
+        if self.enum_val is not None:
+            fields.append("enum index: {}".format(self.enum_val))
+
+        return "<Property, {}>".format(", ".join(fields))
 
 
 class EDTError(Exception):
@@ -643,7 +691,7 @@ def _binding_parent_bus(binding):
     return parent.get("bus")
 
 
-def _prop_value(node, prop_name, prop_type, optional):
+def _prop_val(node, prop_name, prop_type, optional):
     # Returns the value of the property named 'prop_name' on the DT node
     # 'node'. 'prop_type' is from the binding and determines how the value is
     # interpreted. 'optional' is True if the binding has 'category: optional'.
