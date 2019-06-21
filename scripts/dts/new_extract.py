@@ -318,30 +318,27 @@ def write_label(ident, dev):
     out(ident, '"{}"'.format(dev.label))
 
 def write_irqs(dev):
-    # Writes irq num and data for the interrupts in dev's 'interrupt' property
+    # Writes IRQ num and data for the interrupts in dev's 'interrupt' property
 
-    for irq_idx in range(len(dev.interrupts)):
-
-        # We ignore controller right now
-        irq = dev.interrupts[irq_idx].cells
-
-        for cell_name in irq:
-            irq_ident = "IRQ_{:d}".format(irq_idx)
+    for irq_i, irq in enumerate(dev.interrupts):
+        # We ignore the controller for now
+        for cell_name, cell_value in irq.cells.items():
+            irq_ident = "IRQ_{}".format(irq_i)
             if cell_name != "irq":
-                irq_ident = "{}_{}".format(irq_ident, str2ident(cell_name))
+                irq_ident += "_" + str2ident(cell_name)
 
-            out_dev(dev, irq_ident, irq[cell_name])
+            out_dev(dev, irq_ident, cell_value)
 
-            irq_name = dev.interrupts[irq_idx].name
-            ident_with_dev = dev_ident(dev) + "_" + irq_ident
-            if irq_name:
-                irq_ident_name = "IRQ_{}".format(str2ident(irq_name))
+            # If the IRQ has a name (from 'interrupt-names'), write an alias
+            # based on it
+            if irq.name:
+                irq_ident_name = "IRQ_{}".format(str2ident(irq.name))
                 if cell_name != "irq":
-                    irq_ident_name = "{}_{}".format(irq_ident_name, str2ident(cell_name))
+                    irq_ident_name += "_" + str2ident(cell_name)
 
                 # TODO: See how to handle this in a common way, will
                 # be similar to reg-name handling.
-                out_dev(dev, irq_ident_name, ident_with_dev)
+                out_dev(dev, irq_ident_name, dev_ident(dev) + "_" + irq_ident)
 
 
 def str2ident(s):
