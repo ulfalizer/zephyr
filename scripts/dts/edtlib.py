@@ -346,35 +346,42 @@ class Device:
 
     def _init_binding(self):
         # Initializes Device.matching_compat and Device.binding
-
-        if "compatible" not in self._node.props:
-            self.compats = []
-            self.matching_compat = self.binding = None
-            if self.parent and self.parent.binding:
-                parent_binding = self.parent.binding
-                if 'sub-node' in parent_binding:
-                    self.binding = parent_binding['sub-node']
-                    self.matching_compat = self.parent.matching_compat
-            return
-
+        #
         # This relies on the parent of the Device having already been
         # initialized, which is guaranteed by going through the nodes in
         # node_iter() order
-        if self.parent and self.parent.binding:
-            bus = _binding_child_bus(self.parent.binding)
+
+        if "compatible" in self._node.props:
+            self.compats = self._node.props["compatible"].to_strings()
+
+            if self.parent and self.parent.binding:
+                bus = _binding_child_bus(self.parent.binding)
+            else:
+                bus = None
+
+            for compat in self.compats:
+                binding = self.edt._compat2bindings.get((compat, bus))
+                if binding:
+                    # Binding found
+                    self.matching_compat = compat
+                    self.binding = binding
+                    return
         else:
-            bus = None
+            # No 'compatible' property. See if the parent has a 'sub-node:' key
+            # that gives the binding.
 
-        self.compats = self._node.props["compatible"].to_strings()
+            self.compats = []
 
-        for compat in self.compats:
-            binding = self.edt._compat2bindings.get((compat, bus))
-            if binding:
-                self.matching_compat = compat
-                self.binding = binding
-                return
+            if self.parent and self.parent.binding:
+                parent_binding = self.parent.binding
+                if "sub-node" in parent_binding:
+                    # Binding found
+                    self.binding = parent_binding["sub-node"]
+                    self.matching_compat = self.parent.matching_compat
+                    return
 
-        self.matching_compat = self.binding = None
+        # No binding found
+        self.binding = self.matching_compat = None
 
     def _create_props(self):
         # Creates self.props. See the class docstring.
