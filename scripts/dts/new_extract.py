@@ -351,7 +351,7 @@ def write_irqs(dev):
                 if cell_name != "irq":
                     irq_ident_name += "_" + str2ident(cell_name)
 
-                out_dev_aliases(dev, irq_ident_name, irq_ident)
+                out_name_aliases(dev, irq_ident_name, irq_ident)
 
 
 def write_gpios(dev):
@@ -394,6 +394,20 @@ def out_dev(dev, ident, val):
     # Write assignment and aliases
     out(dev_ident(dev) + "_" + ident, val)
     out_dev_aliases(dev, ident, ident)
+
+
+def out_name_aliases(dev, ident, target):
+    # Writes aliases for 'target', based on 'dev' and 'ident'. The device
+    # prefix is automatically added to 'target'.  This version is used when
+    # you need to additional creat an alias between 'ident' and 'target'.
+    # TODO: Give example
+    out_dev_aliases(dev, ident, target)
+
+    alias_target = dev_ident(dev) + "_" + target
+
+    # Create an alias for something like:
+    # <DEV_IDENT>_IRQ_COMMAND_COMPLETE <DEV_IDENT>_IRQ_0
+    out_alias(dev_ident(dev) + "_" + ident, alias_target)
 
 
 def out_dev_aliases(dev, ident, target):
