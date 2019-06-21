@@ -249,7 +249,6 @@ def dev_path_aliases(dev):
     return aliases
 
 
-
 def dev_instance_aliases(dev):
     # Returns a list of aliases for the Device 'dev', based on the instance
     # number of the device (based on how many instances of that particular
