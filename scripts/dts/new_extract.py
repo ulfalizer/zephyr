@@ -42,7 +42,7 @@ def main():
             #
             # These are flags for which devices exist.
             for compat in dev.compats:
-                out("DT_{}_{}"
+                out("{}_{}"
                     .format(str2ident(compat), dev.instance_no[compat]), 1)
 
     # These are derived from /chosen
@@ -50,25 +50,25 @@ def main():
     if edt.sram_dev:
         # TODO: Check that regs[0] exists
         reg = edt.sram_dev.regs[0]
-        out("DT_SRAM_BASE_ADDRESS", hex(reg.addr))
-        out("DT_SRAM_SIZE", reg.size//1024)
+        out("SRAM_BASE_ADDRESS", hex(reg.addr))
+        out("SRAM_SIZE", reg.size//1024)
 
     if edt.ccm_dev:
         # TODO: Check that regs[0] exists
         reg = edt.ccm_dev.regs[0]
-        out("DT_CCM_BASE_ADDRESS", hex(reg.addr))
-        out("DT_CCM_SIZE", reg.size//1024)
+        out("CCM_BASE_ADDRESS", hex(reg.addr))
+        out("CCM_SIZE", reg.size//1024)
 
     # NOTE: These defines aren't used by the code and just used by
     # the kconfig build system, we can remove them in the future
     # if we provide a function in kconfigfunctions.py to get
     # the same info
-    write_label("DT_UART_CONSOLE_ON_DEV_NAME", edt.console_dev)
-    write_label("DT_UART_SHELL_ON_DEV_NAME",   edt.shell_uart_dev)
-    write_label("DT_BT_UART_ON_DEV_NAME",      edt.bt_uart_dev)
-    write_label("DT_UART_PIPE_ON_DEV_NAME",    edt.uart_pipe_dev)
-    write_label("DT_BT_MONITOR_ON_DEV_NAME",   edt.bt_mon_uart_dev)
-    write_label("DT_UART_MCUMGR_ON_DEV_NAME",  edt.uart_mcumgr_dev)
+    write_label("UART_CONSOLE_ON_DEV_NAME", edt.console_dev)
+    write_label("UART_SHELL_ON_DEV_NAME",   edt.shell_uart_dev)
+    write_label("BT_UART_ON_DEV_NAME",      edt.bt_uart_dev)
+    write_label("UART_PIPE_ON_DEV_NAME",    edt.uart_pipe_dev)
+    write_label("BT_MONITOR_ON_DEV_NAME",   edt.bt_mon_uart_dev)
+    write_label("UART_MCUMGR_ON_DEV_NAME",  edt.uart_mcumgr_dev)
 
     if edt.flash_dev:
         write_flash(edt.flash_dev)
@@ -96,7 +96,7 @@ def write_regs(dev):
             # Avoid writing aliases that equal the identifier.
             # TODO: Get rid of this?
             if alias != ident:
-                out(alias, ident)
+                out_alias(alias, ident)
 
         # Write size aliases
         ident = reg_size_ident(reg)
@@ -104,7 +104,7 @@ def write_regs(dev):
             # Avoid writing aliases that equal the identifier.
             # TODO: Get rid of this?
             if alias != ident:
-                out(alias, ident)
+                out_alias(alias, ident)
 
 
 def write_props(dev):
@@ -159,7 +159,6 @@ def reg_addr_ident(reg):
         return "{}_BASE_ADDRESS_{}".format(dev_ident(dev), dev.regs.index(reg))
     else:
         return "{}_BASE_ADDRESS".format(dev_ident(dev))
-
 
 
 def reg_size_ident(reg):
@@ -218,7 +217,7 @@ def reg_name_alias(reg):
     # TODO: Is this needed?
 
     dev = reg.dev
-    return "DT_{}_{:X}_{}".format(
+    return "{}_{:X}_{}".format(
         str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
 
 
@@ -229,22 +228,22 @@ def dev_ident(dev):
     # TODO: Handle PWM on STM
     # TODO: Better document the rules of how we generate things
 
-    ident = "DT"
+    ident = ""
 
     # TODO: Factor out helper? Seems to be the same thing being done to the
     # node and the parent. Maybe elsewhere too.
 
     if dev.bus:
-        ident += "_{}_{:X}".format(
+        ident += "{}_{:X}_".format(
             str2ident(dev.parent.matching_compat), dev.parent.unit_addr)
 
-    ident += "_{}".format(str2ident(dev.matching_compat))
+    ident += "{}_".format(str2ident(dev.matching_compat))
 
     if dev.unit_addr is not None:
-        ident += "_{:X}".format(dev.unit_addr)
+        ident += "{:X}".format(dev.unit_addr)
     else:
         # This is a bit of a hack
-        ident += "_{}".format(str2ident(dev.name))
+        ident += "{}".format(str2ident(dev.name))
 
     return ident
 
@@ -266,8 +265,7 @@ def dev_path_aliases(dev):
 
     compat_s = str2ident(dev.matching_compat)
 
-    return ["DT_ALIAS_{}".format(str2ident(alias))
-            for alias in dev.aliases]
+    return ["ALIAS_{}".format(str2ident(alias)) for alias in dev.aliases]
 
 
 def dev_instance_aliases(dev):
@@ -278,7 +276,7 @@ def dev_instance_aliases(dev):
     # This is a list since a device can have multiple 'compatible' strings,
     # each with their own instance number.
 
-    return ["DT_INST_{}_{}".format(dev.instance_no[compat], str2ident(compat))
+    return ["INST_{}_{}".format(dev.instance_no[compat], str2ident(compat))
             for compat in dev.compats]
 
 
@@ -292,9 +290,9 @@ def write_flash(flash_dev):
 
     reg = flash_dev.regs[0]
 
-    out("DT_FLASH_BASE_ADDRESS", hex(reg.addr))
+    out("FLASH_BASE_ADDRESS", hex(reg.addr))
     if reg.size is not None:
-        out("DT_FLASH_SIZE", reg.size//1024)
+        out("FLASH_SIZE", reg.size//1024)
 
 
 def write_flash_partition(partition_dev):
@@ -303,23 +301,23 @@ def write_flash_partition(partition_dev):
 
     label = str2ident(partition_dev.label)
 
-    out("DT_FLASH_AREA_{}_LABEL".format(label), label)
-    out("DT_FLASH_AREA_{}_READ_ONLY".format(label),
+    out("FLASH_AREA_{}_LABEL".format(label), label)
+    out("FLASH_AREA_{}_READ_ONLY".format(label),
             1 if partition_dev.read_only else 0)
 
     for i, reg in enumerate(partition_dev.regs):
-        out("DT_FLASH_AREA_{}_OFFSET_{}".format(label, i), reg.addr)
-        out("DT_FLASH_AREA_{}_SIZE_{}".format(label, i), reg.size)
+        out("FLASH_AREA_{}_OFFSET_{}".format(label, i), reg.addr)
+        out("FLASH_AREA_{}_SIZE_{}".format(label, i), reg.size)
 
     # Add aliases that points to the first sector
     #
     # TODO: Could we get rid of this? Code could just refer to sector _0 where
     # needed instead.
 
-    out("DT_FLASH_AREA_{}_OFFSET".format(label),
-            "DT_FLASH_AREA_{0}_OFFSET_0".format(label))
-    out("DT_FLASH_AREA_{}_SIZE".format(label),
-            "DT_FLASH_AREA_{0}_SIZE_0".format(label))
+    out_alias("FLASH_AREA_{}_OFFSET".format(label),
+              "FLASH_AREA_{}_OFFSET_0".format(label))
+    out_alias("FLASH_AREA_{}_SIZE".format(label),
+              "FLASH_AREA_{}_SIZE_0".format(label))
 
 
 def write_label(ident, dev):
@@ -351,7 +349,14 @@ def out(ident, val):
     # TODO: This is just for writing the header. Will get a .conf file later as
     # well.
 
-    print("#define {}\t{}".format(ident, val), file=_out)
+    print("#define DT_{}\t{}".format(ident, val), file=_out)
+
+
+def out_alias(ident, target):
+    # TODO: This is just for writing the header. Will get a .conf file later as
+    # well.
+
+    print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
 
 
 def err(s):
