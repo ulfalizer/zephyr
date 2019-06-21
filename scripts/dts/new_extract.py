@@ -84,27 +84,9 @@ def write_regs(dev):
     # Writes address/size output for the registers in dev's 'reg' property
 
     for reg in dev.regs:
-        out(reg_addr_ident(reg), hex(reg.addr))
+        out_dev(dev, reg_addr_ident(reg), hex(reg.addr))
         if reg.size is not None:
-            out(reg_size_ident(reg), reg.size)
-
-    # Write aliases, in a separate block after the addr/size definitions
-    for reg in dev.regs:
-        # Write address aliases
-        ident = reg_addr_ident(reg)
-        for alias in reg_addr_aliases(reg):
-            # Avoid writing aliases that equal the identifier.
-            # TODO: Get rid of this?
-            if alias != ident:
-                out_alias(alias, ident)
-
-        # Write size aliases
-        ident = reg_size_ident(reg)
-        for alias in reg_size_aliases(reg):
-            # Avoid writing aliases that equal the identifier.
-            # TODO: Get rid of this?
-            if alias != ident:
-                out_alias(alias, ident)
+            out_dev(dev, reg_size_ident(reg), reg.size)
 
 
 def write_props(dev):
@@ -156,9 +138,9 @@ def reg_addr_ident(reg):
     # NOTE: to maintain compat wit the old script we special case if there's
     # only a single register (we drop the '_0').
     if len(dev.regs) > 1:
-        return "{}_BASE_ADDRESS_{}".format(dev_ident(dev), dev.regs.index(reg))
+        return "BASE_ADDRESS_{}".format(dev.regs.index(reg))
     else:
-        return "{}_BASE_ADDRESS".format(dev_ident(dev))
+        return "BASE_ADDRESS"
 
 
 def reg_size_ident(reg):
@@ -170,46 +152,15 @@ def reg_size_ident(reg):
     # NOTE: to maintain compat wit the old script we special case if there's
     # only a single register (we drop the '_0').
     if len(dev.regs) > 1:
-        return "{}_SIZE_{}".format(dev_ident(dev), dev.regs.index(reg))
+        return "SIZE_{}".format(dev.regs.index(reg))
     else:
-        return "{}_SIZE".format(dev_ident(dev))
+        return "SIZE"
 
 
 def reg_addr_aliases(reg):
     # Returns a list of aliases for the address of 'reg'
 
     return [alias + "_BASE_ADDRESS" for alias in reg_aliases(reg)]
-
-
-def reg_size_aliases(reg):
-    # Returns a list of aliases for the size of 'reg'
-
-    return [alias + "_SIZE" for alias in reg_aliases(reg)]
-
-
-def reg_aliases(reg):
-    # Returns a list of aliases for the Register 'reg', used e.g. when building
-    # macro names
-
-    dev = reg.dev
-
-    aliases = []
-
-    # Register aliases are based on device aliases
-    for alias in dev_aliases(dev):
-        if len(dev.regs) > 1:
-            alias += "_" + str(dev.regs.index(reg))
-        aliases.append(alias)
-
-        if reg.name:
-            aliases.append("{}_{}".format(
-                dev_alias, str2ident(reg.name)))
-
-    if reg.name:
-        # TODO: Is this needed?
-        aliases.append(reg_name_alias(reg))
-
-    return aliases
 
 
 def reg_name_alias(reg):
@@ -356,7 +307,22 @@ def out_alias(ident, target):
     # TODO: This is just for writing the header. Will get a .conf file later as
     # well.
 
-    print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
+    # TODO: Make this check unnecessary?
+    if ident != target:
+        print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
+
+
+def out_dev(dev, ident, val):
+    # TODO: Document
+
+    ident_with_dev = dev_ident(dev) + "_" + ident
+
+    # Write main entry
+    out(ident_with_dev, val)
+
+    # Write aliases that point to it
+    for dev_alias in dev_aliases(dev):
+        out_alias(dev_alias + "_" + ident, ident_with_dev)
 
 
 def err(s):
