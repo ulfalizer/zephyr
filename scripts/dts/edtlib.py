@@ -15,6 +15,23 @@ import yaml
 from dtlib import DT, DTError, to_num, to_nums
 
 
+def spi_dev_cs_gpio(dev):
+    # Helper function to return a SPI device's GPIO chipselect if it exists
+
+    if dev.bus != "spi":
+        return None
+
+    spi_bus_dev = dev.parent
+    cs_gpios = spi_bus_dev.gpios.get("cs")
+
+    if cs_gpios is not None:
+        dt_spi_reg_addr = dev.regs[0].addr
+
+        return cs_gpios[dt_spi_reg_addr]
+
+    return None
+
+
 class EDT:
     """
     Represents a "high-level" view of a device tree, with a list of devices
