@@ -103,8 +103,15 @@ def write_regs(dev):
 
     for reg in dev.regs:
         out_dev(dev, reg_addr_ident(reg), hex(reg.addr))
+        if reg.name:
+            ident = str2ident(reg.name) + "_BASE_ADDRESS"
+            out_name_aliases(dev, ident, reg_addr_ident(reg))
+
         if reg.size is not None:
             out_dev(dev, reg_size_ident(reg), reg.size)
+            if reg.name:
+                ident = str2ident(reg.name) + "_SIZE"
+                out_name_aliases(dev, ident, reg_size_ident(reg))
 
 
 def write_props(dev):
@@ -198,15 +205,6 @@ def reg_addr_aliases(reg):
     # Returns a list of aliases for the address of 'reg'
 
     return [alias + "_BASE_ADDRESS" for alias in reg_aliases(reg)]
-
-
-def reg_name_alias(reg):
-    # reg_aliases() helper. Returns an alias based on 'reg's name.
-    # TODO: Is this needed?
-
-    dev = reg.dev
-    return "{}_{:X}_{}".format(
-        str2ident(dev.matching_compat), dev.regs[0].addr, str2ident(reg.name))
 
 
 def dev_ident(dev):
