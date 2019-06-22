@@ -354,28 +354,35 @@ def write_irqs(dev):
                 out_name_aliases(dev, irq_ident_name, irq_ident)
 
 
+def write_gpio(dev, gpio, gpio_name, gpio_index=0, num_gpios=1):
+    # Writes gpio controller & data for a single gpio object.
+
+    (gpio_ctrl, gpio_cells) = gpio
+
+    gpio_ctrl_ident = "GPIOS_CONTROLLER"
+    if gpio_name:
+        gpio_ctrl_ident = str2ident(gpio_name) + "_" + gpio_ctrl_ident
+    if num_gpios > 1:
+        gpio_ctrl_ident += "_{}".format(gpio_index)
+
+    out_dev(dev, gpio_ctrl_ident, '"{}"'.format(gpio_ctrl.label))
+
+    for cell, val in gpio_cells.items():
+        gpio_cell_ident = "GPIOS_{}".format(str2ident(cell))
+        if gpio_name:
+            gpio_cell_ident = str2ident(gpio_name) + "_" + gpio_cell_ident
+        if num_gpios > 1:
+            gpio_cell_ident += "_{}".format(gpio_index)
+
+        out_dev(dev, gpio_cell_ident, val)
+
+
 def write_gpios(dev):
     # Writes gpio controller data for the gpios in dev's 'gpios' property
 
     for gpio_name, gpios in dev.gpios.items():
-        for gpio_i, (gpio_ctrl, gpio_cells) in enumerate(gpios):
-
-            gpio_ctrl_ident = "GPIOS_CONTROLLER"
-            if gpio_name:
-                gpio_ctrl_ident = str2ident(gpio_name) + "_" + gpio_ctrl_ident
-            if len(gpios) > 1:
-                gpio_ctrl_ident += "_{}".format(gpio_i)
-
-            out_dev(dev, gpio_ctrl_ident, '"{}"'.format(gpio_ctrl.label))
-
-            for cell, val in gpio_cells.items():
-                gpio_cell_ident = "GPIOS_{}".format(str2ident(cell))
-                if gpio_name:
-                    gpio_cell_ident = str2ident(gpio_name) + "_" + gpio_cell_ident
-                if len(gpios) > 1:
-                    gpio_cell_ident += "_{}".format(gpio_i)
-
-                out_dev(dev, gpio_cell_ident, val)
+        for gpio_i, gpio in enumerate(gpios):
+            write_gpio(dev, gpio, gpio_name, gpio_i, len(gpios))
 
 
 def str2ident(s):
