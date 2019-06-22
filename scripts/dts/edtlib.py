@@ -528,10 +528,15 @@ class Device:
             for controller_node, spec in gpios:
                 controller = self.edt._node2dev[controller_node]
 
-                gpio_res.append((controller,
-                                 self._named_cells(controller, spec, "GPIO")))
+                gpio = GPIO()
+                gpio.dev = self
+                gpio.controller = controller
+                gpio.specifier = self._named_cells(controller, spec, "GPIOS")
+                gpio.name = prefix
 
-            self.gpios[prefix] = gpio_res
+                gpio_res.append(gpio)
+
+                self.gpios[prefix] = gpio_res
 
     def _create_pwms(self):
         # Initializes self.pwms
@@ -670,6 +675,39 @@ class Interrupt:
         fields.append("cells: {}".format(self.cells))
 
         return "<Interrupt, {}>".format(", ".join(fields))
+
+
+class GPIO:
+    """
+    Represents a GPIO used by a device.
+
+    These attributes are available on GPIO instances:
+
+    dev:
+      The Device instance that uses the GPIO
+
+    name:
+      The name of the gpio as extracted out of the "<NAME>-gpios" property. If
+      the property is just "gpios" than there is no name.
+
+    controller:
+      The Device instance for the controller of the GPIO.
+
+    specifier:
+      A dictionary that maps names from the #cells portion of the binding to
+      cell values in the gpio specifier. 'foo-gpios = <&gpioc 5 0>' might give
+      {"pin": 0, "flags": 0}, for example.
+    """
+    def __repr__(self):
+        fields = []
+
+        if self.name is not None:
+            fields.append("name: " + self.name)
+
+        fields.append("target: {}".format(self.controller))
+        fields.append("cells: {}".format(self.cells))
+
+        return "<GPIOs, {}>".format(", ".join(fields))
 
 
 class PWM:

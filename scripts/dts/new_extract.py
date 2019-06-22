@@ -354,10 +354,12 @@ def write_irqs(dev):
                 out_name_aliases(dev, irq_ident_name, irq_ident)
 
 
-def write_gpio(dev, gpio, gpio_name, gpio_index=0, num_gpios=1):
+def write_gpio(dev, gpio, gpio_index=0, num_gpios=1):
     # Writes gpio controller & data for a single gpio object.
 
-    (gpio_ctrl, gpio_cells) = gpio
+    gpio_ctrl = gpio.controller
+    gpio_cells = gpio.specifier
+    gpio_name = gpio.name
 
     gpio_ctrl_ident = "GPIOS_CONTROLLER"
     if gpio_name:
@@ -380,9 +382,9 @@ def write_gpio(dev, gpio, gpio_name, gpio_index=0, num_gpios=1):
 def write_gpios(dev):
     # Writes gpio controller data for the gpios in dev's 'gpios' property
 
-    for gpio_name, gpios in dev.gpios.items():
+    for gpios in dev.gpios.values():
         for gpio_i, gpio in enumerate(gpios):
-            write_gpio(dev, gpio, gpio_name, gpio_i, len(gpios))
+            write_gpio(dev, gpio, gpio_i, len(gpios))
 
 
 def write_spi_dev(dev):
@@ -390,7 +392,7 @@ def write_spi_dev(dev):
 
     cs_gpio = edtlib.spi_dev_cs_gpio(dev)
     if cs_gpio is not None:
-        write_gpio(dev, cs_gpio, "cs")
+        write_gpio(dev, cs_gpio)
 
 
 def write_pwms(dev):
