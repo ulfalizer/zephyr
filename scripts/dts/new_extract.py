@@ -445,7 +445,8 @@ def out_alias(ident, target):
     # TODO: This is just for writing the header. Will get a .conf file later as
     # well.
 
-    print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
+    if ident != target:
+        print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
 
 
 def err(s):
