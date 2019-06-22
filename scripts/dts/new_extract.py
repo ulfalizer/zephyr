@@ -38,6 +38,7 @@ def main():
             write_regs(dev)
             write_irqs(dev)
             write_gpios(dev)
+            write_pwms(dev)
             write_spi_dev(dev)
             write_props(dev)
             write_bus(dev)
@@ -125,7 +126,7 @@ def write_props(dev):
             continue
 
         # skip properties that we handle elsewhere
-        if prop.name in {"reg", "interrupts"} or prop.name.endswith("gpios"):
+        if prop.name in {"reg", "interrupts", "pwms"} or prop.name.endswith("gpios"):
             continue
         # TODO: Add support for some of these properties elsewhere
         if prop.name in {"clocks", "compatible"}:
@@ -390,6 +391,18 @@ def write_spi_dev(dev):
     cs_gpio = edtlib.spi_dev_cs_gpio(dev)
     if cs_gpio is not None:
         write_gpio(dev, cs_gpio, "cs")
+
+
+def write_pwms(dev):
+    # Writes pwm controller and specifier info  for the pwms in dev's 'pwms' property
+
+    for pwm in dev.pwms:
+
+        pwm_ident = "PWMS_CONTROLLER"
+        out_dev(dev, pwm_ident, '"{}"'.format(pwm.controller.label))
+
+        for spec, val in pwm.specifier.items():
+            out_dev(dev, "PWMS_" + str2ident(spec), val)
 
 
 def str2ident(s):
