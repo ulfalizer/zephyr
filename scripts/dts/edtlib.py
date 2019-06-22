@@ -172,6 +172,7 @@ class EDT:
             # do them separately
             dev._create_interrupts()
             dev._create_gpios()
+            dev._create_pwms()
 
         # TODO: Remove this sorting later? It's there to make it easy to
         # compare output against extract_dts_include.py.
@@ -260,6 +261,9 @@ class Device:
       device
 
     gpios:
+      TODO
+
+    pwms:
       TODO
 
     bus:
@@ -529,6 +533,38 @@ class Device:
 
             self.gpios[prefix] = gpio_res
 
+    def _create_pwms(self):
+        # Initializes self.pwms
+
+        node = self._node
+
+        self.pwms = []
+
+        for controller_node, spec in _pwms(node):
+            controller = self.edt._node2dev[controller_node]
+
+            pwm = PWM()
+            pwm.dev = self
+            pwm.controller = controller
+            pwm.specifier = self._named_cells(controller, spec, "pwms")
+
+            self.pwms.append(pwm)
+
+        if "pwm-names" in node.props:
+            pwm_names = node.props["pwm-names"].to_strings()
+            if len(pwm_names) != len(self.pwms):
+                _err("'pwm-names' property in {} has {} strings, but "
+                     "there are {} pwms"
+                     .format(node.name, len(pwm_names),
+                             len(self.pwms)))
+
+            for pwm, name in zip(self.pwms, pwm_names):
+                pwm.name = name
+        else:
+            for pwm in self.pwms:
+                pwm.name = self.name
+
+
     def _named_cells(self, controller, spec, controller_s):
         # _create_{interrupts,gpios}() helper. Returns a dictionary that maps
         # #cell names given in the binding for 'controller' to cell values.
@@ -634,6 +670,39 @@ class Interrupt:
         fields.append("cells: {}".format(self.cells))
 
         return "<Interrupt, {}>".format(", ".join(fields))
+
+
+class PWM:
+    """
+    Represents a PWM used by a device.
+
+    These attributes are available on PWM instances:
+
+    dev:
+      The Device instance that uses the PWM
+
+    name:
+      The name of the pwm as given in the 'pwm-names' property, or the
+      node name if the 'pwm-names' property doesn't exist.
+
+    controller:
+      The Device instance for the controller of the PWM.
+
+    specifier:
+      A dictionary that maps names from the #cells portion of the binding to
+      cell values in the pwm specifier. 'pwms = <&pwm 0 5000000>' might give
+      {"channel": 0, "period": 5000000}, for example.
+    """
+    def __repr__(self):
+        fields = []
+
+        if self.name is not None:
+            fields.append("name: " + self.name)
+
+        fields.append("target: {}".format(self.controller))
+        fields.append("cells: {}".format(self.cells))
+
+        return "<PWMs, {}>".format(", ".join(fields))
 
 
 class Property:
@@ -986,6 +1055,36 @@ def _map_interrupt(child, parent, child_spec):
     return (parent, raw_spec[4*own_address_cells(parent):])
 
 
+def _pwms(node):
+    # TODO: document
+
+    res = []
+
+    prop = node.props.get("pwms")
+    if prop is not None:
+        raw = prop.value
+
+        while raw:
+            if len(raw) < 4:
+                # Not enough room for phandle
+                _err("bad value for " + repr(prop))
+            phandle = to_num(raw[:4])
+            raw = raw[4:]
+
+            controller = prop.node.dt.phandle2node.get(phandle)
+            if not controller:
+                _err("bad phandle in " + repr(prop))
+
+            pwm_cells = _pwm_cells(controller)
+            if len(raw) < 4*pwm_cells:
+                _err("missing data after phandle in " + repr(prop))
+
+            res.append((controller, raw[:4*pwm_cells]))
+            raw = raw[4*pwm_cells:]
+
+    return res
+
+
 def _gpios(node):
     # TODO: document
 
@@ -1189,6 +1288,14 @@ def _gpio_cells(node):
     if "#gpio-cells" not in node.props:
         _err("{!r} lacks #gpio-cells".format(node))
     return node.props["#gpio-cells"].to_num()
+
+
+def _pwm_cells(node):
+    # TODO: have a _required_prop(node, "blah") or similar?
+
+    if "#pwm-cells" not in node.props:
+        _err("{!r} lacks #pwm-cells".format(node))
+    return node.props["#pwm-cells"].to_num()
 
 
 def _size_cells(node):
