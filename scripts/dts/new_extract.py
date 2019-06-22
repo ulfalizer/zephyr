@@ -38,6 +38,7 @@ def main():
             write_regs(dev)
             write_irqs(dev)
             write_gpios(dev)
+            write_spi_dev(dev)
             write_props(dev)
             write_bus(dev)
 
@@ -383,6 +384,14 @@ def write_gpios(dev):
     for gpio_name, gpios in dev.gpios.items():
         for gpio_i, gpio in enumerate(gpios):
             write_gpio(dev, gpio, gpio_name, gpio_i, len(gpios))
+
+
+def write_spi_dev(dev):
+    # Writes spi device gpio chipselect data if there is one
+
+    cs_gpio = edtlib.spi_dev_cs_gpio(dev)
+    if cs_gpio is not None:
+        write_gpio(dev, cs_gpio, "cs")
 
 
 def str2ident(s):
