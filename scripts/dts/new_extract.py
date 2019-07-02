@@ -112,7 +112,7 @@ def write_props(dev):
     # Writes any properties defined in the "properties" section of the binding
     # for the device
 
-    for prop in dev.props:
+    for prop in dev.props.values():
         # Skip #size-cell and other property starting with #. Also skip mapping
         # properties like "gpio-map".
         if prop.name[0] == "#" or prop.name.endswith("-map"):

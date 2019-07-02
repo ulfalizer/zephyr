@@ -271,8 +271,8 @@ class Device:
       A list of Register instances for the device's registers
 
     props:
-      A list of Property instances for the DT properties on the device that are
-      mentioned in 'properties:' in the binding
+      A dictionary of Property instances for the DT properties on the device that
+      are mentioned in 'properties:' in the binding
 
     aliases:
       A list of aliases for the device. This is fetched from the /aliases node.
@@ -443,7 +443,7 @@ class Device:
     def _create_props(self):
         # Creates self.props. See the class docstring.
 
-        self.props = []
+        self.props = {}
 
         if not self.binding or "properties" not in self.binding:
             return
@@ -484,7 +484,7 @@ class Device:
 
                 prop.enum_index = enum.index(val)
 
-            self.props.append(prop)
+            self.props[prop_name] = prop
 
     def _create_regs(self):
         # Initializes self.regs with a list of Register instances
