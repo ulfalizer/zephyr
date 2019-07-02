@@ -51,6 +51,7 @@ class EDT:
     uart_pipe_dev:
     bt_mon_uart_dev:
     uart_mcumgr_dev:
+    bt_c2h_uart_dev:
       The Device instance for the corresponding 'zephyr,<name>' property on
       the /chosen node, or None if missing.
 
@@ -191,6 +192,7 @@ class EDT:
         self.uart_pipe_dev   = self._chosen_dev("zephyr,uart-pipe")
         self.bt_mon_uart_dev = self._chosen_dev("zephyr,bt-mon-uart")
         self.uart_mcumgr_dev = self._chosen_dev("zephyr,uart-mcumgr")
+        self.bt_c2h_uart_dev = self._chosen_dev("zephyr,bt-c2h-uart")
 
     def _chosen_dev(self, prop_name):
         # _parse_chosen() helper. Returns the device pointed to by prop_name in

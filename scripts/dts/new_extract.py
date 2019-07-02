@@ -83,6 +83,7 @@ def main():
     write_label("UART_PIPE_ON_DEV_NAME",    edt.uart_pipe_dev)
     write_label("BT_MONITOR_ON_DEV_NAME",   edt.bt_mon_uart_dev)
     write_label("UART_MCUMGR_ON_DEV_NAME",  edt.uart_mcumgr_dev)
+    write_label("BT_C2H_UART_ON_DEV_NAME",  edt.bt_c2h_uart_dev)
 
     if edt.flash_dev:
         write_flash(edt.flash_dev)
