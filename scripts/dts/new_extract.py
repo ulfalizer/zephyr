@@ -432,11 +432,10 @@ def out_name_aliases(dev, ident, target):
     # TODO: Give example
     out_dev_aliases(dev, ident, target)
 
-    alias_target = dev_ident(dev) + "_" + target
-
     # Create an alias for something like:
     # <DEV_IDENT>_IRQ_COMMAND_COMPLETE <DEV_IDENT>_IRQ_0
-    out_alias(dev_ident(dev) + "_" + ident, alias_target)
+    out_alias(dev_ident(dev) + "_" + ident,
+              dev_ident(dev) + "_" + target)
 
 
 def out_dev_aliases(dev, ident, target):
