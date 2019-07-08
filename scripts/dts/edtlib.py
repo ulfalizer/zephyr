@@ -696,9 +696,9 @@ class PWM:
             fields.append("name: " + self.name)
 
         fields.append("target: {}".format(self.controller))
-        fields.append("cells: {}".format(self.cells))
+        fields.append("specifier: {}".format(self.specifier))
 
-        return "<PWMs, {}>".format(", ".join(fields))
+        return "<PWM, {}>".format(", ".join(fields))
 
 
 class Property:
