@@ -1237,7 +1237,8 @@ def _phandle_val_list(prop, n_cells_fn):
     #   dtlib.Property with value to parse
     #
     # cells_fn:
-    #   A function that returns the number of cells for <value>, given <node>
+    #   A function that returns the number of cells for a <value>. Takes the
+    #   node pointed at by the preceding <phandle> as its argument.
     #
     # Returns a list of (<node>, <value>) tuples, where <node> is the node
     # pointed at by <phandle>. 'cells_fn' is a function called on <node> to get
