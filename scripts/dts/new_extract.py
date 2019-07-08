@@ -197,12 +197,6 @@ def reg_size_ident(reg):
         return "SIZE"
 
 
-def reg_addr_aliases(reg):
-    # Returns a list of aliases for the address of 'reg'
-
-    return [alias + "_BASE_ADDRESS" for alias in reg_aliases(reg)]
-
-
 def dev_ident(dev):
     # Returns an identifier for the Device 'dev'. Used when building e.g. macro
     # names.
