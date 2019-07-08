@@ -351,36 +351,37 @@ def write_irqs(dev):
 
 
 def write_gpios(dev):
-    # Writes gpio controller data for the gpios in dev's 'gpios' property
+    # Writes GPIO controller data for the gpios in dev's 'gpios' property
 
     for gpios in dev.gpios.values():
         for gpio_i, gpio in enumerate(gpios):
-            write_gpio(dev, gpio, gpio_i, len(gpios))
+            write_gpio(dev, gpio, gpio_i if len(gpios) > 1 else None)
 
 
-def write_gpio(dev, gpio, gpio_index=0, num_gpios=1):
-    # Writes gpio controller & data for a single gpio object.
+def write_gpio(dev, gpio, index=None):
+    # Writes GPIO controller & data for the GPIO object 'gpio'. If 'index' is
+    # not None, it is added as a suffix to identifiers.
 
-    gpio_ctrl_ident = "GPIOS_CONTROLLER"
+    ctrl_ident = "GPIOS_CONTROLLER"
     if gpio.name:
-        gpio_ctrl_ident = str2ident(gpio.name) + "_" + gpio_ctrl_ident
-    if num_gpios > 1:
-        gpio_ctrl_ident += "_{}".format(gpio_index)
+        ctrl_ident = str2ident(gpio.name) + "_" + ctrl_ident
+    if index is not None:
+        ctrl_ident += "_{}".format(index)
 
-    out_dev(dev, gpio_ctrl_ident, '"{}"'.format(gpio.controller.label))
+    out_dev(dev, ctrl_ident, '"{}"'.format(gpio.controller.label))
 
     for cell, val in gpio.specifier.items():
-        gpio_cell_ident = "GPIOS_{}".format(str2ident(cell))
+        cell_ident = "GPIOS_" + str2ident(cell)
         if gpio.name:
-            gpio_cell_ident = str2ident(gpio.name) + "_" + gpio_cell_ident
-        if num_gpios > 1:
-            gpio_cell_ident += "_{}".format(gpio_index)
+            cell_ident = str2ident(gpio.name) + "_" + cell_ident
+        if index is not None:
+            cell_ident += "_{}".format(index)
 
-        out_dev(dev, gpio_cell_ident, val)
+        out_dev(dev, cell_ident, val)
 
 
 def write_spi_dev(dev):
-    # Writes spi device gpio chipselect data if there is one
+    # Writes SPI device GPIO chip select data if there is any
 
     cs_gpio = edtlib.spi_dev_cs_gpio(dev)
     if cs_gpio is not None:
@@ -388,7 +389,8 @@ def write_spi_dev(dev):
 
 
 def write_pwms(dev):
-    # Writes pwm controller and specifier info  for the pwms in dev's 'pwms' property
+    # Writes PWM controller and specifier info for the PWMs in dev's 'pwms'
+    # property
 
     for pwm in dev.pwms:
         out_dev(dev, "PWMS_CONTROLLER", '"{}"'.format(pwm.controller.label))
