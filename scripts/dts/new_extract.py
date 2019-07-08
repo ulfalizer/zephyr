@@ -350,37 +350,33 @@ def write_irqs(dev):
                 out_name_aliases(dev, irq_ident_name, irq_ident)
 
 
-def write_gpio(dev, gpio, gpio_index=0, num_gpios=1):
-    # Writes gpio controller & data for a single gpio object.
-
-    gpio_ctrl = gpio.controller
-    gpio_cells = gpio.specifier
-    gpio_name = gpio.name
-
-    gpio_ctrl_ident = "GPIOS_CONTROLLER"
-    if gpio_name:
-        gpio_ctrl_ident = str2ident(gpio_name) + "_" + gpio_ctrl_ident
-    if num_gpios > 1:
-        gpio_ctrl_ident += "_{}".format(gpio_index)
-
-    out_dev(dev, gpio_ctrl_ident, '"{}"'.format(gpio_ctrl.label))
-
-    for cell, val in gpio_cells.items():
-        gpio_cell_ident = "GPIOS_{}".format(str2ident(cell))
-        if gpio_name:
-            gpio_cell_ident = str2ident(gpio_name) + "_" + gpio_cell_ident
-        if num_gpios > 1:
-            gpio_cell_ident += "_{}".format(gpio_index)
-
-        out_dev(dev, gpio_cell_ident, val)
-
-
 def write_gpios(dev):
     # Writes gpio controller data for the gpios in dev's 'gpios' property
 
     for gpios in dev.gpios.values():
         for gpio_i, gpio in enumerate(gpios):
             write_gpio(dev, gpio, gpio_i, len(gpios))
+
+
+def write_gpio(dev, gpio, gpio_index=0, num_gpios=1):
+    # Writes gpio controller & data for a single gpio object.
+
+    gpio_ctrl_ident = "GPIOS_CONTROLLER"
+    if gpio.name:
+        gpio_ctrl_ident = str2ident(gpio.name) + "_" + gpio_ctrl_ident
+    if num_gpios > 1:
+        gpio_ctrl_ident += "_{}".format(gpio_index)
+
+    out_dev(dev, gpio_ctrl_ident, '"{}"'.format(gpio.controller.label))
+
+    for cell, val in gpio.specifier.items():
+        gpio_cell_ident = "GPIOS_{}".format(str2ident(cell))
+        if gpio.name:
+            gpio_cell_ident = str2ident(gpio.name) + "_" + gpio_cell_ident
+        if num_gpios > 1:
+            gpio_cell_ident += "_{}".format(gpio_index)
+
+        out_dev(dev, gpio_cell_ident, val)
 
 
 def write_spi_dev(dev):
@@ -395,10 +391,7 @@ def write_pwms(dev):
     # Writes pwm controller and specifier info  for the pwms in dev's 'pwms' property
 
     for pwm in dev.pwms:
-
-        pwm_ident = "PWMS_CONTROLLER"
-        out_dev(dev, pwm_ident, '"{}"'.format(pwm.controller.label))
-
+        out_dev(dev, "PWMS_CONTROLLER", '"{}"'.format(pwm.controller.label))
         for spec, val in pwm.specifier.items():
             out_dev(dev, "PWMS_" + str2ident(spec), val)
 
