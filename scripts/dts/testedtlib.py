@@ -43,6 +43,7 @@ verify_eq(str(edt.get_dev("/interrupt-map-bitops-test/node@70000000E").interrupt
 #
 
 verify_eq(str(edt.get_dev("/gpio-test/node").gpios),
-          "{'': [(<Device controller-0, 0 regs>, {'one': 1}), (<Device controller-1, 0 regs>, {'one': 2, 'two': 3})], 'foo': [(<Device controller-1, 0 regs>, {'one': 4, 'two': 5})], 'bar': [(<Device controller-1, 0 regs>, {'one': 6, 'two': 7})]}")
+          "{'': [<GPIO, name: , target: <Device controller-0, 0 regs>, specifier: {'one': 1}>, <GPIO, name: , target: <Device controller-1, 0 regs>, specifier: {'one': 2, 'two': 3}>], 'foo': [<GPIO, name: foo, target: <Device controller-1, 0 regs>, specifier: {'one': 4, 'two': 5}>], 'bar': [<GPIO, name: bar, target: <Device controller-1, 0 regs>, specifier: {'one': 6, 'two': 7}>]}")
+
 
 print("all tests passed")
