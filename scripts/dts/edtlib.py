@@ -1010,33 +1010,11 @@ def _interrupts(node):
     # Takes precedence over 'interrupts' if both are present
     if "interrupts-extended" in node.props:
         prop = node.props["interrupts-extended"]
-        raw = prop.value
-
-        res = []
-
-        while raw:
-            if len(raw) < 4:
-                # Not enough room for phandle
-                _err("bad value for " + repr(prop))
-            phandle = to_num(raw[:4])
-            raw = raw[4:]
-
-            # Could also be a nexus (with interrupt-map = ...)
-            iparent = node.dt.phandle2node.get(phandle)
-            if not iparent:
-                _err("bad phandle in " + repr(prop))
-
-            interrupt_cells = _interrupt_cells(iparent)
-            if len(raw) < 4*interrupt_cells:
-                _err("missing data after phandle in " + repr(prop))
-
-            res.append(_map_interrupt(node, iparent, raw[:4*interrupt_cells]))
-            raw = raw[4*interrupt_cells:]
-
-        return res
+        return [_map_interrupt(node, iparent, spec)
+                for iparent, spec in _phandle_val_list(prop, _interrupt_cells)]
 
     if "interrupts" in node.props:
-        # Treat 'interrupts' as a special case of 'interrupts-extended' with
+        # Treat 'interrupts' as a special case of 'interrupts-extended', with
         # the same interrupt parent for all interrupts
 
         iparent = _interrupt_parent(node)
@@ -1081,31 +1059,9 @@ def _map_interrupt(child, parent, child_spec):
 def _pwms(node):
     # TODO: document
 
-    res = []
-
-    prop = node.props.get("pwms")
-    if prop is not None:
-        raw = prop.value
-
-        while raw:
-            if len(raw) < 4:
-                # Not enough room for phandle
-                _err("bad value for " + repr(prop))
-            phandle = to_num(raw[:4])
-            raw = raw[4:]
-
-            controller = prop.node.dt.phandle2node.get(phandle)
-            if not controller:
-                _err("bad phandle in " + repr(prop))
-
-            pwm_cells = _pwm_cells(controller)
-            if len(raw) < 4*pwm_cells:
-                _err("missing data after phandle in " + repr(prop))
-
-            res.append((controller, raw[:4*pwm_cells]))
-            raw = raw[4*pwm_cells:]
-
-    return res
+    if "pwms" not in node.props:
+        return []
+    return _phandle_val_list(node.props["pwms"], _pwm_cells)
 
 
 def _gpios(node):
@@ -1132,28 +1088,8 @@ def _gpios_from_prop(prop):
     # gpios() helper. Returns a list of (<controller>, <spec>) GPIO
     # specifications parsed from 'prop'.
 
-    raw = prop.value
-    res = []
-
-    while raw:
-        if len(raw) < 4:
-            # Not enough room for phandle
-            _err("bad value for " + repr(prop))
-        phandle = to_num(raw[:4])
-        raw = raw[4:]
-
-        controller = prop.node.dt.phandle2node.get(phandle)
-        if not controller:
-            _err("bad phandle in " + repr(prop))
-
-        gpio_cells = _gpio_cells(controller)
-        if len(raw) < 4*gpio_cells:
-            _err("missing data after phandle in " + repr(prop))
-
-        res.append(_map_gpio(prop.node, controller, raw[:4*gpio_cells]))
-        raw = raw[4*gpio_cells:]
-
-    return res
+    return [_map_gpio(prop.node, controller, spec)
+            for controller, spec in _phandle_val_list(prop, _gpio_cells)]
 
 
 def _map_gpio(child, parent, child_spec):
@@ -1294,6 +1230,43 @@ def _not(b):
 
     # ANDing with 0xFF avoids negative numbers
     return bytes(~x & 0xFF for x in b)
+
+
+def _phandle_val_list(prop, n_cells_fn):
+    # Parses a '<phandle> <value> <phandle> <value> ...' value
+    #
+    # prop:
+    #   dtlib.Property with value to parse
+    #
+    # cells_fn:
+    #   A function that returns the number of cells for <value>, given <node>
+    #
+    # Returns a list of (<node>, <value>) tuples, where <node> is the node
+    # pointed at by <phandle>. 'cells_fn' is a function called on <node> to get
+    # the number of cells for <value>.
+
+    res = []
+
+    raw = prop.value
+    while raw:
+        if len(raw) < 4:
+            # Not enough room for phandle
+            _err("bad value for " + repr(prop))
+        phandle = to_num(raw[:4])
+        raw = raw[4:]
+
+        node = prop.node.dt.phandle2node.get(phandle)
+        if not node:
+            _err("bad phandle in " + repr(prop))
+
+        n_cells = n_cells_fn(node)
+        if len(raw) < 4*n_cells:
+            _err("missing data after phandle in " + repr(prop))
+
+        res.append((node, raw[:4*n_cells]))
+        raw = raw[4*n_cells:]
+
+    return res
 
 
 def _interrupt_cells(node):
