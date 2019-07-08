@@ -698,7 +698,7 @@ class GPIO:
     specifier:
       A dictionary that maps names from the #cells portion of the binding to
       cell values in the gpio specifier. 'foo-gpios = <&gpioc 5 0>' might give
-      {"pin": 0, "flags": 0}, for example.
+      {"pin": 5, "flags": 0}, for example.
     """
     def __repr__(self):
         fields = []
