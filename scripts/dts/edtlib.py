@@ -1049,15 +1049,6 @@ def _interrupt_parent(node):
     return _interrupt_parent(node.parent)
 
 
-def _address_cells(node):
-    # Returns the #address-cells setting for 'node', giving the number of <u32>
-    # cells used to encode the address in the 'reg' property
-
-    if "#address-cells" in node.parent.props:
-        return node.parent.props["#address-cells"].to_num()
-    return 2  # Default value per DT spec.
-
-
 def _interrupts(node):
     # TODO: document
 
@@ -1341,28 +1332,13 @@ def _interrupt_cells(node):
     return node.props["#interrupt-cells"].to_num()
 
 
-def _gpio_cells(node):
-    # TODO: have a _required_prop(node, "blah") or similar?
+def _address_cells(node):
+    # Returns the #address-cells setting for 'node', giving the number of <u32>
+    # cells used to encode the address in the 'reg' property
 
-    if "#gpio-cells" not in node.props:
-        _err("{!r} lacks #gpio-cells".format(node))
-    return node.props["#gpio-cells"].to_num()
-
-
-def _pwm_cells(node):
-    # TODO: have a _required_prop(node, "blah") or similar?
-
-    if "#pwm-cells" not in node.props:
-        _err("{!r} lacks #pwm-cells".format(node))
-    return node.props["#pwm-cells"].to_num()
-
-
-def _clock_cells(node):
-    # TODO: have a _required_prop(node, "blah") or similar?
-
-    if "#clock-cells" not in node.props:
-        _err("{!r} lacks #clock-cells".format(node))
-    return node.props["#clock-cells"].to_num()
+    if "#address-cells" in node.parent.props:
+        return node.parent.props["#address-cells"].to_num()
+    return 2  # Default value per DT spec.
 
 
 def _size_cells(node):
@@ -1372,6 +1348,24 @@ def _size_cells(node):
     if "#size-cells" in node.parent.props:
         return node.parent.props["#size-cells"].to_num()
     return 1  # Default value per DT spec.
+
+
+def _gpio_cells(node):
+    if "#gpio-cells" not in node.props:
+        _err("{!r} lacks #gpio-cells".format(node))
+    return node.props["#gpio-cells"].to_num()
+
+
+def _pwm_cells(node):
+    if "#pwm-cells" not in node.props:
+        _err("{!r} lacks #pwm-cells".format(node))
+    return node.props["#pwm-cells"].to_num()
+
+
+def _clock_cells(node):
+    if "#clock-cells" not in node.props:
+        _err("{!r} lacks #clock-cells".format(node))
+    return node.props["#clock-cells"].to_num()
 
 
 def _slice(node, prop_name, size):
