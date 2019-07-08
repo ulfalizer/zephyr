@@ -514,11 +514,9 @@ class Device:
     def _create_pwms(self):
         # Initializes self.pwms
 
-        node = self._node
-
         self.pwms = []
 
-        for controller_node, spec in _pwms(node):
+        for controller_node, spec in _pwms(self._node):
             controller = self.edt._node2dev[controller_node]
 
             pwm = PWM()
@@ -528,7 +526,7 @@ class Device:
 
             self.pwms.append(pwm)
 
-        _add_names(node, "pwm-names", self.pwms)
+        _add_names(self._node, "pwm-names", self.pwms)
 
     def _named_cells(self, controller, spec, controller_s):
         # _create_{interrupts,gpios}() helper. Returns a dictionary that maps
