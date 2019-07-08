@@ -16,18 +16,17 @@ from dtlib import DT, DTError, to_num, to_nums
 
 
 def spi_dev_cs_gpio(dev):
-    # Helper function to return a SPI device's GPIO chipselect if it exists
+    # Returns an SPI device's GPIO chip select if it exists, as a GPIO
+    # instance, and None otherwise. See
+    # Documentation/devicetree/bindings/spi/spi-bus.txt in the Linux kernel.
 
     if dev.bus != "spi":
         return None
 
-    spi_bus_dev = dev.parent
-    cs_gpios = spi_bus_dev.gpios.get("cs")
-
-    if cs_gpios is not None:
-        dt_spi_reg_addr = dev.regs[0].addr
-
-        return cs_gpios[dt_spi_reg_addr]
+    if "cs" in dev.parent.gpios:
+        # cs-gpios is indexed by the unit address
+        # TODO: Error out if dev.regs is empty?
+        return dev.parent.gpios["cs"][dev.regs[0].addr]
 
     return None
 
