@@ -1323,15 +1323,6 @@ def _phandle_val_list(prop, n_cells_fn):
     return res
 
 
-def _interrupt_cells(node):
-    # Returns the #interrupt-cells property value on 'node', erroring out if
-    # 'node' has no #interrupt-cells property
-
-    if "#interrupt-cells" not in node.props:
-        _err("{} lacks #interrupt-cells".format(node.path))
-    return node.props["#interrupt-cells"].to_num()
-
-
 def _address_cells(node):
     # Returns the #address-cells setting for 'node', giving the number of <u32>
     # cells used to encode the address in the 'reg' property
@@ -1348,6 +1339,15 @@ def _size_cells(node):
     if "#size-cells" in node.parent.props:
         return node.parent.props["#size-cells"].to_num()
     return 1  # Default value per DT spec.
+
+
+def _interrupt_cells(node):
+    # Returns the #interrupt-cells property value on 'node', erroring out if
+    # 'node' has no #interrupt-cells property
+
+    if "#interrupt-cells" not in node.props:
+        _err("{} lacks #interrupt-cells".format(node.path))
+    return node.props["#interrupt-cells"].to_num()
 
 
 def _gpio_cells(node):
