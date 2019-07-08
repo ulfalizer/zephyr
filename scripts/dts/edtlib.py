@@ -20,10 +20,7 @@ def spi_dev_cs_gpio(dev):
     # instance, and None otherwise. See
     # Documentation/devicetree/bindings/spi/spi-bus.txt in the Linux kernel.
 
-    if dev.bus != "spi":
-        return None
-
-    if "cs" in dev.parent.gpios:
+    if dev.bus == "spi" and "cs" in dev.parent.gpios:
         # cs-gpios is indexed by the unit address
         # TODO: Error out if dev.regs is empty?
         return dev.parent.gpios["cs"][dev.regs[0].addr]
