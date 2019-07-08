@@ -133,14 +133,13 @@ def write_props(dev):
         if isinstance(prop.val, bool):
             out_dev(dev, ident, 1 if prop.val else 0)
         elif isinstance(prop.val, str):
-            out_dev(dev, ident, '"{}"'.format(prop.val))
+            out_dev_s(dev, ident, prop.val)
         elif isinstance(prop.val, int):
             out_dev(dev, ident, prop.val)
         elif isinstance(prop.val, list):
             for i, elm in enumerate(prop.val):
-                if isinstance(elm, str):
-                    elm = '"{}"'.format(elm)
-                out_dev(dev, "{}_{}".format(ident, i), elm)
+                out_fn = out_dev_s if isinstance(elm, str) else out_dev
+                out_fn(dev, "{}_{}".format(ident, i), elm)
         else:
             # Internal error
             assert False
@@ -159,7 +158,7 @@ def write_bus(dev):
     if dev.parent.label is None:
         _err("Missing 'label' property on {!r}".format(dev.parent))
     # #define DT_<DEV-IDENT>_BUS_NAME <BUS-LABEL>
-    out_dev(dev, "BUS_NAME", '"{}"'.format(str2ident(dev.parent.label)))
+    out_dev_s(dev, "BUS_NAME", str2ident(dev.parent.label))
 
     for compat in dev.compats:
         ident = "{}_BUS_{}".format(str2ident(compat), str2ident(dev.bus))
@@ -368,7 +367,7 @@ def write_gpio(dev, gpio, index=None):
     if index is not None:
         ctrl_ident += "_{}".format(index)
 
-    out_dev(dev, ctrl_ident, '"{}"'.format(gpio.controller.label))
+    out_dev_s(dev, ctrl_ident, gpio.controller.label)
 
     for cell, val in gpio.specifier.items():
         cell_ident = "GPIOS_" + str2ident(cell)
@@ -393,7 +392,7 @@ def write_pwms(dev):
     # property
 
     for pwm in dev.pwms:
-        out_dev(dev, "PWMS_CONTROLLER", '"{}"'.format(pwm.controller.label))
+        out_dev_s(dev, "PWMS_CONTROLLER", pwm.controller.label)
         for spec, val in pwm.specifier.items():
             out_dev(dev, "PWMS_" + str2ident(spec), val)
 
@@ -406,6 +405,15 @@ def str2ident(s):
             .replace("/", "_") \
             .replace("+", "PLUS") \
             .upper()
+
+
+def out_dev_s(dev, ident, s):
+    # Like out_dev(), but puts quotes around 's' and escapes any quotes and
+    # backslashes within it
+
+    # \ must be escaped before " to avoid double escaping
+    out_dev(dev, ident,
+            '"{}"'.format(s.replace("\\", "\\\\").replace('"', '\\"')))
 
 
 def out_dev(dev, ident, val):
