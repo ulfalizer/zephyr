@@ -472,18 +472,7 @@ class Device:
 
             self.regs.append(reg)
 
-        if "reg-names" in node.props:
-            reg_names = node.props["reg-names"].to_strings()
-            if len(reg_names) != len(self.regs):
-                _err("'reg-names' property in {} has {} strings, but there "
-                     "are {} registers"
-                     .format(node.name, len(reg_names), len(self.regs)))
-
-            for reg, name in zip(self.regs, reg_names):
-                reg.name = name
-        else:
-            for reg in self.regs:
-                reg.name = None
+        _add_names(node, "reg-names", self.regs)
 
     def _create_interrupts(self):
         # Initializes self.interrupts with a list of Interrupt instances
@@ -502,19 +491,7 @@ class Device:
 
             self.interrupts.append(interrupt)
 
-        if "interrupt-names" in node.props:
-            interrupt_names = node.props["interrupt-names"].to_strings()
-            if len(interrupt_names) != len(self.interrupts):
-                _err("'interrupt-names' property in {} has {} strings, but "
-                     "there are {} interrupts"
-                     .format(node.name, len(interrupt_names),
-                             len(self.interrupts)))
-
-            for interrupt, name in zip(self.interrupts, interrupt_names):
-                interrupt.name = name
-        else:
-            for interrupt in self.interrupts:
-                interrupt.name = None
+        _add_names(node, "interrupt-names", self.interrupts)
 
     def _create_gpios(self):
         # Initializes self.gpios
@@ -551,19 +528,7 @@ class Device:
 
             self.pwms.append(pwm)
 
-        if "pwm-names" in node.props:
-            pwm_names = node.props["pwm-names"].to_strings()
-            if len(pwm_names) != len(self.pwms):
-                _err("'pwm-names' property in {} has {} strings, but "
-                     "there are {} pwms"
-                     .format(node.name, len(pwm_names),
-                             len(self.pwms)))
-
-            for pwm, name in zip(self.pwms, pwm_names):
-                pwm.name = name
-        else:
-            for pwm in self.pwms:
-                pwm.name = self.name
+        _add_names(node, "pwm-names", self.pwms)
 
     def _named_cells(self, controller, spec, controller_s):
         # _create_{interrupts,gpios}() helper. Returns a dictionary that maps
@@ -994,6 +959,31 @@ def _translate(addr, node):
 
     # 'addr' is not within range of any translation in 'ranges'
     return addr
+
+
+def _add_names(node, names_ident, objs):
+    # Helper for registering names from <foo>-names properties.
+    #
+    # node:
+    #   Device tree node
+    #
+    # names-ident:
+    #   name of property holding names, e.g. "reg-names"
+    #
+    # objs:
+    #   list of objects whose .name field should be set
+
+    if names_ident in node.props:
+        names = node.props[names_ident].to_strings()
+        if len(names) != len(objs):
+            _err("{} property in {} has {} strings, expected {} strings"
+                 .format(names_ident, node.name, len(names), len(objs)))
+
+        for obj, name in zip(objs, names):
+            obj.name = name
+    else:
+        for obj in objs:
+            obj.name = None
 
 
 def _interrupt_parent(node):
