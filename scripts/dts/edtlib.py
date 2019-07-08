@@ -368,11 +368,11 @@ class Device:
         self.read_only = "read-only" in node.props
 
     def _init_binding(self):
-        # Initializes Device.matching_compat and Device.binding
+        # Initializes Device.matching_compat and Device.binding.
         #
         # This relies on the parent of the Device having already been
         # initialized, which is guaranteed by going through the nodes in
-        # node_iter() order
+        # node_iter() order.
 
         if "compatible" in self._node.props:
             self.compats = self._node.props["compatible"].to_strings()
@@ -395,13 +395,13 @@ class Device:
 
             self.compats = []
 
-            if self.parent and self.parent.binding:
-                parent_binding = self.parent.binding
-                if "sub-node" in parent_binding:
-                    # Binding found
-                    self.binding = parent_binding["sub-node"]
-                    self.matching_compat = self.parent.matching_compat
-                    return
+            if self.parent and self.parent.binding and \
+                "sub-node" in self.parent.binding:
+
+                # Binding found
+                self.binding = self.parent.binding["sub-node"]
+                self.matching_compat = self.parent.matching_compat
+                return
 
         # No binding found
         self.binding = self.matching_compat = None
