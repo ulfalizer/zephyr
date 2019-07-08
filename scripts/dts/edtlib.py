@@ -526,7 +526,7 @@ class Device:
         self.gpios = {}
 
         for prefix, gpios in _gpios(self._node).items():
-            gpio_res = []
+            self.gpios[prefix] = []
             for controller_node, spec in gpios:
                 controller = self.edt._node2dev[controller_node]
 
@@ -536,9 +536,7 @@ class Device:
                 gpio.specifier = self._named_cells(controller, spec, "GPIOS")
                 gpio.name = prefix
 
-                gpio_res.append(gpio)
-
-                self.gpios[prefix] = gpio_res
+                self.gpios[prefix].append(gpio)
 
     def _create_pwms(self):
         # Initializes self.pwms
@@ -570,7 +568,6 @@ class Device:
         else:
             for pwm in self.pwms:
                 pwm.name = self.name
-
 
     def _named_cells(self, controller, spec, controller_s):
         # _create_{interrupts,gpios}() helper. Returns a dictionary that maps
