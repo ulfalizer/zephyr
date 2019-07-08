@@ -532,21 +532,8 @@ class Device:
 
             self.clocks.append(clock)
 
-        # TOOD: verify clock name support
-        if "clock-names" in node.props:
-            clock_names = node.props["clock-names"].to_strings()
-            if len(clock_names) != len(self.clocks):
-                _err("'clock-names' property in {} has {} strings, but "
-                     "there are {} clocks"
-                     .format(node.name, len(clock_names),
-                             len(self.clocks)))
-
-            for clock, name in zip(self.clocks, clock_names):
-                clock.name = name
-        else:
-            for clock in self.clocks:
-                clock.name = None
-
+        # TODO: verify clock name support
+        _add_names(node, "clock-names", self.clocks)
 
     def _create_pwms(self):
         # Initializes self.pwms
@@ -686,7 +673,7 @@ class GPIO:
       the property is just "gpios" than there is no name.
 
     controller:
-      The Device instance for the controller of the GPIO.
+      The Device instance for the controller of the GPIO
 
     specifier:
       A dictionary that maps names from the #cells portion of the binding to
@@ -723,8 +710,7 @@ class Clock:
 
     specifier:
       A dictionary that maps names from the #cells portion of the binding to
-      cell values in the pwm specifier. 'pwms = <&pwm 0 5000000>' might give
-      {"channel": 0, "period": 5000000}, for example.
+      cell values in the clock specifier
     """
     def __repr__(self):
         fields = []
@@ -733,9 +719,9 @@ class Clock:
             fields.append("name: " + self.name)
 
         fields.append("target: {}".format(self.controller))
-        fields.append("cells: {}".format(self.cells))
+        fields.append("specifier: {}".format(self.specifier))
 
-        return "<clocks, {}>".format(", ".join(fields))
+        return "<Clock, {}>".format(", ".join(fields))
 
 
 class PWM:
@@ -752,7 +738,7 @@ class PWM:
       node name if the 'pwm-names' property doesn't exist.
 
     controller:
-      The Device instance for the controller of the PWM.
+      The Device instance for the controller of the PWM
 
     specifier:
       A dictionary that maps names from the #cells portion of the binding to
@@ -1127,31 +1113,9 @@ def _map_interrupt(child, parent, child_spec):
 def _clocks(node):
     # TODO: document
 
-    res = []
-
-    prop = node.props.get("clocks")
-    if prop is not None:
-        raw = prop.value
-
-        while raw:
-            if len(raw) < 4:
-                # Not enough room for phandle
-                _err("bad value for " + repr(prop))
-            phandle = to_num(raw[:4])
-            raw = raw[4:]
-
-            controller = prop.node.dt.phandle2node.get(phandle)
-            if not controller:
-                _err("bad phandle in " + repr(prop))
-
-            clock_cells = _clock_cells(controller)
-            if len(raw) < 4*clock_cells:
-                _err("missing data after phandle in " + repr(prop))
-
-            res.append((controller, raw[:4*clock_cells]))
-            raw = raw[4*clock_cells:]
-
-    return res
+    if "clocks" not in node.props:
+        return []
+    return _phandle_val_list(node.props["clocks"], _clock_cells)
 
 
 def _pwms(node):
