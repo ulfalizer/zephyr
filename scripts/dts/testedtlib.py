@@ -24,19 +24,19 @@ edt = edtlib.EDT("test.dts", "bindings")
 #
 
 verify_eq(str(edt.get_dev("/interrupt-parent-test/node").interrupts),
-          "[<Interrupt, name: foo, target: <Device controller, 0 regs>, cells: {'one': 1, 'two': 2, 'three': 3}>, <Interrupt, name: bar, target: <Device controller, 0 regs>, cells: {'one': 4, 'two': 5, 'three': 6}>]")
+          "[<Interrupt, name: foo, target: <Device controller, 0 regs>, specifier: {'one': 1, 'two': 2, 'three': 3}>, <Interrupt, name: bar, target: <Device controller, 0 regs>, specifier: {'one': 4, 'two': 5, 'three': 6}>]")
 
 verify_eq(str(edt.get_dev("/interrupts-extended-test/node").interrupts),
-          "[<Interrupt, target: <Device controller-0, 0 regs>, cells: {'one': 1}>, <Interrupt, target: <Device controller-1, 0 regs>, cells: {'one': 2, 'two': 3}>, <Interrupt, target: <Device controller-2, 0 regs>, cells: {'one': 4, 'two': 5, 'three': 6}>]")
+          "[<Interrupt, target: <Device controller-0, 0 regs>, specifier: {'one': 1}>, <Interrupt, target: <Device controller-1, 0 regs>, specifier: {'one': 2, 'two': 3}>, <Interrupt, target: <Device controller-2, 0 regs>, specifier: {'one': 4, 'two': 5, 'three': 6}>]")
 
 verify_eq(str(edt.get_dev("/interrupt-map-test/node@0").interrupts),
-          "[<Interrupt, target: <Device controller-0, 0 regs>, cells: {'one': 0}>, <Interrupt, target: <Device controller-1, 0 regs>, cells: {'one': 0, 'two': 1}>, <Interrupt, target: <Device controller-2, 0 regs>, cells: {'one': 0, 'two': 0, 'three': 2}>]")
+          "[<Interrupt, target: <Device controller-0, 0 regs>, specifier: {'one': 0}>, <Interrupt, target: <Device controller-1, 0 regs>, specifier: {'one': 0, 'two': 1}>, <Interrupt, target: <Device controller-2, 0 regs>, specifier: {'one': 0, 'two': 0, 'three': 2}>]")
 
 verify_eq(str(edt.get_dev("/interrupt-map-test/node@1").interrupts),
-          "[<Interrupt, target: <Device controller-0, 0 regs>, cells: {'one': 3}>, <Interrupt, target: <Device controller-1, 0 regs>, cells: {'one': 0, 'two': 4}>, <Interrupt, target: <Device controller-2, 0 regs>, cells: {'one': 0, 'two': 0, 'three': 5}>]")
+          "[<Interrupt, target: <Device controller-0, 0 regs>, specifier: {'one': 3}>, <Interrupt, target: <Device controller-1, 0 regs>, specifier: {'one': 0, 'two': 4}>, <Interrupt, target: <Device controller-2, 0 regs>, specifier: {'one': 0, 'two': 0, 'three': 5}>]")
 
 verify_eq(str(edt.get_dev("/interrupt-map-bitops-test/node@70000000E").interrupts),
-          "[<Interrupt, target: <Device controller, 0 regs>, cells: {'one': 3, 'two': 2}>]")
+          "[<Interrupt, target: <Device controller, 0 regs>, specifier: {'one': 3, 'two': 2}>]")
 
 #
 # Test GPIOS

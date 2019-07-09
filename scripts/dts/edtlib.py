@@ -491,7 +491,7 @@ class Device:
             interrupt = Interrupt()
             interrupt.dev = self
             interrupt.controller = controller
-            interrupt.cells = self._named_cells(controller, spec, "interrupt")
+            interrupt.specifier = self._named_cells(controller, spec, "interrupt")
 
             self.interrupts.append(interrupt)
 
@@ -642,7 +642,7 @@ class Interrupt:
       'interrupt-map' is taken into account, so that this is the final
       controller node.
 
-    cells:
+    specifier:
       A dictionary that maps names from the #cells portion of the binding to
       cell values in the interrupt specifier. 'interrupts = <1 2>' might give
       {"irq": 1, "level": 2}, for example.
@@ -654,7 +654,7 @@ class Interrupt:
             fields.append("name: " + self.name)
 
         fields.append("target: {}".format(self.controller))
-        fields.append("cells: {}".format(self.cells))
+        fields.append("specifier: {}".format(self.specifier))
 
         return "<Interrupt, {}>".format(", ".join(fields))
 
