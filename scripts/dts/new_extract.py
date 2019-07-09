@@ -295,38 +295,39 @@ def write_flash_partition(partition_dev, index):
     if partition_dev.label is None:
         err("missing 'label' property on {!r}".format(partition_dev))
 
-    label = str2ident(partition_dev.label)
+    # Generate label-based identifiers
+    write_flash_partition_prefix(
+        "FLASH_AREA_" + str2ident(partition_dev.label), partition_dev, index)
 
-    out_s("FLASH_AREA_{}_LABEL".format(label), partition_dev.label)
-    out_s("FLASH_AREA_{}_LABEL".format(index), partition_dev.label)
-    out("FLASH_AREA_{}_ID".format(label), index)
+    # Generate index-based identifiers
+    write_flash_partition_prefix(
+        "FLASH_AREA_{}".format(index), partition_dev, index)
 
-    out("FLASH_AREA_{}_READ_ONLY".format(label),
-        1 if partition_dev.read_only else 0)
+
+def write_flash_partition_prefix(prefix, partition_dev, index):
+    # write_flash_partition() helper. Generates identifiers starting with
+    # 'prefix'.
+
+    out_s("{}_LABEL".format(prefix), partition_dev.label)
+    out("{}_ID".format(prefix), index)
+
+    out("{}_READ_ONLY".format(prefix), 1 if partition_dev.read_only else 0)
 
     for i, reg in enumerate(partition_dev.regs):
-        out("FLASH_AREA_{}_OFFSET_{}".format(label, i), reg.addr)
-        out("FLASH_AREA_{}_OFFSET_{}".format(index, i), reg.addr)
-        out("FLASH_AREA_{}_SIZE_{}".format(label, i), reg.size)
-        out("FLASH_AREA_{}_SIZE_{}".format(index, i), reg.size)
+        out("{}_OFFSET_{}".format(prefix, i), reg.addr)
+        out("{}_SIZE_{}".format(prefix, i), reg.size)
 
     # Add aliases that points to the first sector
     #
     # TODO: Could we get rid of this? Code could just refer to sector _0 where
     # needed instead.
 
-    out_alias("FLASH_AREA_{}_OFFSET".format(label),
-              "FLASH_AREA_{}_OFFSET_0".format(label))
-    out_alias("FLASH_AREA_{}_OFFSET".format(index),
-              "FLASH_AREA_{}_OFFSET_0".format(index))
-    out_alias("FLASH_AREA_{}_SIZE".format(label),
-              "FLASH_AREA_{}_SIZE_0".format(label))
-    out_alias("FLASH_AREA_{}_SIZE".format(index),
-              "FLASH_AREA_{}_SIZE_0".format(index))
+    out_alias("{}_OFFSET".format(prefix), "{}_OFFSET_0".format(prefix))
+    out_alias("{}_SIZE".format(prefix), "{}_SIZE_0".format(prefix))
 
     controller = partition_dev.flash_controller
     if controller.label is not None:
-        out_s("FLASH_AREA_{}_DEV".format(index), controller.label)
+        out_s("{}_DEV".format(prefix), controller.label)
 
 
 def write_required_label(ident, dev):
