@@ -320,6 +320,10 @@ def write_flash_partition(partition_dev, index):
     out_alias("FLASH_AREA_{}_SIZE".format(index),
               "FLASH_AREA_{}_SIZE_0".format(index))
 
+    controller = partition_dev.flash_controller
+    if controller.label is not None:
+        out_s("FLASH_AREA_{}_DEV".format(index), controller.label)
+
 
 def write_required_label(ident, dev):
     # Helper function. Writes '#define <ident> "<label>"', where <label>
