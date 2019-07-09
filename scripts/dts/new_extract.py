@@ -340,7 +340,7 @@ def write_flash_partition_prefix(prefix, partition_dev, index):
     # write_flash_partition() helper. Generates identifiers starting with
     # 'prefix'.
 
-    out_s("{}_LABEL".format(prefix), partition_dev.label)
+    out("{}_LABEL".format(prefix), str2ident(partition_dev.label))
     out("{}_ID".format(prefix), index)
 
     out("{}_READ_ONLY".format(prefix), 1 if partition_dev.read_only else 0)
