@@ -160,6 +160,8 @@ class EDT:
         self.devices = []
 
         for node in self._dt.node_iter():
+            # Warning: Device.__init__() relies on parent Devices being created
+            # before their children
             dev = Device(self, node)
             self.devices.append(dev)
             self._node2dev[node] = dev
