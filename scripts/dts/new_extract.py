@@ -80,13 +80,10 @@ def main():
     write_required_label("UART_MCUMGR_ON_DEV_NAME",  edt.uart_mcumgr_dev)
     write_required_label("BT_C2H_UART_ON_DEV_NAME",  edt.bt_c2h_uart_dev)
 
-    if edt.flash_dev:
-        write_flash(edt.flash_dev)
+    write_flash(edt.flash_dev)
 
     flash_index = 0
     for dev in edt.devices:
-        # TODO: Feels a bit janky to handle this separately from
-        # zephyr,flash-dev
         if dev.name.startswith("partition@"):
             write_flash_partition(dev, flash_index)
             flash_index += 1
@@ -279,6 +276,12 @@ def dev_instance_aliases(dev):
 def write_flash(flash_dev):
     # Writes the size and address of the node pointed at by the zephyr,flash
     # property in /chosen
+
+    if not flash_dev:
+        # No flash device. Write dummy values.
+        out("FLASH_BASE_ADDRESS", 0)
+        out("FLASH_SIZE", 0)
+        return
 
     if len(flash_dev.regs) != 1:
         err("expected zephyr,flash to have a single register, has {}"
