@@ -88,11 +88,16 @@ def main():
     if edt.flash_dev:
         write_flash(edt.flash_dev)
 
+    flash_index = 0
     for dev in edt.devices:
         # TODO: Feels a bit janky to handle this separately from
         # zephyr,flash-dev
         if dev.name.startswith("partition@"):
             write_flash_partition(dev)
+            flash_index += 1
+
+    # Number of flash partitions
+    out("FLASH_AREA_NUM", flash_index)
 
 
 def write_regs(dev):
