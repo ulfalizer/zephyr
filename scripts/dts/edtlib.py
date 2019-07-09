@@ -58,7 +58,7 @@ class EDT:
     def __init__(self, dts, bindings_dir):
         self._dt = DT(dts)
 
-        self._create_compat2bindings(bindings_dir)
+        self._create_compat2binding(bindings_dir)
         self._create_devices()
         self._parse_chosen()
 
@@ -72,16 +72,16 @@ class EDT:
         except DTError as e:
             _err(e)
 
-    def _create_compat2bindings(self, bindings_dir):
-        # Creates self._compat2bindings. This dictionary maps
+    def _create_compat2binding(self, bindings_dir):
+        # Creates self._compat2binding. This dictionary maps
         # (<compatible>, <bus>) tuples (both strings) to bindings (in parsed
         # PyYAML format).
         #
-        # For example, self._compat2bindings["company,dev", "can"] contains the
+        # For example, self._compat2binding["company,dev", "can"] contains the
         # binding for the 'company,dev' device, when it appears on the CAN bus.
         #
         # For bindings that don't specify a bus, the bus part is None, so that
-        # e.g. self._compat2bindings["company,notonbus", None] contains the
+        # e.g. self._compat2binding["company,notonbus", None] contains the
         # binding.
         #
         # Only bindings for compatible strings mentioned in the device tree are
@@ -98,7 +98,7 @@ class EDT:
 
         dt_compats = _dt_compats(self._dt)
 
-        self._compat2bindings = {}
+        self._compat2binding = {}
 
         self._find_bindings(bindings_dir)
         for binding_path in self._bindings:
@@ -106,7 +106,7 @@ class EDT:
             if compat in dt_compats:
                 binding = _load_binding(binding_path)
                 bus = _binding_parent_bus(binding)
-                self._compat2bindings[compat, bus] = binding
+                self._compat2binding[compat, bus] = binding
 
     def _find_bindings(self, bindings_dir):
         # Creates a list with paths to all binding files, in self._bindings
@@ -420,7 +420,7 @@ class Device:
                 bus = None
 
             for compat in self.compats:
-                binding = self.edt._compat2bindings.get((compat, bus))
+                binding = self.edt._compat2binding.get((compat, bus))
                 if binding:
                     # Binding found
                     self.matching_compat = compat
