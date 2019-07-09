@@ -42,14 +42,7 @@ def main():
             write_spi_dev(dev)
             write_props(dev)
             write_bus(dev)
-
-            # Generate defines of the form
-            #
-            #   #define DT_<COMPAT>_<INSTANCE> 1
-            #
-            # These are flags for which devices exist.
-            for compat in dev.compats:
-                out("{}_{}".format(str2ident(compat), dev.instance_no[compat]), 1)
+            write_existence_flags(dev)
 
             active_compats.update(dev.compats)
 
@@ -174,6 +167,17 @@ def write_bus(dev):
         if compat == dev.matching_compat:
             # TODO
             pass
+
+
+def write_existence_flags(dev):
+    # Generate #defines of the form
+    #
+    #   #define DT_<COMPAT>_<INSTANCE> 1
+    #
+    # These are flags for which devices exist.
+
+    for compat in dev.compats:
+        out("{}_{}".format(str2ident(compat), dev.instance_no[compat]), 1)
 
 
 def reg_addr_ident(reg):
