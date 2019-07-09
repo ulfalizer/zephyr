@@ -326,7 +326,7 @@ def write_irqs(dev):
 
     for irq_i, irq in enumerate(dev.interrupts):
         # We ignore the controller for now
-        for cell_name, cell_value in irq.cells.items():
+        for cell_name, cell_value in irq.specifier.items():
             irq_ident = "IRQ_{}".format(irq_i)
             if cell_name != "irq":
                 irq_ident += "_" + str2ident(cell_name)
