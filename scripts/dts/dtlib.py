@@ -1265,7 +1265,7 @@ class Node:
               ...
         """
         yield self
-        for node in self.nodes.values():
+        for node in sorted(self.nodes.values(), key=lambda node: node.name):
             yield from node.node_iter()
 
     def __str__(self):
