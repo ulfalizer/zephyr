@@ -1346,7 +1346,7 @@ def _interrupt_cells(node):
     # 'node' has no #interrupt-cells property
 
     if "#interrupt-cells" not in node.props:
-        _err("{} lacks #interrupt-cells".format(node.path))
+        _err("{!r} lacks #interrupt-cells".format(node))
     return node.props["#interrupt-cells"].to_num()
 
 
@@ -1388,7 +1388,6 @@ def _err(msg):
 def _warn(msg):
     print("warning: " + msg, file=sys.stderr)
 
-# TODO: replace node.path, etc., with repr's, which give more information
 # TODO: check if interrupt-controller exists on domain root?
 # TODO: does e.g. gpio-controller need to exist as well?
 
