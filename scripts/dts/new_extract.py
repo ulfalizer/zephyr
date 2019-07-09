@@ -407,12 +407,11 @@ def str2ident(s):
 
 
 def out_dev_s(dev, ident, s):
-    # Like out_dev(), but puts quotes around 's' and escapes any quotes and
-    # backslashes within it
+    # Like out_dev(), but puts quotes around 's' and escapes any double quotes
+    # and backslashes within it
 
     # \ must be escaped before " to avoid double escaping
-    out_dev(dev, ident,
-            '"{}"'.format(s.replace("\\", "\\\\").replace('"', '\\"')))
+    out_dev(dev, ident, '"{}"'.format(escape(s)))
 
 
 def out_dev(dev, ident, val):
@@ -447,10 +446,18 @@ def out_dev_aliases(dev, ident, target):
         out_alias(dev_alias + "_" + ident, target)
 
 
-def out(ident, val):
-    # TODO: This is just for writing the header. Will get a .conf file later as
-    # well.
+# TODO: These are just for writing the header. Will get a .conf file later as
+# well.
 
+
+def out_s(ident, val):
+    # Like out(), but puts quotes around 's' and escapes any double quotes and
+    # backslashes within it
+
+    out(ident, '"{}"'.format(escape(val)))
+
+
+def out(ident, val):
     print("#define DT_{}\t{}".format(ident, val), file=_out)
 
 
@@ -460,6 +467,13 @@ def out_alias(ident, target):
 
     if ident != target:
         print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
+
+
+def escape(s):
+    # Backslash-escapes any double quotes and backslashes in 's'
+
+    # \ must be escaped before " to avoid double escaping
+    return s.replace("\\", "\\\\").replace('"', '\\"')
 
 
 def err(s):
