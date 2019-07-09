@@ -79,13 +79,13 @@ def main():
     # the kconfig build system, we can remove them in the future
     # if we provide a function in kconfigfunctions.py to get
     # the same info
-    write_label("UART_CONSOLE_ON_DEV_NAME", edt.console_dev)
-    write_label("UART_SHELL_ON_DEV_NAME",   edt.shell_uart_dev)
-    write_label("BT_UART_ON_DEV_NAME",      edt.bt_uart_dev)
-    write_label("UART_PIPE_ON_DEV_NAME",    edt.uart_pipe_dev)
-    write_label("BT_MONITOR_ON_DEV_NAME",   edt.bt_mon_uart_dev)
-    write_label("UART_MCUMGR_ON_DEV_NAME",  edt.uart_mcumgr_dev)
-    write_label("BT_C2H_UART_ON_DEV_NAME",  edt.bt_c2h_uart_dev)
+    write_required_label("UART_CONSOLE_ON_DEV_NAME", edt.console_dev)
+    write_required_label("UART_SHELL_ON_DEV_NAME",   edt.shell_uart_dev)
+    write_required_label("BT_UART_ON_DEV_NAME",      edt.bt_uart_dev)
+    write_required_label("UART_PIPE_ON_DEV_NAME",    edt.uart_pipe_dev)
+    write_required_label("BT_MONITOR_ON_DEV_NAME",   edt.bt_mon_uart_dev)
+    write_required_label("UART_MCUMGR_ON_DEV_NAME",  edt.uart_mcumgr_dev)
+    write_required_label("BT_C2H_UART_ON_DEV_NAME",  edt.bt_c2h_uart_dev)
 
     if edt.flash_dev:
         write_flash(edt.flash_dev)
@@ -321,8 +321,8 @@ def write_flash_partition(partition_dev, index):
               "FLASH_AREA_{}_SIZE_0".format(index))
 
 
-def write_label(ident, dev):
-    # Helper function. Writes '#define <ident> <label>', where <label>
+def write_required_label(ident, dev):
+    # Helper function. Writes '#define <ident> "<label>"', where <label>
     # is the value of the 'label' property from 'dev'. Does nothing if
     # 'dev' is None.
     #
@@ -334,7 +334,7 @@ def write_label(ident, dev):
     if dev.label is None:
         err("missing 'label' property on {!r}".format(dev))
 
-    out(ident, '"{}"'.format(dev.label))
+    out_s(ident, dev.label)
 
 
 def write_irqs(dev):
