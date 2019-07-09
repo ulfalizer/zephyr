@@ -294,6 +294,7 @@ def write_flash_partition(partition_dev, index):
     label = str2ident(partition_dev.label)
 
     out_s("FLASH_AREA_{}_LABEL".format(label), partition_dev.label)
+    out_s("FLASH_AREA_{}_LABEL".format(index), partition_dev.label)
     out("FLASH_AREA_{}_ID".format(label), index)
 
     out("FLASH_AREA_{}_READ_ONLY".format(label),
@@ -301,7 +302,9 @@ def write_flash_partition(partition_dev, index):
 
     for i, reg in enumerate(partition_dev.regs):
         out("FLASH_AREA_{}_OFFSET_{}".format(label, i), reg.addr)
+        out("FLASH_AREA_{}_OFFSET_{}".format(index, i), reg.addr)
         out("FLASH_AREA_{}_SIZE_{}".format(label, i), reg.size)
+        out("FLASH_AREA_{}_SIZE_{}".format(index, i), reg.size)
 
     # Add aliases that points to the first sector
     #
@@ -310,8 +313,12 @@ def write_flash_partition(partition_dev, index):
 
     out_alias("FLASH_AREA_{}_OFFSET".format(label),
               "FLASH_AREA_{}_OFFSET_0".format(label))
+    out_alias("FLASH_AREA_{}_OFFSET".format(index),
+              "FLASH_AREA_{}_OFFSET_0".format(index))
     out_alias("FLASH_AREA_{}_SIZE".format(label),
               "FLASH_AREA_{}_SIZE_0".format(label))
+    out_alias("FLASH_AREA_{}_SIZE".format(index),
+              "FLASH_AREA_{}_SIZE_0".format(index))
 
 
 def write_label(ident, dev):
