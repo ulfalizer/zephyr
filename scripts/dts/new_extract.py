@@ -163,7 +163,7 @@ def write_bus(dev):
         return
 
     if dev.parent.label is None:
-        _err("Missing 'label' property on {!r}".format(dev.parent))
+        _err("missing 'label' property on {!r}".format(dev.parent))
     # #define DT_<DEV-IDENT>_BUS_NAME <BUS-LABEL>
     out_dev_s(dev, "BUS_NAME", str2ident(dev.parent.label))
 
@@ -277,7 +277,7 @@ def write_flash(flash_dev):
     # property in /chosen
 
     if len(flash_dev.regs) != 1:
-        err("Expected zephyr,flash to have a single register, has {}"
+        err("expected zephyr,flash to have a single register, has {}"
             .format(len(flash_dev.regs)))
 
     reg = flash_dev.regs[0]

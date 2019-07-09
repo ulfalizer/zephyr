@@ -364,7 +364,7 @@ class Device:
         # parent of the flash node.
 
         if not self.parent or not self.parent.parent:
-            _err("Flash partition {!r} lacks parent or grandparent node"
+            _err("flash partition {!r} lacks parent or grandparent node"
                  .format(self._node))
 
         controller = self.parent.parent
@@ -478,7 +478,7 @@ class Device:
                 prop.enum_index = None
             else:
                 if val not in enum:
-                    _err("Value ({}) for property ({}) is not in enumerated "
+                    _err("value ({}) for property ({}) is not in enumerated "
                          "list {} for node {}".format(
                              val, prop_name, enum, self.name))
 
