@@ -1045,7 +1045,9 @@ class DT:
         # Removes any unreferenced nodes marked with /omit-if-no-ref/ from the
         # tree
 
-        for node in self.node_iter():
+        # tuple() is to avoid 'RuntimeError: dictionary changed size during
+        # iteration' errors
+        for node in tuple(self.node_iter()):
             if node._omit_if_no_ref and not node._is_referenced:
                 self._del_node(node)
 
@@ -1262,11 +1264,9 @@ class Node:
           for node in dt.root.node_iter():
               ...
         """
-        queue = collections.deque((self,))
-        while queue:
-            node = queue.popleft()
-            yield node
-            queue.extend(node.nodes.values())
+        yield self
+        for node in self.nodes.values():
+            yield from node.node_iter()
 
     def __str__(self):
         """
