@@ -91,7 +91,8 @@ def main():
             flash_index += 1
 
     # Number of flash partitions
-    out("FLASH_AREA_NUM", flash_index)
+    if flash_index != 0:
+        out("FLASH_AREA_NUM", flash_index)
 
 
 def write_regs(dev):
