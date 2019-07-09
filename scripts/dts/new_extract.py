@@ -443,8 +443,9 @@ def write_pwms(dev):
     # property
 
     for pwm in dev.pwms:
-        # TODO: Mandatory label?
-        out_dev_s(dev, "PWMS_CONTROLLER", pwm.controller.label)
+        if pwm.controller.label is not None:
+            out_dev_s(dev, "PWMS_CONTROLLER", pwm.controller.label)
+
         for spec, val in pwm.specifier.items():
             out_dev(dev, "PWMS_" + str2ident(spec), val)
 
@@ -454,8 +455,9 @@ def write_clocks(dev):
     # property
 
     for clock_i, clock in enumerate(dev.clocks):
-        # TODO: Mandatory label?
-        out_dev_s(dev, "CLOCK_CONTROLLER", clock.controller.label)
+        if clock.controller.label is not None:
+            out_dev_s(dev, "CLOCK_CONTROLLER", clock.controller.label)
+
         for spec, val in clock.specifier.items():
             out_dev(dev, "CLOCK_{}_{}".format(str2ident(spec), clock_i), val)
 
