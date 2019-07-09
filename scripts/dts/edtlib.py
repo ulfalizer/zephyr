@@ -325,9 +325,15 @@ class Device:
 
     @property
     def label(self):
+        "See the class docstring"
         if "label" in self._node.props:
             return self._node.props["label"].to_string()
         return None
+
+    @property
+    def read_only(self):
+        "See the class docstring"
+        return "read-only" in self._node.props
 
     @property
     def aliases(self):
@@ -365,12 +371,11 @@ class Device:
 
         self.edt = edt
         self._node = node
+
         self._init_binding()
         self._create_props()
         self._create_regs()
         self._set_instance_no()
-
-        self.read_only = "read-only" in node.props
 
     def _init_binding(self):
         # Initializes Device.matching_compat and Device.binding.
