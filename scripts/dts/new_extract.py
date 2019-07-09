@@ -82,6 +82,7 @@ def main():
     write_required_label("BT_C2H_UART_ON_DEV_NAME",  edt.bt_c2h_uart_dev)
 
     write_flash(edt.flash_dev)
+    write_code_partition(edt.code_partition_dev)
 
     flash_index = 0
     for dev in edt.devices:
@@ -275,8 +276,8 @@ def dev_instance_aliases(dev):
 
 
 def write_flash(flash_dev):
-    # Writes the size and address of the node pointed at by the zephyr,flash
-    # property in /chosen
+    # Writes output for the node pointed at by the zephyr,flash property in
+    # /chosen
 
     if not flash_dev:
         # No flash device. Write dummy values.
@@ -303,6 +304,23 @@ def write_flash(flash_dev):
 
     if "write-block-size" in flash_dev.props:
         out("FLASH_WRITE_BLOCK_SIZE", flash_dev.props["write-block-size"].val)
+
+
+def write_code_partition(code_partition_dev):
+    # Writes output for the node pointed at by the zephyr,code-partition
+    # property in /chosen
+
+    if not code_partition_dev:
+        # No code partition. Write dummy values.
+        out("CODE_PARTITION_OFFSET", 0)
+        out("CODE_PARTITION_SIZE", 0)
+        return
+
+    if not code_partition_dev.regs:
+        err("missing 'regs' property on {!r}".format(code_partition_dev))
+
+    out("CODE_PARTITION_OFFSET", code_partition_dev.regs[0].addr)
+    out("CODE_PARTITION_SIZE", code_partition_dev.regs[0].size)
 
 
 def write_flash_partition(partition_dev, index):
