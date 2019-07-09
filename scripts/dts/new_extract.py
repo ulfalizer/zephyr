@@ -93,7 +93,7 @@ def main():
         # TODO: Feels a bit janky to handle this separately from
         # zephyr,flash-dev
         if dev.name.startswith("partition@"):
-            write_flash_partition(dev)
+            write_flash_partition(dev, flash_index)
             flash_index += 1
 
     # Number of flash partitions
@@ -285,15 +285,17 @@ def write_flash(flash_dev):
         out("FLASH_SIZE", reg.size//1024)
 
 
-def write_flash_partition(partition_dev):
+def write_flash_partition(partition_dev, index):
     if partition_dev.label is None:
         err("missing 'label' property on {!r}".format(partition_dev))
 
     label = str2ident(partition_dev.label)
 
     out_s("FLASH_AREA_{}_LABEL".format(label), partition_dev.label)
+    out("FLASH_AREA_{}_ID".format(label), index)
+
     out("FLASH_AREA_{}_READ_ONLY".format(label),
-            1 if partition_dev.read_only else 0)
+        1 if partition_dev.read_only else 0)
 
     for i, reg in enumerate(partition_dev.regs):
         out("FLASH_AREA_{}_OFFSET_{}".format(label, i), reg.addr)
