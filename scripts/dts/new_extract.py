@@ -297,6 +297,12 @@ def write_flash(flash_dev):
     if reg.size is not None:
         out("FLASH_SIZE", reg.size//1024)
 
+    if "erase-block-size" in flash_dev.props:
+        out("FLASH_ERASE_BLOCK_SIZE", flash_dev.props["erase-block-size"].val)
+
+    if "write-block-size" in flash_dev.props:
+        out("FLASH_WRITE_BLOCK_SIZE", flash_dev.props["write-block-size"].val)
+
 
 def write_flash_partition(partition_dev, index):
     if partition_dev.label is None:
