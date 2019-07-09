@@ -338,6 +338,17 @@ class Device:
         return None
 
     @property
+    def parent(self):
+        "See the class docstring"
+        return self.edt._node2dev.get(self._node.parent)
+
+    @property
+    def enabled(self):
+        "See the class docstring"
+        return "status" not in self._node.props or \
+            self._node.props["status"].to_string() != "disabled"
+
+    @property
     def read_only(self):
         "See the class docstring"
         return "read-only" in self._node.props
@@ -374,17 +385,6 @@ class Device:
         if controller.matching_compat == "soc-nv-flash":
             return controller.parent
         return controller
-
-    @property
-    def enabled(self):
-        "See the class docstring"
-        return "status" not in self._node.props or \
-            self._node.props["status"].to_string() != "disabled"
-
-    @property
-    def parent(self):
-        "See the class docstring"
-        return self.edt._node2dev.get(self._node.parent)
 
     def __repr__(self):
         return "<Device {}, {} regs>".format(
