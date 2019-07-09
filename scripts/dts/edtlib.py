@@ -324,6 +324,12 @@ class Device:
         return addr
 
     @property
+    def label(self):
+        if "label" in self._node.props:
+            return self._node.props["label"].to_string()
+        return None
+
+    @property
     def aliases(self):
         "See the class docstring"
         return [alias for alias, node in self._node.dt.alias2node.items()
@@ -363,9 +369,6 @@ class Device:
         self._create_props()
         self._create_regs()
         self._set_instance_no()
-
-        label = node.props.get("label")
-        self.label = None if label is None else label.to_string()
 
         self.read_only = "read-only" in node.props
 
