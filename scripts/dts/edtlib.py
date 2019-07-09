@@ -293,6 +293,10 @@ class Device:
     bus:
       The bus the device is on, e.g. "i2c" or "spi", as a string, or None if
       non-applicable
+
+    flash_controller:
+      The flash controller for the device. Only meaningful for devices
+      representing flash partitions.
     """
     @property
     def name(self):
@@ -347,6 +351,26 @@ class Device:
         if self.binding and "parent" in self.binding:
             return self.binding["parent"].get("bus")
         return None
+
+    @property
+    def flash_controller(self):
+        "See the class docstring"
+
+        # The node path might be something like
+        # /flash-controller@4001E000/flash@0/partitions/partition@fc000. We go
+        # up two levels to get the flash and check its compat. The flash
+        # controller might be the flash itself (for cases like NOR flashes).
+        # For the case of 'soc-nv-flash', we assume the controller is the
+        # parent of the flash node.
+
+        if not self.parent or not self.parent.parent:
+            _err("Flash partition {!r} lacks parent or grandparent node"
+                 .format(self._node))
+
+        controller = self.parent.parent
+        if controller.matching_compat == "soc-nv-flash":
+            return controller.parent
+        return controller
 
     @property
     def enabled(self):
