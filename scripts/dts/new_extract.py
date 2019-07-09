@@ -287,7 +287,11 @@ def write_flash(flash_dev):
         err("expected zephyr,flash to have a single register, has {}"
             .format(len(flash_dev.regs)))
 
-    reg = flash_dev.regs[0]
+    if flash_dev.bus == "spi" and len(flash_dev.parent.regs) == 2:
+        # QSPI flash
+        reg = flash_dev.parent.regs[1]
+    else:
+        reg = flash_dev.regs[0]
 
     out("FLASH_BASE_ADDRESS", hex(reg.addr))
     if reg.size is not None:
