@@ -271,8 +271,9 @@ class Device:
       A list of Register instances for the device's registers
 
     props:
-      A dictionary of Property instances for the DT properties on the device that
-      are mentioned in 'properties:' in the binding
+      A dictionary that maps property names to Property instances. Property
+      instances are created for all DT properties on the device that are
+      mentioned in 'properties:' in the binding.
 
     aliases:
       A list of aliases for the device. This is fetched from the /aliases node.
