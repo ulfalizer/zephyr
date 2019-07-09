@@ -291,7 +291,7 @@ def write_flash_partition(partition_dev):
 
     label = str2ident(partition_dev.label)
 
-    out("FLASH_AREA_{}_LABEL".format(label), label)
+    out_s("FLASH_AREA_{}_LABEL".format(label), partition_dev.label)
     out("FLASH_AREA_{}_READ_ONLY".format(label),
             1 if partition_dev.read_only else 0)
 
