@@ -604,14 +604,16 @@ class Device:
             _err("{} controller {!r} for {!r} lacks binding"
                  .format(controller_s, controller._node, self._node))
 
-        cell_names = controller.binding.get("#cells")
-        if not cell_names:
-            _err("binding for {} controller {!r} has no #cells array"
-                 .format(controller_s, controller._node))
-
-        if not isinstance(cell_names, list):
-            _err("binding for {} controller {!r} has malformed #cells array"
-                 .format(controller_s, controller._node))
+        if "#cells" in controller.binding:
+            cell_names = controller.binding["#cells"]
+            if not isinstance(cell_names, list):
+                _err("binding for {} controller {!r} has malformed #cells array"
+                     .format(controller_s, controller._node))
+        else:
+            # Treat no #cells in the binding the same as an empty #cells, so
+            # that bindings don't have to have an empty #cells for e.g.
+            # '#clock-cells = <0>'.
+            cell_names = []
 
         spec_list = to_nums(spec)
         if len(spec_list) != len(cell_names):
