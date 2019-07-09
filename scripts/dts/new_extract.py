@@ -31,7 +31,7 @@ def main():
 
     _out = open(args.keyvalue + "-new", "w")
 
-    seen_compats = set()
+    active_compats = set()
 
     for dev in edt.devices:
         if dev.enabled and dev.binding:
@@ -50,13 +50,15 @@ def main():
             # These are flags for which devices exist.
             for compat in dev.compats:
                 out("{}_{}".format(str2ident(compat), dev.instance_no[compat]), 1)
-                seen_compats.add(compat)
+
+            active_compats.update(dev.compats)
 
     # Generate defines of the form
     #
     #   #define DT_COMPAT_<COMPAT> 1
     #
-    for compat in seen_compats:
+    # These are flags for which compats exist on (enabled) DT nodes.
+    for compat in active_compats:
         out("COMPAT_{}".format(str2ident(compat)), 1)
 
     # These are derived from /chosen
