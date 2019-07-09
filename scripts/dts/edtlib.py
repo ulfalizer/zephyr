@@ -291,10 +291,12 @@ class Device:
       list of two GPIO objects.
 
     pwms:
-      TODO
+      A list of PWM objects, derived from the 'pwms' property. The list is
+      empty if the device has no 'pwms' property.
 
     clocks:
-      TODO
+      A list of Clock objects, derived from the 'clocks' property. The list is
+      empty if the device has no 'clocks' property.
 
     bus:
       The bus the device is on, e.g. "i2c" or "spi", as a string, or None if
