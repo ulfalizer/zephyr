@@ -415,11 +415,7 @@ class Device:
 
         if "compatible" in self._node.props:
             self.compats = self._node.props["compatible"].to_strings()
-
-            if self.parent and self.parent.binding:
-                bus = _binding_child_bus(self.parent.binding)
-            else:
-                bus = None
+            bus = self._bus_from_parent_binding()
 
             for compat in self.compats:
                 binding = self.edt._compat2binding.get((compat, bus))
@@ -444,6 +440,18 @@ class Device:
 
         # No binding found
         self.binding = self.matching_compat = None
+
+    def _bus_from_parent_binding(self):
+        # _init_binding() helper. Returns the bus specified by
+        # 'child: bus: ...' in the parent binding, or None if missing.
+
+        if not self.parent:
+            return None
+
+        binding = self.parent.binding
+        if binding and "child" in binding:
+            return binding["child"].get("bus")
+        return None
 
     def _create_props(self):
         # Creates self.props. See the class docstring.
@@ -871,16 +879,6 @@ def _binding_bus(binding):
 
     if binding and "parent" in binding:
         return binding["parent"].get("bus")
-    return None
-
-
-def _binding_child_bus(binding):
-    # Returns the bus specified for children in 'binding' (the bus that
-    # children of the device describes by binding are on), e.g. "i2c", or None
-    # if the binding doesn't specify a bus for children
-
-    if binding and "child" in binding:
-        return binding["child"].get("bus")
     return None
 
 
