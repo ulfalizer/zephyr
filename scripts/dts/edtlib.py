@@ -1206,7 +1206,26 @@ def _map_gpio(child, parent, child_spec):
 
 
 def _map(prefix, child, parent, child_spec, spec_len_fn):
-    # TODO: document
+    # Common code for mapping through <prefix>-map properties, e.g.
+    # interrupt-map and gpio-map.
+    #
+    # prefix:
+    #   The prefix, e.g. "interrupt" or "gpio"
+    #
+    # child:
+    #   The "sender", e.g. the node with 'interrupts = <...>'
+    #
+    # parent:
+    #   The "receiver", e.g. a node with 'interrupt-map = <...>' or
+    #   'interrupt-controller' (no mapping)
+    #
+    # child_spec:
+    #   The data associated with the interrupt/GPIO/etc., as a 'bytes' object,
+    #   e.g. <1 2> for 'foo-gpios = <&gpio1 1 2>'.
+    #
+    # spec_len_fn:
+    #   Function called on a parent specified in a *-map property to get its
+    #   *-cells value, e.g. #interrupt-cells
 
     map_prop = parent.props.get(prefix + "-map")
     if not map_prop:
@@ -1250,7 +1269,6 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
             # Found match. Recursively map and return it.
             return _map(prefix, parent, map_parent, parent_spec, spec_len_fn)
 
-    # TODO: Is raising an error the right thing to do here?
     _err("child specifier for {!r} ({}) does not appear in {!r}"
          .format(child, child_spec, map_prop))
 
