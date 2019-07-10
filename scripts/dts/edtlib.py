@@ -879,7 +879,9 @@ def _binding_bus(binding):
 
 
 def _binding_child_bus(binding):
-    # TODO: document
+    # Returns the bus specified for children in 'binding' (the bus that
+    # children of the device describes by binding are on), e.g. "i2c", or None
+    # if the binding doesn't specify a bus for children
 
     parent = binding.get("child")
     if not parent:
