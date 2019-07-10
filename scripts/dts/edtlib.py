@@ -456,8 +456,8 @@ class Device:
             _err("'{}' lacks 'type' in {}"
                  .format(name, self.binding_path))
 
-        val = _prop_val(self._node, name, prop_type,
-                        options.get("category") == "optional")
+        val = self._prop_val(name, prop_type,
+                             options.get("category") == "optional")
         if val is None:
             # 'category: optional' property that wasn't there
             return
@@ -477,6 +477,44 @@ class Device:
             prop.enum_index = enum.index(val)
 
         self.props[name] = prop
+
+    def _prop_val(self, name, prop_type, optional):
+        # _init_prop() helper for getting the property's value
+
+        node = self._node
+
+        if prop_type == "boolean":
+            # True/False
+            return name in node.props
+
+        prop = node.props.get(name)
+        if not prop:
+            if not optional and \
+                ("status" not in node.props or
+                 node.props["status"].to_string() != "disabled"):
+
+                _warn("'{}' appears in 'properties:' in {}, but not in {!r}"
+                      .format(name, self.binding_path, node))
+
+            return None
+
+        if prop_type == "int":
+            return prop.to_num()
+
+        if prop_type == "array":
+            return prop.to_nums()
+
+        if prop_type == "uint8-array":
+            return prop.to_nums(length=1)
+
+        if prop_type == "string":
+            return prop.to_string()
+
+        if prop_type == "string-array":
+            return prop.to_strings()
+
+        # TODO: Turn into an error
+        return "UNKNOWN TYPE"
 
     def _init_regs(self):
         # Initializes self.regs with a list of Register objects
@@ -859,46 +897,6 @@ def _binding_bus(binding):
     if binding and "parent" in binding:
         return binding["parent"].get("bus")
     return None
-
-
-def _prop_val(node, prop_name, prop_type, optional):
-    # Returns the value of the property named 'prop_name' on the DT node
-    # 'node'. 'prop_type' is from the binding and determines how the value is
-    # interpreted. 'optional' is True if the binding has 'category: optional'.
-    # for the property.
-
-    if prop_type == "boolean":
-        # True/False
-        return prop_name in node.props
-
-    prop = node.props.get(prop_name)
-    if not prop:
-        if not optional and ("status" not in node.props or
-                             node.props["status"].to_string() != "disabled"):
-
-            _warn("REQUIRED PROP: '{}' appears in 'properties' in binding for "
-                  "{!r}, but not in its device tree node"
-                  .format(prop_name, node))
-
-        return None
-
-    if prop_type == "int":
-        return prop.to_num()
-
-    if prop_type == "array":
-        return prop.to_nums()
-
-    if prop_type == "uint8-array":
-        return prop.to_nums(length=1)
-
-    if prop_type == "string":
-        return prop.to_string()
-
-    if prop_type == "string-array":
-        return prop.to_strings()
-
-    # TODO: Turn into an error
-    return "UNKNOWN TYPE"
 
 
 def _yaml_inc_error(msg):
