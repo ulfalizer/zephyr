@@ -919,7 +919,7 @@ def _prop_val(node, prop_name, prop_type, optional):
     if prop_type == "string-array":
         return prop.to_strings()
 
-    # TODO... try to make it visible
+    # TODO: Turn into an error
     return "UNKNOWN TYPE"
 
 
@@ -964,8 +964,8 @@ def _check_expected_props(binding_path, yaml_top):
 
     for prop in "title", "version", "description":
         if prop not in yaml_top:
-            _warn("'{}' lacks '{}' property".format(
-                binding_path, prop))
+            # TODO: Turn into error
+            _warn("'{}' lacks '{}' property".format(binding_path, prop))
 
 
 def _merge_props(binding_path, parent_prop, to_dict, from_dict):
@@ -981,6 +981,7 @@ def _merge_props(binding_path, parent_prop, to_dict, from_dict):
             _merge_props(binding_path, prop, to_dict[prop], from_dict[prop])
         else:
             if _bad_overwrite(to_dict, from_dict, prop):
+                # TODO: Turn into error
                 _warn("{} (in '{}'): '{}' from !include'd file overwritten "
                       "('{}' replaced with '{}')".format(
                           binding_path, parent_prop, prop, from_dict[prop],
