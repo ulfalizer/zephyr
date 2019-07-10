@@ -859,7 +859,9 @@ def _dt_compats(dt):
 
 
 def _binding_compat(binding_path):
-    # TODO: document
+    # Returns the compatible string specified in the binding at 'binding_path'.
+    # Uses a regex to avoid having to parse the bindings, which is slow when
+    # done for all bindings.
 
     with open(binding_path) as binding:
         for line in binding:
