@@ -849,15 +849,13 @@ class EDTError(Exception):
 
 
 def _dt_compats(dt):
-    # TODO: document
+    # Returns a set() with all 'compatible' strings in the device tree
+    # represented by dt (a dtlib.DT instance)
 
-    res = set()
-
-    for node in dt.node_iter():
-        if "compatible" in node.props:
-            res.update(node.props["compatible"].to_strings())
-
-    return res
+    return {compat
+            for node in dt.node_iter()
+                if "compatible" in node.props
+                    for compat in node.props["compatible"].to_strings()}
 
 
 def _binding_compat(binding_path):
