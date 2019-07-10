@@ -37,30 +37,12 @@ class EDT:
 
     devices:
       A list of Device objects for the devices
-
-    sram_dev:
-    ccm_dev:
-    flash_dev:
-    console_dev:
-    shell_uart_dev:
-    bt_uart_dev:
-    uart_pipe_dev:
-    bt_mon_uart_dev:
-    uart_mcumgr_dev:
-    bt_c2h_uart_dev:
-    code_partition_dev:
-      The Device instance for the corresponding 'zephyr,<name>' property on
-      the /chosen node, or None if missing.
-
-      For example, uart_pipe_dev corresponds to 'zephyr,uart-pipe', and
-      uart_mcumgr_dev to 'zephyr,uart_mcumgr'.
     """
     def __init__(self, dts, bindings_dir):
         self._dt = DT(dts)
 
         self._create_compat2binding(bindings_dir)
         self._create_devices()
-        self._parse_chosen()
 
     def get_dev(self, path):
         """
@@ -71,6 +53,27 @@ class EDT:
             return self._node2dev[self._dt.get_node(path)]
         except DTError as e:
             _err(e)
+
+    def chosen_dev(self, name):
+        """
+        Returns the Device pointed at by the property named 'name' in /chosen,
+        or None if the property is missing
+        """
+        try:
+            chosen = self._dt.get_node("/chosen")
+        except DTError:
+            # No /chosen node
+            return None
+
+        if name not in chosen.props:
+            return None
+
+        path = chosen.props[name].to_string()
+        try:
+            return self._node2dev[self._dt.get_node(path)]
+        except DTError:
+            _err("{} in /chosen points to {}, which does not exist"
+                 .format(name, path))
 
     def _create_compat2binding(self, bindings_dir):
         # Creates self._compat2binding. This dictionary maps
@@ -177,40 +180,6 @@ class EDT:
         # TODO: Remove this sorting later? It's there to make it easy to
         # compare output against extract_dts_include.py.
         self.devices.sort(key=lambda dev: dev.name)
-
-    def _parse_chosen(self):
-        # Extracts information from the device tree's /chosen node. 'dt' is the
-        # dtlib.DT instance for the device tree.
-
-        self.sram_dev           = self._chosen_dev("zephyr,sram")
-        self.ccm_dev            = self._chosen_dev("zephyr,ccm")
-        self.flash_dev          = self._chosen_dev("zephyr,flash")
-        self.console_dev        = self._chosen_dev("zephyr,console")
-        self.shell_uart_dev     = self._chosen_dev("zephyr,shell-uart")
-        self.bt_uart_dev        = self._chosen_dev("zephyr,bt-uart")
-        self.uart_pipe_dev      = self._chosen_dev("zephyr,uart-pipe")
-        self.bt_mon_uart_dev    = self._chosen_dev("zephyr,bt-mon-uart")
-        self.uart_mcumgr_dev    = self._chosen_dev("zephyr,uart-mcumgr")
-        self.bt_c2h_uart_dev    = self._chosen_dev("zephyr,bt-c2h-uart")
-        self.code_partition_dev = self._chosen_dev("zephyr,code-partition")
-
-    def _chosen_dev(self, prop_name):
-        # _parse_chosen() helper. Returns the device pointed to by prop_name in
-        # /chosen, or None if /chosen has no property named prop_name.
-
-        if not self._dt.has_node("/chosen"):
-            return None
-
-        chosen = self._dt.get_node("/chosen")
-
-        if prop_name in chosen.props:
-            # Value is the path of a node that represents the memory device
-            path = chosen.props[prop_name].to_string()
-            if not self._dt.has_node(path):
-                _err("{} points to {}, which does not exist"
-                     .format(prop_name, path))
-
-            return self._node2dev[self._dt.get_node(path)]
 
     def __repr__(self):
         return "<EDT, {} devices>".format(len(self.devices))

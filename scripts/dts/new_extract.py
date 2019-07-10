@@ -57,15 +57,17 @@ def main():
 
     # These are derived from /chosen
 
-    if edt.sram_dev:
+    sram_dev = edt.chosen_dev("zephyr,sram")
+    if sram_dev:
         # TODO: Check that regs[0] exists
-        reg = edt.sram_dev.regs[0]
+        reg = sram_dev.regs[0]
         out("SRAM_BASE_ADDRESS", hex(reg.addr))
         out("SRAM_SIZE", reg.size//1024)
 
-    if edt.ccm_dev:
+    ccm_dev = edt.chosen_dev("zephyr,ccm")
+    if ccm_dev:
         # TODO: Check that regs[0] exists
-        reg = edt.ccm_dev.regs[0]
+        reg = ccm_dev.regs[0]
         out("CCM_BASE_ADDRESS", hex(reg.addr))
         out("CCM_SIZE", reg.size//1024)
 
@@ -73,16 +75,16 @@ def main():
     # the kconfig build system, we can remove them in the future
     # if we provide a function in kconfigfunctions.py to get
     # the same info
-    write_required_label("UART_CONSOLE_ON_DEV_NAME", edt.console_dev)
-    write_required_label("UART_SHELL_ON_DEV_NAME",   edt.shell_uart_dev)
-    write_required_label("BT_UART_ON_DEV_NAME",      edt.bt_uart_dev)
-    write_required_label("UART_PIPE_ON_DEV_NAME",    edt.uart_pipe_dev)
-    write_required_label("BT_MONITOR_ON_DEV_NAME",   edt.bt_mon_uart_dev)
-    write_required_label("UART_MCUMGR_ON_DEV_NAME",  edt.uart_mcumgr_dev)
-    write_required_label("BT_C2H_UART_ON_DEV_NAME",  edt.bt_c2h_uart_dev)
+    write_required_label("UART_CONSOLE_ON_DEV_NAME", edt.chosen_dev("zephyr,console"))
+    write_required_label("UART_SHELL_ON_DEV_NAME",   edt.chosen_dev("zephyr,shell-uart"))
+    write_required_label("BT_UART_ON_DEV_NAME",      edt.chosen_dev("zephyr,bt-uart"))
+    write_required_label("UART_PIPE_ON_DEV_NAME",    edt.chosen_dev("zephyr,uart-pipe"))
+    write_required_label("BT_MONITOR_ON_DEV_NAME",   edt.chosen_dev("zephyr,bt-mon-uart"))
+    write_required_label("UART_MCUMGR_ON_DEV_NAME",  edt.chosen_dev("zephyr,uart-mcumgr"))
+    write_required_label("BT_C2H_UART_ON_DEV_NAME",  edt.chosen_dev("zephyr,bt-c2h-uart"))
 
-    write_flash(edt.flash_dev)
-    write_code_partition(edt.code_partition_dev)
+    write_flash(edt.chosen_dev("zephyr,flash"))
+    write_code_partition(edt.chosen_dev("zephyr,code-partition"))
 
     flash_index = 0
     for dev in edt.devices:
