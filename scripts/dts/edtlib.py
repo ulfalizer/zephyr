@@ -1435,31 +1435,3 @@ def _err(msg):
 
 def _warn(msg):
     print("warning: " + msg, file=sys.stderr)
-
-# Unimplemented features:
-#   virtual-reg (unused)
-#   dma-ranges (unused)
-#   name (deprecated)
-#   device_type (deprecated)
-
-# Nexus node properties:
-#   #<specifier>-cells
-#   #<specifier>-map
-#   #<specifier>-map-mask
-#   #<specifier>-map-pass-thru
-#
-# Questions:
-#   - Is there even anything like a gpio-controller spec-wise?
-#
-# Spec stuff:
-#   Bad grammar:
-#     If a CPU/thread can be the target of an exter-
-#     nal interrupt the reg property value must be a
-#     unique CPU/thread id that is addressable by
-#     the interrupt controller
-#
-#   "child specifier domian"
-#
-#  Translation look-aside buffer?
-#    The following properties of a cpu node describe the translate look-aside
-#    buffer in the processor’s MMU.
