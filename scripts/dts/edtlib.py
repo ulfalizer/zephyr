@@ -105,8 +105,7 @@ class EDT:
             compat = _binding_compat(binding_path)
             if compat in dt_compats:
                 binding = _load_binding(binding_path)
-                bus = _binding_bus(binding)
-                self._compat2binding[compat, bus] = binding
+                self._compat2binding[compat, _binding_bus(binding)] = binding
 
     def _find_bindings(self, bindings_dir):
         # Creates a list with paths to all binding files, in self._bindings
