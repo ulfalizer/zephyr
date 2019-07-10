@@ -105,7 +105,7 @@ class EDT:
             compat = _binding_compat(binding_path)
             if compat in dt_compats:
                 binding = _load_binding(binding_path)
-                bus = _binding_parent_bus(binding)
+                bus = _binding_bus(binding)
                 self._compat2binding[compat, bus] = binding
 
     def _find_bindings(self, bindings_dir):
@@ -867,19 +867,21 @@ def _binding_compat(binding_path):
     return None
 
 
-def _binding_child_bus(binding):
-    # TODO: document
+def _binding_bus(binding):
+    # Returns the bus specified in 'binding' (the bus the device described by
+    # 'binding' is on), e.g. "i2c", or None if the binding doesn't specify a
+    # bus
 
-    parent = binding.get("child")
+    parent = binding.get("parent")
     if not parent:
         return None
     return parent.get("bus")
 
 
-def _binding_parent_bus(binding):
+def _binding_child_bus(binding):
     # TODO: document
 
-    parent = binding.get("parent")
+    parent = binding.get("child")
     if not parent:
         return None
     return parent.get("bus")
