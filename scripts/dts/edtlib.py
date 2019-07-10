@@ -77,11 +77,13 @@ class EDT:
 
     def _init_compat2binding(self, bindings_dir):
         # Creates self._compat2binding. This dictionary maps
-        # (<compatible>, <bus>) tuples (both strings) to bindings (in parsed
-        # PyYAML format).
+        # (<compatible>, <bus>) tuples (both strings) to (<binding>, <path>)
+        # tuples. <binding> is the binding in parsed PyYAML format, and <path>
+        # the path to the binding (nice for binding-related error messages).
         #
         # For example, self._compat2binding["company,dev", "can"] contains the
-        # binding for the 'company,dev' device, when it appears on the CAN bus.
+        # binding/binding path for the 'company,dev' device, when it appears on
+        # the CAN bus.
         #
         # For bindings that don't specify a bus, the bus part is None, so that
         # e.g. self._compat2binding["company,notonbus", None] contains the
@@ -108,7 +110,8 @@ class EDT:
             compat = _binding_compat(binding_path)
             if compat in dt_compats:
                 binding = _load_binding(binding_path)
-                self._compat2binding[compat, _binding_bus(binding)] = binding
+                self._compat2binding[compat, _binding_bus(binding)] = \
+                    (binding, binding_path)
 
     def _find_bindings(self, bindings_dir):
         # Creates a list with paths to all binding files, in self._bindings
@@ -229,6 +232,10 @@ class Device:
     binding:
       The data from the device's binding file, in the format returned by PyYAML
       (plain Python lists, dicts, etc.), or None if the device has no binding.
+
+    binding_path:
+      The path to to the device's binding file, or None if the device has no
+      binding
 
     matching_compat:
       The 'compatible' string for the binding that matched the device, or
@@ -387,11 +394,11 @@ class Device:
             bus = self._bus_from_parent_binding()
 
             for compat in self.compats:
-                binding = self.edt._compat2binding.get((compat, bus))
-                if binding:
+                if (compat, bus) in self.edt._compat2binding:
                     # Binding found
                     self.matching_compat = compat
-                    self.binding = binding
+                    self.binding, self.binding_path = \
+                        self.edt._compat2binding[compat, bus]
                     return
         else:
             # No 'compatible' property. See if the parent has a 'sub-node:' key
@@ -408,7 +415,7 @@ class Device:
                 return
 
         # No binding found
-        self.binding = self.matching_compat = None
+        self.binding = self.binding_path = self.matching_compat = None
 
     def _bus_from_parent_binding(self):
         # _init_binding() helper. Returns the bus specified by
