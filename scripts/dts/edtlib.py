@@ -1116,7 +1116,10 @@ def _interrupts(node):
 
 
 def _map_interrupt(child, parent, child_spec):
-    # TODO: document
+    # Translates an interrupt headed from 'child' to 'parent' with specifier
+    # 'child_spec' through any 'interrupt-map' properties. Returns a
+    # (<controller>, <specifier>) tuple with the final destination after
+    # mapping.
 
     if "interrupt-controller" in parent.props:
         return (parent, child_spec)
