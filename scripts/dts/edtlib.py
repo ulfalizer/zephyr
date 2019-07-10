@@ -411,6 +411,7 @@ class Device:
 
                 # Binding found
                 self.binding = self.parent.binding["sub-node"]
+                self.binding_path = self.parent.binding_path
                 self.matching_compat = self.parent.matching_compat
                 return
 
@@ -513,8 +514,10 @@ class Device:
         if prop_type == "string-array":
             return prop.to_strings()
 
-        # TODO: Turn into an error
-        return "UNKNOWN TYPE"
+        _warn("{} in 'properties:' in {} has unknown type '{}'"
+              .format(name, self.binding_path, prop_type))
+
+        return None
 
     def _init_regs(self):
         # Initializes self.regs with a list of Register objects
