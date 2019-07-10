@@ -444,8 +444,8 @@ class Device:
             # or mapping properties like 'gpio-map' or 'interrupt-map'
             if "generation" not in options and prop_name[0] != "#" and \
                 not prop_name.endswith('-map'):
-                _warn("{} lacks 'generation' in binding for {!r}"
-                      .format(prop_name, node))
+                _err("{} lacks 'generation' in {}"
+                     .format(prop_name, self.binding_path))
 
             prop_type = options.get("type")
             if not prop_type:
