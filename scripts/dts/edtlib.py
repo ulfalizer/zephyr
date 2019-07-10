@@ -444,13 +444,10 @@ class Device:
     def _init_prop(self, name, options):
         # _init_props() helper for initializing a single property
 
-        # Don't worry for properties that start with '#' like '#size-cells'
-        # or mapping properties like 'gpio-map' or 'interrupt-map'
-        if "generation" not in options and name[0] != "#" and \
-            not name.endswith('-map'):
-
-            _err("'{}' lacks 'generation' in {}"
-                 .format(name, self._binding_path))
+        # Skip properties that start with '#', like '#size-cells', and mapping
+        # properties like 'gpio-map'/'interrupt-map'
+        if name[0] == "#" or name.endswith('-map'):
+            return
 
         prop_type = options.get("type")
         if not prop_type:
