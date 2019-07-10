@@ -462,6 +462,9 @@ def write_clocks(dev):
         if clock.controller.label is not None:
             out_dev_s(dev, "CLOCK_CONTROLLER", clock.controller.label)
 
+        if clock.frequency is not None:
+            out_dev(dev, "CLOCKS_CLOCK_FREQUENCY", clock.frequency)
+
         for spec, val in clock.specifier.items():
             out_dev(dev, "CLOCK_{}_{}".format(str2ident(spec), clock_i), val)
 

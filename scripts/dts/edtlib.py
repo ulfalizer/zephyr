@@ -568,6 +568,9 @@ class Device:
             clock.dev = self
             clock.controller = controller
             clock.specifier = self._named_cells(controller, spec, "clocks")
+            clock.frequency = None
+            if "fixed-clock" in controller.compats:
+                clock.frequency = controller.props["clock-frequency"].val
 
             self.clocks.append(clock)
 
@@ -748,6 +751,9 @@ class Clock:
 
     controller:
       The Device instance for the controller of the clock.
+
+    frequency:
+      The frequency of the clock, None if its not determinable
 
     specifier:
       A dictionary that maps names from the #cells portion of the binding to
