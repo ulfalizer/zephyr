@@ -1199,7 +1199,7 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
     if not map_prop:
         if prefix + "-controller" not in parent.props:
             _err("expected '{}-controller' property on {!r} "
-                 "(referenced by {!r})".format(parent, prefix, child))
+                 "(referenced by {!r})".format(prefix, parent, child))
 
         # No mapping
         return (parent, child_spec)
