@@ -1152,6 +1152,7 @@ def _map_interrupt(child, parent, child_spec):
 def _clocks(node):
     # Returns a list of (<controller>, <specifier>) tuples for any 'clocks'
     # property on 'node', or an empty list if 'node' has no 'clocks'.
+    # <controller> is a dtlib.Node.
 
     if "clocks" not in node.props:
         return []
@@ -1161,6 +1162,7 @@ def _clocks(node):
 def _pwms(node):
     # Returns a list of (<controller>, <specifier>) tuples for any 'pwms'
     # property on 'node', or an empty list if 'node' has no 'pwms'.
+    # <controller> is a dtlib.Node.
 
     if "pwms" not in node.props:
         return []
@@ -1168,7 +1170,9 @@ def _pwms(node):
 
 
 def _gpios(node):
-    # TODO: document
+    # Returns a dictionary that maps '<prefix>-gpios' prefixes to lists of
+    # (<controller>, <specifier>) tuples (possibly after mapping through an
+    # gpio-map). <controller> is a dtlib.Node.
 
     res = {}
 
@@ -1188,7 +1192,7 @@ def _gpios(node):
 
 
 def _gpios_from_prop(prop):
-    # gpios() helper. Returns a list of (<controller>, <spec>) GPIO
+    # _gpios() helper. Returns a list of (<controller>, <spec>) GPIO
     # specifications parsed from 'prop'.
 
     return [_map_gpio(prop.node, controller, spec)
