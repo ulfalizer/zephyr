@@ -437,43 +437,46 @@ class Device:
         if not self.binding or "properties" not in self.binding:
             return
 
-        node = self._node
+        for name, options in self.binding["properties"].items():
+            self._init_prop(name, options)
 
-        for prop_name, options in self.binding["properties"].items():
-            # Don't worry for properties that start with '#' like '#size-cells'
-            # or mapping properties like 'gpio-map' or 'interrupt-map'
-            if "generation" not in options and prop_name[0] != "#" and \
-                not prop_name.endswith('-map'):
-                _err("'{}' lacks 'generation' in {}"
-                     .format(prop_name, self.binding_path))
+    def _init_prop(self, name, options):
+        # _init_props() helper for initializing a single property
 
-            prop_type = options.get("type")
-            if not prop_type:
-                _err("'{}' lacks 'type' in {}"
-                     .format(prop_name, self.binding_path))
+        # Don't worry for properties that start with '#' like '#size-cells'
+        # or mapping properties like 'gpio-map' or 'interrupt-map'
+        if "generation" not in options and name[0] != "#" and \
+            not name.endswith('-map'):
 
-            val = _prop_val(node, prop_name, prop_type,
-                            options.get("category") == "optional")
-            if val is None:
-                # 'category: optional' property that wasn't there
-                continue
+            _err("'{}' lacks 'generation' in {}"
+                 .format(name, self.binding_path))
 
-            prop = Property()
-            prop.dev = self
-            prop.name = prop_name
-            prop.val = val
-            enum = options.get("enum")
-            if enum is None:
-                prop.enum_index = None
-            else:
-                if val not in enum:
-                    _err("value ({}) for property ({}) is not in enumerated "
-                         "list {} for node {}".format(
-                             val, prop_name, enum, self.name))
+        prop_type = options.get("type")
+        if not prop_type:
+            _err("'{}' lacks 'type' in {}"
+                 .format(name, self.binding_path))
 
-                prop.enum_index = enum.index(val)
+        val = _prop_val(self._node, name, prop_type,
+                        options.get("category") == "optional")
+        if val is None:
+            # 'category: optional' property that wasn't there
+            return
 
-            self.props[prop_name] = prop
+        prop = Property()
+        prop.dev = self
+        prop.name = name
+        prop.val = val
+        enum = options.get("enum")
+        if enum is None:
+            prop.enum_index = None
+        else:
+            if val not in enum:
+                _err("value ({}) for property ({}) is not in enumerated "
+                     "list {} for node {}".format(val, name, enum, self.name))
+
+            prop.enum_index = enum.index(val)
+
+        self.props[name] = prop
 
     def _init_regs(self):
         # Initializes self.regs with a list of Register objects
