@@ -871,10 +871,9 @@ def _binding_bus(binding):
     # 'binding' is on), e.g. "i2c", or None if the binding doesn't specify a
     # bus
 
-    parent = binding.get("parent")
-    if not parent:
-        return None
-    return parent.get("bus")
+    if "parent" in binding:
+        return binding["parent"].get("bus")
+    return None
 
 
 def _binding_child_bus(binding):
@@ -882,10 +881,9 @@ def _binding_child_bus(binding):
     # children of the device describes by binding are on), e.g. "i2c", or None
     # if the binding doesn't specify a bus for children
 
-    parent = binding.get("child")
-    if not parent:
-        return None
-    return parent.get("bus")
+    if "child" in binding:
+        return binding["child"].get("bus")
+    return None
 
 
 def _prop_val(node, prop_name, prop_type, optional):
