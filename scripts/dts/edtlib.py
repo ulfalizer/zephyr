@@ -41,8 +41,8 @@ class EDT:
     def __init__(self, dts, bindings_dir):
         self._dt = DT(dts)
 
-        self._create_compat2binding(bindings_dir)
-        self._create_devices()
+        self._init_compat2binding(bindings_dir)
+        self._init_devices()
 
     def get_dev(self, path):
         """
@@ -75,7 +75,7 @@ class EDT:
             _err("{} in /chosen points to {}, which does not exist"
                  .format(name, path))
 
-    def _create_compat2binding(self, bindings_dir):
+    def _init_compat2binding(self, bindings_dir):
         # Creates self._compat2binding. This dictionary maps
         # (<compatible>, <bus>) tuples (both strings) to bindings (in parsed
         # PyYAML format).
@@ -153,7 +153,7 @@ class EDT:
         with open(paths[0], encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.Loader)
 
-    def _create_devices(self):
+    def _init_devices(self):
         # Creates a list of devices (Device objects) from the DT nodes, in
         # self.devices. 'dt' is the dtlib.DT instance for the device tree.
 
@@ -172,10 +172,10 @@ class EDT:
         for dev in self.devices:
             # These depend on all Device objects having been created, so we do
             # them separately
-            dev._create_interrupts()
-            dev._create_gpios()
-            dev._create_pwms()
-            dev._create_clocks()
+            dev._init_interrupts()
+            dev._init_gpios()
+            dev._init_pwms()
+            dev._init_clocks()
 
         # TODO: Remove this sorting later? It's there to make it easy to
         # compare output against extract_dts_include.py.
@@ -371,8 +371,8 @@ class Device:
         self._node = node
 
         self._init_binding()
-        self._create_props()
-        self._create_regs()
+        self._init_props()
+        self._init_regs()
         self._set_instance_no()
 
     def _init_binding(self):
@@ -422,7 +422,7 @@ class Device:
             return binding["child"].get("bus")
         return None
 
-    def _create_props(self):
+    def _init_props(self):
         # Creates self.props. See the class docstring.
 
         self.props = {}
@@ -468,7 +468,7 @@ class Device:
 
             self.props[prop_name] = prop
 
-    def _create_regs(self):
+    def _init_regs(self):
         # Initializes self.regs with a list of Register objects
 
         node = self._node
@@ -494,7 +494,7 @@ class Device:
 
         _add_names(node, "reg-names", self.regs)
 
-    def _create_interrupts(self):
+    def _init_interrupts(self):
         # Initializes self.interrupts with a list of Interrupt objects
 
         node = self._node
@@ -513,7 +513,7 @@ class Device:
 
         _add_names(node, "interrupt-names", self.interrupts)
 
-    def _create_gpios(self):
+    def _init_gpios(self):
         # Initializes self.gpios
 
         self.gpios = {}
@@ -531,7 +531,7 @@ class Device:
 
                 self.gpios[prefix].append(gpio)
 
-    def _create_clocks(self):
+    def _init_clocks(self):
         # Initializes self.clocks
 
         node = self._node
@@ -551,7 +551,7 @@ class Device:
         # TODO: verify clock name support
         _add_names(node, "clock-names", self.clocks)
 
-    def _create_pwms(self):
+    def _init_pwms(self):
         # Initializes self.pwms
 
         self.pwms = []
@@ -569,7 +569,7 @@ class Device:
         _add_names(self._node, "pwm-names", self.pwms)
 
     def _named_cells(self, controller, spec, controller_s):
-        # _create_{interrupts,gpios}() helper. Returns a dictionary that maps
+        # _init_{interrupts,gpios}() helper. Returns a dictionary that maps
         # #cell names given in the binding for 'controller' to cell values.
         # 'spec' is the raw interrupt/GPIO data, and 'controller_s' a string
         # that gives the context (for error messages).
