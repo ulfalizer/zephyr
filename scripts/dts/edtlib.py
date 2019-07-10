@@ -863,14 +863,13 @@ def _prop_val(node, prop_name, prop_type, optional):
 
     prop = node.props.get(prop_name)
     if not prop:
-        if optional:
-            return None
+        if not optional and ("status" not in node.props or
+                             node.props["status"].to_string() != "disabled"):
 
-        if "status" not in node.props or \
-                node.props["status"].to_string() != "disabled":
-            _warn(
-                "REQUIRED PROP:'{}' appears in 'properties' in binding for {!r}, but not in its "
-                "device tree node".format(prop_name, node))
+            _warn("REQUIRED PROP: '{}' appears in 'properties' in binding for "
+                  "{!r}, but not in its device tree node"
+                  .format(prop_name, node))
+
         return None
 
     if prop_type == "int":
