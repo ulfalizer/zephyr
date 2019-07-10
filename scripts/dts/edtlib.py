@@ -1149,7 +1149,8 @@ def _map_interrupt(child, parent, child_spec):
 
 
 def _clocks(node):
-    # TODO: document
+    # Returns a list of (<controller>, <specifier>) tuples for any 'clocks'
+    # property on 'node', or an empty list if 'node' has no 'clocks'.
 
     if "clocks" not in node.props:
         return []
@@ -1157,7 +1158,8 @@ def _clocks(node):
 
 
 def _pwms(node):
-    # TODO: document
+    # Returns a list of (<controller>, <specifier>) tuples for any 'pwms'
+    # property on 'node', or an empty list if 'node' has no 'pwms'.
 
     if "pwms" not in node.props:
         return []
