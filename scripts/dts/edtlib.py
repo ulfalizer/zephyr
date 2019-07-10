@@ -1193,7 +1193,8 @@ def _gpios_from_prop(prop):
 
 
 def _map_gpio(child, parent, child_spec):
-    # TODO: document
+    # Returns a (<controller>, <specifier>) tuple with the final destination
+    # after mapping through any 'gpio-map' properties. See _map_interrupt().
 
     if "gpio-map" not in parent.props:
         return (parent, child_spec)
