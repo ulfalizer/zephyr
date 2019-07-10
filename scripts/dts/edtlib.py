@@ -1094,9 +1094,9 @@ def _map_interrupt(child, parent, child_spec):
         return (parent, child_spec)
 
     def own_address_cells(node):
-        # Used for parents pointed to by interrupt-map. We can't use
-        # _address_cells() here, because it's the #address-cells property on
-        # 'node' itself that matters.
+        # Used for parents pointed at by 'interrupt-map'. We can't use
+        # _address_cells(), because it's the #address-cells property on 'node'
+        # itself that matters.
 
         address_cells = node.props.get("#address-cells")
         if not address_cells:
@@ -1197,6 +1197,10 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
 
     map_prop = parent.props.get(prefix + "-map")
     if not map_prop:
+        if prefix + "-controller" not in parent.props:
+            _err("expected '{}-controller' property on {!r} "
+                 "(referenced by {!r})".format(parent, prefix, child))
+
         # No mapping
         return (parent, child_spec)
 
@@ -1431,9 +1435,6 @@ def _err(msg):
 
 def _warn(msg):
     print("warning: " + msg, file=sys.stderr)
-
-# TODO: check if interrupt-controller exists on domain root?
-# TODO: does e.g. gpio-controller need to exist as well?
 
 # Unimplemented features:
 #   virtual-reg (unused)
