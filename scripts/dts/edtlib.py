@@ -446,7 +446,7 @@ class Device:
 
         # Skip properties that start with '#', like '#size-cells', and mapping
         # properties like 'gpio-map'/'interrupt-map'
-        if name[0] == "#" or name.endswith('-map'):
+        if name[0] == "#" or name.endswith("-map"):
             return
 
         prop_type = options.get("type")
