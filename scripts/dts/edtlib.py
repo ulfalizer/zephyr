@@ -298,8 +298,8 @@ class Device:
       empty if the device has no 'clocks' property.
 
     bus:
-      The bus the device is on, e.g. "i2c" or "spi", as a string, or None if
-      non-applicable
+      The bus for the device as specified in its binding, e.g. "i2c" or "spi".
+      None if the binding doesn't specify a bus.
 
     flash_controller:
       The flash controller for the device. Only meaningful for devices
@@ -366,9 +366,7 @@ class Device:
     @property
     def bus(self):
         "See the class docstring"
-        if self.binding and "parent" in self.binding:
-            return self.binding["parent"].get("bus")
-        return None
+        return _binding_bus(self.binding)
 
     @property
     def flash_controller(self):
@@ -868,10 +866,10 @@ def _binding_compat(binding_path):
 
 def _binding_bus(binding):
     # Returns the bus specified in 'binding' (the bus the device described by
-    # 'binding' is on), e.g. "i2c", or None if the binding doesn't specify a
-    # bus
+    # 'binding' is on), e.g. "i2c", or None if 'binding' is None or doesn't
+    # specify a bus
 
-    if "parent" in binding:
+    if binding and "parent" in binding:
         return binding["parent"].get("bus")
     return None
 
@@ -881,7 +879,7 @@ def _binding_child_bus(binding):
     # children of the device describes by binding are on), e.g. "i2c", or None
     # if the binding doesn't specify a bus for children
 
-    if "child" in binding:
+    if binding and "child" in binding:
         return binding["child"].get("bus")
     return None
 
