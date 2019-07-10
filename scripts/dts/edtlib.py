@@ -1186,17 +1186,12 @@ def _gpios(node):
             if prefix.endswith("-"):
                 prefix = prefix[:-1]
 
-            res[prefix] = _gpios_from_prop(prop)
+            res[prefix] = [
+                _map_gpio(prop.node, controller, spec)
+                for controller, spec in _phandle_val_list(prop, _gpio_cells)
+            ]
 
     return res
-
-
-def _gpios_from_prop(prop):
-    # _gpios() helper. Returns a list of (<controller>, <spec>) GPIO
-    # specifications parsed from 'prop'.
-
-    return [_map_gpio(prop.node, controller, spec)
-            for controller, spec in _phandle_val_list(prop, _gpio_cells)]
 
 
 def _map_gpio(child, parent, child_spec):
