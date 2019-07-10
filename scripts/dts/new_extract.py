@@ -34,7 +34,7 @@ def main():
     active_compats = set()
 
     for dev in edt.devices:
-        if dev.enabled and dev.binding:
+        if dev.enabled and dev.matching_compat:
             write_regs(dev)
             write_irqs(dev)
             write_gpios(dev)
