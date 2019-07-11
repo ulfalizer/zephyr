@@ -1224,7 +1224,7 @@ def _map(prefix, child, parent, child_spec, spec_len_fn):
             _err("bad value for {!r}, missing/truncated child specifier"
                  .format(map_prop))
         child_spec_entry = raw[:len(child_spec)]
-        raw = raw[len(child_spec_entry):]
+        raw = raw[len(child_spec):]
 
         if len(raw) < 4:
             _err("bad value for {!r}, missing/truncated phandle"
