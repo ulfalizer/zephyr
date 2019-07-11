@@ -124,7 +124,7 @@ class EDT:
             return [self._binding_include_file(filename)
                     for filename in loader.construct_sequence(node)]
 
-        _yaml_inc_error("Error: unrecognised node type in !include statement")
+        _yaml_inc_error("unrecognised node type in !include statement")
 
     def _binding_include_file(self, filename):
         # _binding_include() helper for loading an !include'd file. !include
@@ -135,11 +135,11 @@ class EDT:
                  if os.path.basename(path) == filename]
 
         if not paths:
-            _yaml_inc_error("Error: '{}' not found".format(filename))
+            _yaml_inc_error("'{}' not found".format(filename))
 
         if len(paths) > 1:
-            _yaml_inc_error("Error: multiple candidates for '{}' in "
-                            "!include: {}".format(filename, ", ".join(paths)))
+            _yaml_inc_error("multiple candidates for '{}' in !include: {}"
+                            .format(filename, ", ".join(paths)))
 
         with open(paths[0], encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.Loader)
@@ -900,7 +900,7 @@ def _binding_bus(binding):
 def _yaml_inc_error(msg):
     # Helper for reporting errors in the !include implementation
 
-    raise yaml.constructor.ConstructorError(None, None, msg)
+    raise yaml.constructor.ConstructorError(None, None, "error: " + msg)
 
 
 def _load_binding(path):
