@@ -505,6 +505,13 @@ def out_s(ident, val):
 
 
 def out(ident, val, aliases=()):
+    # Writes '#define <ident> <val>' to the header and '<ident>=<val>' to the
+    # the configuration file.
+    #
+    # Also writes any aliases listed in 'aliases' (an iterable). For the
+    # header, these look like '#define <alias> <ident>'. For the configuration
+    # file, the value is just repeated as '<alias>=<val>' for each alias.
+
     print("#define DT_{}\t{}".format(ident, val), file=header_file)
     print("DT_{}={}".format(ident, val), file=conf_file)
 
@@ -512,6 +519,8 @@ def out(ident, val, aliases=()):
         if alias != ident:
             print("#define DT_{}\tDT_{}".format(alias, ident),
                   file=header_file)
+            # For the configuration file, the value is just repeated for all
+            # the aliases
             print("DT_{}={}".format(alias, val),
                   file=conf_file)
 
