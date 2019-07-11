@@ -99,17 +99,19 @@ def main():
 def write_regs(dev):
     # Writes address/size output for the registers in dev's 'reg' property
 
+    def reg_addr_name_alias(reg):
+        return str2ident(reg.name) + "_BASE_ADDRESS" if reg.name else None
+
+    def reg_size_name_alias(reg):
+        return str2ident(reg.name) + "_SIZE" if reg.name else None
+
     for reg in dev.regs:
-        out_dev(dev, reg_addr_ident(reg), hex(reg.addr))
-        if reg.name:
-            ident = str2ident(reg.name) + "_BASE_ADDRESS"
-            out_name_aliases(dev, ident, reg_addr_ident(reg))
+        out_dev(dev, reg_addr_ident(reg), hex(reg.addr),
+                name_alias=reg_addr_name_alias(reg))
 
         if reg.size is not None:
-            out_dev(dev, reg_size_ident(reg), reg.size)
-            if reg.name:
-                ident = str2ident(reg.name) + "_SIZE"
-                out_name_aliases(dev, ident, reg_size_ident(reg))
+            out_dev(dev, reg_size_ident(reg), reg.size,
+                    name_alias=reg_size_name_alias(reg))
 
 
 def write_props(dev):
@@ -161,6 +163,7 @@ def write_bus(dev):
 
     if dev.parent.label is None:
         _err("missing 'label' property on {!r}".format(dev.parent))
+
     # #define DT_<DEV-IDENT>_BUS_NAME <BUS-LABEL>
     out_dev_s(dev, "BUS_NAME", str2ident(dev.parent.label))
 
@@ -347,16 +350,12 @@ def write_flash_partition_prefix(prefix, partition_dev, index):
     out("{}_READ_ONLY".format(prefix), 1 if partition_dev.read_only else 0)
 
     for i, reg in enumerate(partition_dev.regs):
-        out("{}_OFFSET_{}".format(prefix, i), reg.addr)
-        out("{}_SIZE_{}".format(prefix, i), reg.size)
-
-    # Add aliases that points to the first sector
-    #
-    # TODO: Could we get rid of this? Code could just refer to sector _0 where
-    # needed instead.
-
-    out_alias("{}_OFFSET".format(prefix), "{}_OFFSET_0".format(prefix))
-    out_alias("{}_SIZE".format(prefix), "{}_SIZE_0".format(prefix))
+        # Also add aliases that point to the first sector (TODO: get rid of the
+        # aliases?)
+        out("{}_OFFSET_{}".format(prefix, i), reg.addr,
+            aliases=["{}_OFFSET".format(prefix)] if i == 0 else [])
+        out("{}_SIZE_{}".format(prefix, i), reg.size,
+            aliases=["{}_SIZE".format(prefix)] if i == 0 else [])
 
     controller = partition_dev.flash_controller
     if controller.label is not None:
@@ -382,23 +381,24 @@ def write_required_label(ident, dev):
 def write_irqs(dev):
     # Writes IRQ num and data for the interrupts in dev's 'interrupt' property
 
+    def irq_name_alias(irq, cell_name):
+        if not irq.name:
+            return None
+
+        alias = "IRQ_{}".format(str2ident(irq.name))
+        if cell_name != "irq":
+            alias += "_" + str2ident(cell_name)
+        return alias
+
     for irq_i, irq in enumerate(dev.interrupts):
         # We ignore the controller for now
         for cell_name, cell_value in irq.specifier.items():
-            irq_ident = "IRQ_{}".format(irq_i)
+            ident = "IRQ_{}".format(irq_i)
             if cell_name != "irq":
-                irq_ident += "_" + str2ident(cell_name)
+                ident += "_" + str2ident(cell_name)
 
-            out_dev(dev, irq_ident, cell_value)
-
-            # If the IRQ has a name (from 'interrupt-names'), write an alias
-            # based on it
-            if irq.name:
-                irq_ident_name = "IRQ_{}".format(str2ident(irq.name))
-                if cell_name != "irq":
-                    irq_ident_name += "_" + str2ident(cell_name)
-
-                out_name_aliases(dev, irq_ident_name, irq_ident)
+            out_dev(dev, ident, cell_value,
+                    name_alias=irq_name_alias(irq, cell_name))
 
 
 def write_gpios(dev):
@@ -476,48 +476,25 @@ def str2ident(s):
             .upper()
 
 
+def out_dev(dev, ident, val, name_alias=None):
+    # TODO: update documentation
+
+    dev_prefix = dev_ident(dev)
+
+    aliases = [alias + "_" + ident for alias in dev_aliases(dev)]
+    if name_alias is not None:
+        aliases.append(dev_prefix + "_" + name_alias)
+        aliases += [alias + "_" + name_alias for alias in dev_aliases(dev)]
+
+    out(dev_prefix + "_" + ident, val, aliases)
+
+
 def out_dev_s(dev, ident, s):
     # Like out_dev(), but puts quotes around 's' and escapes any double quotes
     # and backslashes within it
 
     # \ must be escaped before " to avoid double escaping
     out_dev(dev, ident, '"{}"'.format(escape(s)))
-
-
-def out_dev(dev, ident, val):
-    # Writes an <ident>=<val> assignment, along with aliases for <ident> based
-    # on 'dev'
-
-    # Write assignment and aliases
-    out(dev_ident(dev) + "_" + ident, val)
-    out_dev_aliases(dev, ident, ident)
-
-
-def out_name_aliases(dev, ident, target):
-    # Writes aliases for 'target', based on 'dev' and 'ident'. The device
-    # prefix is automatically added to 'target'.  This version is used when
-    # you need to additional creat an alias between 'ident' and 'target'.
-    # TODO: Give example
-    out_dev_aliases(dev, ident, target)
-
-    # Create an alias for something like:
-    # <DEV_IDENT>_IRQ_COMMAND_COMPLETE <DEV_IDENT>_IRQ_0
-    out_alias(dev_ident(dev) + "_" + ident,
-              dev_ident(dev) + "_" + target)
-
-
-def out_dev_aliases(dev, ident, target):
-    # Writes aliases for 'target', based on 'dev' and 'ident'. The device
-    # prefix is automatically added to 'target'.
-    # TODO: Give example
-
-    target = dev_ident(dev) + "_" + target
-    for dev_alias in dev_aliases(dev):
-        out_alias(dev_alias + "_" + ident, target)
-
-
-# TODO: These are just for writing the header. Will get a .conf file later as
-# well.
 
 
 def out_s(ident, val):
@@ -527,17 +504,16 @@ def out_s(ident, val):
     out(ident, '"{}"'.format(escape(val)))
 
 
-def out(ident, val):
-    print("DT_{}={}".format(ident, val), file=conf_file)
+def out(ident, val, aliases=[]):
     print("#define DT_{}\t{}".format(ident, val), file=header_file)
+    print("DT_{}={}".format(ident, val), file=conf_file)
 
-
-def out_alias(ident, target):
-    # TODO: This is just for writing the header. Will get a .conf file later as
-    # well.
-
-    if ident != target:
-        print("#define DT_{}\tDT_{}".format(ident, target), file=header_file)
+    for alias in aliases:
+        if alias != ident:
+            print("#define DT_{}\tDT_{}".format(alias, ident),
+                  file=header_file)
+            print("DT_{}={}".format(alias, val),
+                  file=conf_file)
 
 
 def escape(s):
