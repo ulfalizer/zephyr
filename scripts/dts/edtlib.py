@@ -1441,8 +1441,8 @@ def _slice(node, prop_name, size):
 
     raw = node.props[prop_name].value
     if len(raw) % size:
-        _err("'{}' property in {} has length {}, which is not evenly "
-             "divisible by {}".format(prop_name, len(raw), size))
+        _err("'{}' property in {!r} has length {}, which is not evenly "
+             "divisible by {}".format(prop_name, node, len(raw), size))
 
     return [raw[i:i + size] for i in range(0, len(raw), size)]
 
