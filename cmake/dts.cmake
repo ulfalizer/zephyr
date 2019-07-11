@@ -181,7 +181,7 @@ if(SUPPORTS_DTS)
   # Test the new extractor
   set(CMD_NEW_EXTRACT ${PYTHON_EXECUTABLE} ${ZEPHYR_BASE}/scripts/dts/new_extract.py
   --dts ${BOARD}.dts_compiled
-  --yaml ${DTS_ROOT_BINDINGS}
+  --bindings-dir ${DTS_ROOT_BINDINGS}
   --conf-out ${GENERATED_DTS_BOARD_CONF}-new
   --header-out ${GENERATED_DTS_BOARD_UNFIXED_H}-new
   )

@@ -14,16 +14,16 @@ def main():
 
     # Copied from extract_dts_includes.py
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dts", required=True, help="DTS file")
-    parser.add_argument("-y", "--yaml", nargs="+", required=True,
-                        help="YAML file directories, we allow multiple")
+    parser.add_argument("--dts", required=True, help="DTS file")
+    parser.add_argument("--bindings-dir", required=True,
+                        help="directory with bindings in YAML format")
     parser.add_argument("--header-out",
                         help="path to write header to")
     parser.add_argument("--conf-out",
                         help="path to write configuration file to")
     args = parser.parse_args()
 
-    edt = edtlib.EDT(args.dts, args.yaml[0])
+    edt = edtlib.EDT(args.dts, args.bindings_dir)
 
     conf_file = open(args.conf_out, "w", encoding="utf-8")
     header_file = open(args.header_out, "w", encoding="utf-8")
