@@ -575,7 +575,8 @@ def out_comment(s, blank_before=True):
         print(file=header_file)
         print(file=conf_file)
 
-    print("/* " + s + " */", file=header_file)
+    # Double-space in header for readability
+    print("/*  " + s + "  */", file=header_file)
     print("# " + s, file=conf_file)
 
 
