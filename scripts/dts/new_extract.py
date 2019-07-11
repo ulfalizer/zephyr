@@ -27,8 +27,8 @@ def main():
 
     edt = edtlib.EDT(args.dts, args.yaml[0])
 
-    conf_file = open(args.conf_out, "w")
-    header_file = open(args.header_out, "w")
+    conf_file = open(args.conf_out, "w", encoding="utf-8")
+    header_file = open(args.header_out, "w", encoding="utf-8")
 
     active_compats = set()
 
