@@ -28,7 +28,10 @@ def main():
 
     for dev in edt.devices:
         if dev.enabled and dev.matching_compat:
-            out_comment(dev.path)
+            out_comment("Path: " + dev.path)
+            out_comment("Binding (compatible = {}): {}".format(
+                dev.matching_compat, dev.binding_path),
+                blank_before=False)
 
             write_regs(dev)
             write_irqs(dev)
