@@ -142,6 +142,9 @@ def write_props(dev):
             for i, elm in enumerate(prop.val):
                 out_fn = out_dev_s if isinstance(elm, str) else out_dev
                 out_fn(dev, "{}_{}".format(ident, i), elm)
+        elif isinstance(prop.val, bytes):
+            out_dev(dev, ident,
+                    "{ " + ", ".join("0x{:02x}".format(b) for b in prop.val) + " }")
         else:
             # Internal error
             assert False
