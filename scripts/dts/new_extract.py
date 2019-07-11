@@ -11,7 +11,8 @@ import edtlib
 
 
 def main():
-    global _out
+    global conf_file
+    global header_file
 
     # Copied from extract_dts_includes.py
     parser = argparse.ArgumentParser()
@@ -29,7 +30,8 @@ def main():
 
     edt = edtlib.EDT(args.dts, args.yaml[0])
 
-    _out = open(args.keyvalue + "-new", "w")
+    conf_file = open(args.keyvalue + "-new", "w")
+    header_file = open(args.include + "-new", "w")
 
     active_compats = set()
 
@@ -526,7 +528,8 @@ def out_s(ident, val):
 
 
 def out(ident, val):
-    print("#define DT_{}\t{}".format(ident, val), file=_out)
+    print("DT_{}={}".format(ident, val), file=conf_file)
+    print("#define DT_{}\t{}".format(ident, val), file=header_file)
 
 
 def out_alias(ident, target):
@@ -534,7 +537,7 @@ def out_alias(ident, target):
     # well.
 
     if ident != target:
-        print("#define DT_{}\tDT_{}".format(ident, target), file=_out)
+        print("#define DT_{}\tDT_{}".format(ident, target), file=header_file)
 
 
 def escape(s):
