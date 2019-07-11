@@ -25,6 +25,9 @@ def main():
 
     for dev in edt.devices:
         if dev.enabled and dev.matching_compat:
+            out_blank()
+            out_comment(dev.path)
+
             write_regs(dev)
             write_irqs(dev)
             write_gpios(dev)
@@ -555,6 +558,13 @@ def out_comment(s):
 
     print("/* " + s + " */", file=header_file)
     print("# " + s, file=conf_file)
+
+
+def out_blank():
+    # Writes a blank line to the header and configuration file
+
+    print(file=header_file)
+    print(file=conf_file)
 
 
 def escape(s):

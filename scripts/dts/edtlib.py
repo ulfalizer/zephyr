@@ -180,6 +180,9 @@ class Device:
       translated through any 'ranges' properties on parent nodes, or None if
       the node name has no unit-address portion
 
+    path:
+      The device tree path of the device
+
     label:
       The text from the 'label' property on the DT node of the Device, or None
       if the node has no 'label'
@@ -276,6 +279,11 @@ class Device:
                   .format(self.regs[0].addr, self.name))
 
         return addr
+
+    @property
+    def path(self):
+        "See the class docstring"
+        return self._node.path
 
     @property
     def label(self):
