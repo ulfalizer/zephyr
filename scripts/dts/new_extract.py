@@ -164,7 +164,7 @@ def write_bus(dev):
 
     for compat in dev.compats:
         ident = "{}_BUS_{}".format(str2ident(compat), str2ident(dev.bus))
-        # #define DT_<COMPAT>_BUS_<BUS TYPE> 1
+        # #define DT_<COMPAT>_BUS_<BUS-TYPE> 1
         out(ident, 1)
         if compat == dev.matching_compat:
             # TODO

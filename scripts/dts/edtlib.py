@@ -14,19 +14,6 @@ import yaml
 from dtlib import DT, DTError, to_num, to_nums
 
 
-def spi_dev_cs_gpio(dev):
-    # Returns an SPI device's GPIO chip select if it exists, as a GPIO
-    # instance, and None otherwise. See
-    # Documentation/devicetree/bindings/spi/spi-bus.txt in the Linux kernel.
-
-    if dev.bus == "spi" and "cs" in dev.parent.gpios:
-        # cs-gpios is indexed by the unit address
-        # TODO: Error out if dev.regs is empty?
-        return dev.parent.gpios["cs"][dev.regs[0].addr]
-
-    return None
-
-
 class EDT:
     """
     Represents a "high-level" view of a device tree, with a list of devices
@@ -846,6 +833,24 @@ class Property:
 
 class EDTError(Exception):
     "Exception raised for Extended Device Tree-related errors"
+
+
+#
+# Public global functions
+#
+
+
+def spi_dev_cs_gpio(dev):
+    # Returns an SPI device's GPIO chip select if it exists, as a GPIO
+    # instance, and None otherwise. See
+    # Documentation/devicetree/bindings/spi/spi-bus.txt in the Linux kernel.
+
+    if dev.bus == "spi" and "cs" in dev.parent.gpios:
+        # cs-gpios is indexed by the unit address
+        # TODO: Error out if dev.regs is empty?
+        return dev.parent.gpios["cs"][dev.regs[0].addr]
+
+    return None
 
 
 #
