@@ -92,6 +92,10 @@ class EDT:
         # Only bindings for compatible strings mentioned in the device tree are
         # loaded.
 
+        self._find_bindings(bindings_dir)
+
+        dt_compats = _dt_compats(self._dt)
+
         # Add '!include foo.yaml' handling.
         #
         # Do yaml.Loader.add_constructor() instead of yaml.add_constructor() to be
@@ -101,11 +105,7 @@ class EDT:
         # if multiple EDT objects are created?
         yaml.Loader.add_constructor("!include", self._binding_include)
 
-        dt_compats = _dt_compats(self._dt)
-
         self._compat2binding = {}
-
-        self._find_bindings(bindings_dir)
         for binding_path in self._bindings:
             compat = _binding_compat(binding_path)
             if compat in dt_compats:
