@@ -211,6 +211,10 @@ class Device:
       The 'compatible' string for the binding that matched the device, or
       None if the device has no binding
 
+    binding_path:
+      The path to to the device's binding file, or None if the device has no
+      binding
+
     compats:
       A list of 'compatible' strings for the device
 
@@ -359,14 +363,11 @@ class Device:
 
     def _init_binding(self):
         # Initializes Device.matching_compat, Device._binding, and
-        # Device._binding_path.
+        # Device.binding_path.
         #
         # Device._binding holds the data from the device's binding file, in the
         # format returned by PyYAML (plain Python lists, dicts, etc.), or None
         # if the device has no binding.
-        #
-        # If there is a binding, Device._binding_path holds the path to it.
-        # This is handy for errors/warnings.
 
         # This relies on the parent of the Device having already been
         # initialized, which is guaranteed by going through the nodes in
@@ -380,7 +381,7 @@ class Device:
                 if (compat, bus) in self.edt._compat2binding:
                     # Binding found
                     self.matching_compat = compat
-                    self._binding, self._binding_path = \
+                    self._binding, self.binding_path = \
                         self.edt._compat2binding[compat, bus]
                     return
         else:
@@ -394,7 +395,7 @@ class Device:
 
                 # Binding found
                 self._binding = self.parent._binding["sub-node"]
-                self._binding_path = self.parent._binding_path
+                self.binding_path = self.parent.binding_path
                 self.matching_compat = self.parent.matching_compat
                 return
 
@@ -434,8 +435,7 @@ class Device:
 
         prop_type = options.get("type")
         if not prop_type:
-            _err("'{}' lacks 'type' in {}"
-                 .format(name, self._binding_path))
+            _err("'{}' in {} lacks 'type'".format(name, self.binding_path))
 
         val = self._prop_val(name, prop_type,
                              options.get("category") == "optional")
@@ -475,7 +475,7 @@ class Device:
                  node.props["status"].to_string() != "disabled"):
 
                 _warn("'{}' appears in 'properties:' in {}, but not in {!r}"
-                      .format(name, self._binding_path, node))
+                      .format(name, self.binding_path, node))
 
             return None
 
@@ -495,7 +495,7 @@ class Device:
             return prop.to_strings()
 
         _warn("'{}' in 'properties:' in {} has unknown type '{}'"
-              .format(name, self._binding_path, prop_type))
+              .format(name, self.binding_path, prop_type))
 
         return None
 

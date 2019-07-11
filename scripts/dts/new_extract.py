@@ -354,7 +354,7 @@ def write_code_partition(code_partition_dev):
 
 
 def write_flash_partition(partition_dev, index):
-    out_comment("flash partition at " + partition_dev.path)
+    out_comment("Flash partition at " + partition_dev.path)
 
     if partition_dev.label is None:
         err("missing 'label' property on {!r}".format(partition_dev))
