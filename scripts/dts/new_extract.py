@@ -467,7 +467,8 @@ def write_clocks(dev):
 
 
 def str2ident(s):
-    # Change ,-@/ to _ and uppercase
+    # Converts 's' to a form suitable for (part of) an identifier
+
     return s.replace("-", "_") \
             .replace(",", "_") \
             .replace("@", "_") \
