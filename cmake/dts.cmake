@@ -182,8 +182,8 @@ if(SUPPORTS_DTS)
   set(CMD_NEW_EXTRACT ${PYTHON_EXECUTABLE} ${ZEPHYR_BASE}/scripts/dts/new_extract.py
   --dts ${BOARD}.dts_compiled
   --yaml ${DTS_ROOT_BINDINGS}
-  --keyvalue ${GENERATED_DTS_BOARD_CONF}
-  --include ${GENERATED_DTS_BOARD_UNFIXED_H}
+  --keyvalue ${GENERATED_DTS_BOARD_CONF}-new
+  --include ${GENERATED_DTS_BOARD_UNFIXED_H}-new
   )
 
   execute_process(
