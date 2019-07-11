@@ -335,25 +335,24 @@ def write_flash(flash_dev):
         out("FLASH_WRITE_BLOCK_SIZE", flash_dev.props["write-block-size"].val)
 
 
-def write_code_partition(code_partition_dev):
+def write_code_partition(code_dev):
     # Writes output for the node pointed at by the zephyr,code-partition
     # property in /chosen
 
     out_comment("zephyr,code-partition ({})"
-                .format(code_partition_dev.path) if code_partition_dev
-                    else "missing")
+                .format(code_dev.path) if code_dev else "missing")
 
-    if not code_partition_dev:
+    if not code_dev:
         # No code partition. Write dummy values.
         out("CODE_PARTITION_OFFSET", 0)
         out("CODE_PARTITION_SIZE", 0)
         return
 
-    if not code_partition_dev.regs:
-        err("missing 'regs' property on {!r}".format(code_partition_dev))
+    if not code_dev.regs:
+        err("missing 'regs' property on {!r}".format(code_dev))
 
-    out("CODE_PARTITION_OFFSET", code_partition_dev.regs[0].addr)
-    out("CODE_PARTITION_SIZE", code_partition_dev.regs[0].size)
+    out("CODE_PARTITION_OFFSET", code_dev.regs[0].addr)
+    out("CODE_PARTITION_SIZE", code_dev.regs[0].size)
 
 
 def write_flash_partition(partition_dev, index):
