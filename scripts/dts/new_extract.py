@@ -19,16 +19,16 @@ def main():
     parser.add_argument("-d", "--dts", required=True, help="DTS file")
     parser.add_argument("-y", "--yaml", nargs="+", required=True,
                         help="YAML file directories, we allow multiple")
-    parser.add_argument("-i", "--include",
+    parser.add_argument("--header-out",
                         help="path to write header to")
-    parser.add_argument("-k", "--keyvalue",
+    parser.add_argument("--conf-out",
                         help="path to write configuration file to")
     args = parser.parse_args()
 
     edt = edtlib.EDT(args.dts, args.yaml[0])
 
-    conf_file = open(args.keyvalue, "w")
-    header_file = open(args.include, "w")
+    conf_file = open(args.conf_out, "w")
+    header_file = open(args.header_out, "w")
 
     active_compats = set()
 
