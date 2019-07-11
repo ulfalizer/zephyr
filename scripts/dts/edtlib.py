@@ -5,7 +5,6 @@
 Helper library for working with .dts files at a higher level compared to dtlib.
 Deals with devices, registers, bindings, etc.
 """
-import fnmatch
 import os
 import re
 import sys
@@ -76,25 +75,23 @@ class EDT:
                  .format(name, path))
 
     def _init_compat2binding(self, bindings_dir):
-        # Creates self._compat2binding. This dictionary maps
+        # Creates self._compat2binding. This is a dictionary that maps
         # (<compatible>, <bus>) tuples (both strings) to (<binding>, <path>)
         # tuples. <binding> is the binding in parsed PyYAML format, and <path>
         # the path to the binding (nice for binding-related error messages).
         #
         # For example, self._compat2binding["company,dev", "can"] contains the
-        # binding/binding path for the 'company,dev' device, when it appears on
-        # the CAN bus.
+        # binding/path for the 'company,dev' device, when it appears on the CAN
+        # bus.
         #
-        # For bindings that don't specify a bus, the bus part is None, so that
-        # e.g. self._compat2binding["company,notonbus", None] contains the
-        # binding.
+        # For bindings that don't specify a bus, <bus> is None, so that e.g.
+        # self._compat2binding["company,notonbus", None] contains the binding.
         #
-        # Only bindings for compatible strings mentioned in the device tree are
-        # loaded.
-
-        self._find_bindings(bindings_dir)
+        # Only bindings for compatible strings that appear in the device tree
+        # are loaded.
 
         dt_compats = _dt_compats(self._dt)
+        self._binding_paths = _binding_paths(bindings_dir)
 
         # Add '!include foo.yaml' handling.
         #
@@ -106,21 +103,12 @@ class EDT:
         yaml.Loader.add_constructor("!include", self._binding_include)
 
         self._compat2binding = {}
-        for binding_path in self._bindings:
+        for binding_path in self._binding_paths:
             compat = _binding_compat(binding_path)
             if compat in dt_compats:
                 binding = _load_binding(binding_path)
                 self._compat2binding[compat, _binding_bus(binding)] = \
                     (binding, binding_path)
-
-    def _find_bindings(self, bindings_dir):
-        # Creates a list with paths to all binding files, in self._bindings
-
-        self._bindings = []
-
-        for root, _, filenames in os.walk(bindings_dir):
-            for filename in fnmatch.filter(filenames, "*.yaml"):
-                self._bindings.append(os.path.join(root, filename))
 
     def _binding_include(self, loader, node):
         # Implements !include. Returns a list with the YAML structures for the
@@ -143,7 +131,7 @@ class EDT:
         # takes just the basename of the file, so we need to make sure there
         # aren't multiple candidates.
 
-        paths = [path for path in self._bindings
+        paths = [path for path in self._binding_paths
                  if os.path.basename(path) == filename]
 
         if not paths:
@@ -873,6 +861,16 @@ def _dt_compats(dt):
             for node in dt.node_iter()
                 if "compatible" in node.props
                     for compat in node.props["compatible"].to_strings()}
+
+
+def _binding_paths(bindings_dir):
+    # Returns a list with the paths to all bindings (.yaml files) in
+    # 'bindings_dir'
+
+    return [os.path.join(root, filename)
+            for root, _, filenames in os.walk(bindings_dir)
+                for filename in filenames
+                    if filename.endswith(".yaml")]
 
 
 def _binding_compat(binding_path):
