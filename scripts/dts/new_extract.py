@@ -166,12 +166,8 @@ def write_bus(dev):
     out_dev_s(dev, "BUS_NAME", str2ident(dev.parent.label))
 
     for compat in dev.compats:
-        ident = "{}_BUS_{}".format(str2ident(compat), str2ident(dev.bus))
         # #define DT_<COMPAT>_BUS_<BUS-TYPE> 1
-        out(ident, 1)
-        if compat == dev.matching_compat:
-            # TODO
-            pass
+        out("{}_BUS_{}".format(str2ident(compat), str2ident(dev.bus)), 1)
 
 
 def write_existence_flags(dev):
