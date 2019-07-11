@@ -12,16 +12,7 @@ def main():
     global conf_file
     global header_file
 
-    # Copied from extract_dts_includes.py
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--dts", required=True, help="DTS file")
-    parser.add_argument("--bindings-dir", required=True,
-                        help="directory with bindings in YAML format")
-    parser.add_argument("--header-out",
-                        help="path to write header to")
-    parser.add_argument("--conf-out",
-                        help="path to write configuration file to")
-    args = parser.parse_args()
+    args = parse_args()
 
     edt = edtlib.EDT(args.dts, args.bindings_dir)
 
@@ -92,6 +83,21 @@ def main():
     # Number of flash partitions
     if flash_index != 0:
         out("FLASH_AREA_NUM", flash_index)
+
+
+def parse_args():
+    # Returns parsed command-line arguments
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dts", required=True, help="DTS file")
+    parser.add_argument("--bindings-dir", required=True,
+                        help="directory with bindings in YAML format")
+    parser.add_argument("--header-out",
+                        help="path to write header to")
+    parser.add_argument("--conf-out",
+                        help="path to write configuration file to")
+
+    return parser.parse_args()
 
 
 def write_regs(dev):
