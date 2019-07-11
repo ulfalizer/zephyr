@@ -184,7 +184,6 @@ if(SUPPORTS_DTS)
   --yaml ${DTS_ROOT_BINDINGS}
   --keyvalue ${GENERATED_DTS_BOARD_CONF}
   --include ${GENERATED_DTS_BOARD_UNFIXED_H}
-  --old-alias-names
   )
 
   execute_process(

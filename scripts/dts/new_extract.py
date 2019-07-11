@@ -23,9 +23,6 @@ def main():
                         help="path to write header to")
     parser.add_argument("-k", "--keyvalue",
                         help="path to write configuration file to")
-    parser.add_argument("--old-alias-names", action="store_true",
-                        help="Generate aliases also in the old way, without "
-                             "compatibility information in their labels")
     args = parser.parse_args()
 
     edt = edtlib.EDT(args.dts, args.yaml[0])
