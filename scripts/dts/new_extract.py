@@ -48,7 +48,8 @@ def main():
     sram_dev = edt.chosen_dev("zephyr,sram")
     if sram_dev:
         if not sram_dev.regs:
-            err("missing 'reg' property in zephyr,sram")
+            err("missing 'reg' property in zephyr,sram ({!r})"
+                .format(sram_dev))
 
         reg = sram_dev.regs[0]
         out("SRAM_BASE_ADDRESS", hex(reg.addr))
@@ -57,7 +58,7 @@ def main():
     ccm_dev = edt.chosen_dev("zephyr,ccm")
     if ccm_dev:
         if not ccm_dev.regs:
-            err("missing 'reg' property in zephyr,ccm")
+            err("missing 'reg' property in zephyr,ccm ({!r})".format(ccm_dev))
 
         reg = ccm_dev.regs[0]
         out("CCM_BASE_ADDRESS", hex(reg.addr))
