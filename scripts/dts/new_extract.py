@@ -504,7 +504,7 @@ def out_s(ident, val):
     out(ident, '"{}"'.format(escape(val)))
 
 
-def out(ident, val, aliases=[]):
+def out(ident, val, aliases=()):
     print("#define DT_{}\t{}".format(ident, val), file=header_file)
     print("DT_{}={}".format(ident, val), file=conf_file)
 
