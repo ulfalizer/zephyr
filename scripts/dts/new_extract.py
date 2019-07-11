@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import os
-import sys
 
 import edtlib
 
