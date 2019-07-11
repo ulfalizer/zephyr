@@ -536,8 +536,7 @@ def out(ident, val, aliases=()):
                   file=header_file)
             # For the configuration file, the value is just repeated for all
             # the aliases
-            print("DT_{}={}".format(alias, val),
-                  file=conf_file)
+            print("DT_{}={}".format(alias, val), file=conf_file)
 
 
 def escape(s):
