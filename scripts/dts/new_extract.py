@@ -92,7 +92,7 @@ def main():
             write_flash_partition(dev, flash_index)
             flash_index += 1
 
-    # Number of flash partitions
+    out_comment("Number of flash partitions")
     if flash_index != 0:
         out("FLASH_AREA_NUM", flash_index)
 
@@ -299,6 +299,9 @@ def write_flash(flash_dev):
     # Writes output for the node pointed at by the zephyr,flash property in
     # /chosen
 
+    out_comment("zephyr,flash ({})"
+                .format(flash_dev.path) if flash_dev else "missing")
+
     if not flash_dev:
         # No flash device. Write dummy values.
         out("FLASH_BASE_ADDRESS", 0)
@@ -330,6 +333,10 @@ def write_code_partition(code_partition_dev):
     # Writes output for the node pointed at by the zephyr,code-partition
     # property in /chosen
 
+    out_comment("zephyr,code-partition ({})"
+                .format(code_partition_dev.path) if code_partition_dev
+                    else "missing")
+
     if not code_partition_dev:
         # No code partition. Write dummy values.
         out("CODE_PARTITION_OFFSET", 0)
@@ -344,6 +351,8 @@ def write_code_partition(code_partition_dev):
 
 
 def write_flash_partition(partition_dev, index):
+    out_comment("flash partition at " + partition_dev.path)
+
     if partition_dev.label is None:
         err("missing 'label' property on {!r}".format(partition_dev))
 
