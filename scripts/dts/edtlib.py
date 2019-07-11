@@ -478,8 +478,7 @@ class Device:
             return prop.to_nums()
 
         if prop_type == "uint8-array":
-            # Plain 'bytes'
-            return prop.value
+            return prop.value  # Plain 'bytes'
 
         if prop_type == "string":
             return prop.to_string()
