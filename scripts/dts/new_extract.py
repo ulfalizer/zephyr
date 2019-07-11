@@ -477,7 +477,21 @@ def str2ident(s):
 
 
 def out_dev(dev, ident, val, name_alias=None):
-    # TODO: update documentation
+    # Writes an
+    #
+    #   <device prefix>_<ident> = <val>
+    #
+    # assignment, along with a set of
+    #
+    #   <device alias>_<ident>
+    #
+    # aliases, for each device alias. If 'name_alias' (a string) is passed,
+    # then these additional aliases are generated:
+    #
+    #   <device prefix>_<name alias>
+    #   <device alias>_<name alias> (for each device alias)
+    #
+    # 'name_alias' is used for reg-names and the like.
 
     dev_prefix = dev_ident(dev)
 
