@@ -1001,7 +1001,7 @@ def _merge_props(to_dict, from_dict, parent, binding_path):
             _merge_props(to_dict[prop], from_dict[prop], prop, binding_path)
         else:
             if _bad_overwrite(to_dict, from_dict, prop):
-                _err("{} (in '{}'): '{}' from !include'd file overwritten "
+                _err("{} (in '{}'): '{}' from !included file overwritten "
                      "('{}' replaced with '{}')".format(
                          binding_path, parent, prop, from_dict[prop],
                          to_dict[prop]))
