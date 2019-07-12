@@ -306,7 +306,7 @@ def write_flash(flash_dev):
     # /chosen
 
     out_comment("zephyr,flash ({})"
-                .format(flash_dev.path) if flash_dev else "missing")
+                .format(flash_dev.path if flash_dev else "missing"))
 
     if not flash_dev:
         # No flash device. Write dummy values.
@@ -339,7 +339,7 @@ def write_code_partition(code_dev):
     # property in /chosen
 
     out_comment("zephyr,code-partition ({})"
-                .format(code_dev.path) if code_dev else "missing")
+                .format(code_dev.path if code_dev else "missing"))
 
     if not code_dev:
         # No code partition. Write dummy values.
