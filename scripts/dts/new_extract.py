@@ -56,13 +56,9 @@ def main():
 
             active_compats.update(dev.compats)
 
-    # Generate defines of the form
-    #
-    #   #define DT_COMPAT_<COMPAT> 1
-    #
-    # These are flags for which compats exist on (enabled) DT nodes.
     out_comment("Active compatibles (mentioned in DTS + binding found)")
     for compat in active_compats:
+        #define DT_COMPAT_<COMPAT> 1
         out("COMPAT_{}".format(str2ident(compat)), 1)
 
     # These are derived from /chosen
