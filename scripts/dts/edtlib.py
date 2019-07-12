@@ -571,10 +571,8 @@ class Device:
         if prop_type == "string-array":
             return prop.to_strings()
 
-        _warn("'{}' in 'properties:' in {} has unknown type '{}'"
-              .format(name, self.binding_path, prop_type))
-
-        return None
+        _err("'{}' in 'properties:' in {} has unknown type '{}'"
+             .format(name, self.binding_path, prop_type))
 
     def _init_regs(self):
         # Initializes self.regs with a list of Register objects

@@ -179,9 +179,6 @@ def write_props(dev):
         elif isinstance(prop.val, bytes):
             out_dev(dev, ident,
                     "{ " + ", ".join("0x{:02x}".format(b) for b in prop.val) + " }")
-        else:
-            # Internal error
-            assert False
 
         # Generate DT_..._ENUM if there's an 'enum:' key in the binding
         if prop.enum_index is not None:
