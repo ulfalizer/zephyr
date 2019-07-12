@@ -50,6 +50,9 @@ from dtlib import DT, DTError, to_num, to_nums
 # - Don't expose dtlib stuff directly.
 #
 # - Add documentation for any new APIs you add.
+#
+#   The convention here is that docstrings (quoted strings) are used for public
+#   APIs, and "doc comments" for internal functions.
 
 #
 # Public classes
