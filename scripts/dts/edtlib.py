@@ -1099,12 +1099,17 @@ def _add_names(node, names_ident, objs):
 
 
 def _interrupt_parent(node):
-    # TODO: Update documentation
-    # TODO: Fixup error handling if we don't find a match
+    # Returns the node pointed at by the closest 'interrupt-parent', searching
+    # the parents of 'node'. As of writing, this behavior isn't specified in
+    # the DT spec., but seems to match what some .dts files except.
 
-    if "interrupt-parent" in node.props:
-        return node.props["interrupt-parent"].to_node()
-    return _interrupt_parent(node.parent)
+    while node:
+        if "interrupt-parent" in node.props:
+            return node.props["interrupt-parent"].to_node()
+        node = node.parent
+
+    _err("{!r} has an 'interrupts' property, but neither the node nor any "
+         "of its parents has an 'interrupt-parent' property".format(node))
 
 
 def _interrupts(node):
