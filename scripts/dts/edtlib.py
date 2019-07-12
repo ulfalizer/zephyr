@@ -53,6 +53,9 @@ from dtlib import DT, DTError, to_num, to_nums
 #
 #   The convention here is that docstrings (quoted strings) are used for public
 #   APIs, and "doc comments" for internal functions.
+#
+# - Please use ""-quoted strings instead of ''-quoted strings, just to make
+#   things consistent (''-quoting is more common otherwise in Python)
 
 #
 # Public classes
