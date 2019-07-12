@@ -972,7 +972,7 @@ def _merge_binding(yaml_top, binding_path):
     if 'inherits' in yaml_top:
         for inherited in yaml_top.pop('inherits'):
             inherited = _merge_binding(inherited, binding_path)
-            _merge_props(None, inherited, yaml_top, binding_path)
+            _merge_props(inherited, yaml_top, None, binding_path)
             yaml_top = inherited
 
     return yaml_top
@@ -987,7 +987,7 @@ def _check_expected_props(yaml_top, binding_path):
             _err("'{}' lacks '{}' property".format(binding_path, prop))
 
 
-def _merge_props(parent_prop, to_dict, from_dict, binding_path):
+def _merge_props(to_dict, from_dict, parent_prop, binding_path):
     # Recursively merges 'from_dict' into 'to_dict', to implement !include.
     #
     # binding_path is the path of the top-level binding, and parent_prop the
@@ -997,7 +997,7 @@ def _merge_props(parent_prop, to_dict, from_dict, binding_path):
     for prop in from_dict:
         if isinstance(from_dict[prop], dict) and \
            isinstance(to_dict.get(prop), dict):
-            _merge_props(prop, to_dict[prop], from_dict[prop], binding_path)
+            _merge_props(to_dict[prop], from_dict[prop], prop, binding_path)
         else:
             if _bad_overwrite(to_dict, from_dict, prop):
                 _err("{} (in '{}'): '{}' from !include'd file overwritten "
