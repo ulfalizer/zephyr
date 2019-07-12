@@ -141,7 +141,7 @@ class EDT:
         # For bindings that don't specify a bus, <bus> is None, so that e.g.
         # self._compat2binding["company,notonbus", None] contains the binding.
         #
-        # Only bindings for compatible strings that appear in the device tree
+        # Only bindings for 'compatible' strings that appear in the device tree
         # are loaded.
 
         dt_compats = _dt_compats(self._dt)
