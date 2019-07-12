@@ -253,9 +253,6 @@ def dev_ident(dev):
 
     ident = ""
 
-    # TODO: Factor out helper? Seems to be the same thing being done to the
-    # node and the parent. Maybe elsewhere too.
-
     if dev.bus:
         ident += "{}_{:X}_".format(
             str2ident(dev.parent.matching_compat), dev.parent.unit_addr)
