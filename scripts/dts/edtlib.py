@@ -292,7 +292,7 @@ class Device:
         try:
             addr = int(self.name.split("@", 1)[1], 16)
         except ValueError:
-            _err(self.name + " has non-hex unit address")
+            _err("{!r} has non-hex unit address".format(self))
 
         addr = _translate(addr, self._node)
 
@@ -356,7 +356,7 @@ class Device:
 
         if not self.parent or not self.parent.parent:
             _err("flash partition {!r} lacks parent or grandparent node"
-                 .format(self._node))
+                 .format(self))
 
         controller = self.parent.parent
         if controller.matching_compat == "soc-nv-flash":
