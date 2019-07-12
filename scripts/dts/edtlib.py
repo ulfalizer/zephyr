@@ -209,7 +209,7 @@ class EDT:
 
         for node in self._dt.node_iter():
             # Warning: Device.__init__() relies on parent Devices being created
-            # before their children
+            # before their children. This is guaranteed by node_iter().
             dev = Device(self, node)
             self.devices.append(dev)
             self._node2dev[node] = dev
