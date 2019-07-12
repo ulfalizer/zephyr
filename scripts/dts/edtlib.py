@@ -333,10 +333,11 @@ class Device:
     @property
     def unit_addr(self):
         "See the class docstring"
-        if "@" not in self.name:
-            return None
 
         # TODO: Return a plain string here later, like dtlib.Node.unit_addr?
+
+        if "@" not in self.name:
+            return None
 
         try:
             addr = int(self.name.split("@", 1)[1], 16)
