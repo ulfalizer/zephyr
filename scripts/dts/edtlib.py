@@ -643,7 +643,6 @@ class Device:
 
             self.clocks.append(clock)
 
-        # TODO: verify clock name support
         _add_names(node, "clock-names", self.clocks)
 
     def _init_pwms(self):
