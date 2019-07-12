@@ -283,7 +283,6 @@ def dev_path_aliases(dev):
     aliases = []
     for alias in dev.aliases:
         aliases.append("ALIAS_{}".format(str2ident(alias)))
-
         # TODO: See if we can remove or deprecate this form
         aliases.append("{}_{}".format(compat_s, str2ident(alias)))
 
@@ -320,8 +319,7 @@ def write_flash(flash_dev):
             .format(len(flash_dev.regs)))
 
     if flash_dev.bus == "spi" and len(flash_dev.parent.regs) == 2:
-        # QSPI flash
-        reg = flash_dev.parent.regs[1]
+        reg = flash_dev.parent.regs[1]  # QSPI flash
     else:
         reg = flash_dev.regs[0]
 
