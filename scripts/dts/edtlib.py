@@ -364,8 +364,10 @@ class Device:
         return controller
 
     def __repr__(self):
-        return "<Device {}, {} regs>".format(
-            self.name, len(self.regs))
+        return "<Device {} in '{}', {}>".format(
+            self.path, self.edt.dts_path,
+            "binding " + self.binding_path if self.binding_path
+                else "no binding")
 
     def __init__(self, edt, node):
         "Private constructor. Not meant to be called by clients."
@@ -420,7 +422,7 @@ class Device:
                 return
 
         # No binding found
-        self._binding = self.matching_compat = None
+        self.matching_compat = self._binding = self.binding_path = None
 
     def _bus_from_parent_binding(self):
         # _init_binding() helper. Returns the bus specified by
