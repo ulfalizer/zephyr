@@ -23,8 +23,27 @@ class EDT:
 
     devices:
       A list of Device objects for the devices
+
+    dts_path:
+      The .dts path passed to __init__()
+
+    bindings_dir:
+      The bindings directory path passed to __init__()
     """
     def __init__(self, dts, bindings_dir):
+        """
+        EDT constructor. The top-level entry point to the library.
+
+        dts:
+          Path to device tree .dts file
+
+        bindings_dir:
+          Path to directory containing bindings, in YAML format. This directory
+          is recursively searched for .yaml files.
+        """
+        self.dts_path = dts
+        self.bindings_dir = bindings_dir
+
         self._dt = DT(dts)
 
         self._init_compat2binding(bindings_dir)
@@ -160,7 +179,8 @@ class EDT:
         self.devices.sort(key=lambda dev: dev.name)
 
     def __repr__(self):
-        return "<EDT, {} devices>".format(len(self.devices))
+        return "<EDT for '{}', binding directory '{}'>".format(
+            self.dts_path, self.bindings_dir)
 
 
 class Device:
