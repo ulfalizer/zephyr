@@ -327,8 +327,7 @@ class Device:
         if "@" not in self.name:
             return None
 
-        # TODO: Return the untranslated address here?
-        # TODO: A non-numeric @<unit-address> seems to be allowed
+        # TODO: Return a plain string here later, like dtlib.Node.unit_addr?
 
         try:
             addr = int(self.name.split("@", 1)[1], 16)
