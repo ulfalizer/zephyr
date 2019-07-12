@@ -110,9 +110,9 @@ def parse_args():
     parser.add_argument("--dts", required=True, help="DTS file")
     parser.add_argument("--bindings-dir", required=True,
                         help="directory with bindings in YAML format")
-    parser.add_argument("--header-out",
+    parser.add_argument("--header-out", required=True,
                         help="path to write header to")
-    parser.add_argument("--conf-out",
+    parser.add_argument("--conf-out", required=True,
                         help="path to write configuration file to")
 
     return parser.parse_args()
