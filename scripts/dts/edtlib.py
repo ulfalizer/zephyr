@@ -285,7 +285,8 @@ class Device:
       binding
 
     compats:
-      A list of 'compatible' strings for the device
+      A list of 'compatible' strings for the device, in the same order that
+      they're listed in the .dts file
 
     regs:
       A list of Register objects for the device's registers
