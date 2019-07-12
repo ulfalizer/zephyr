@@ -102,6 +102,8 @@ def main():
     if flash_index != 0:
         out("FLASH_AREA_NUM", flash_index)
 
+    print("Device tree configuration written to " + args.conf_out)
+
 
 def parse_args():
     # Returns parsed command-line arguments
