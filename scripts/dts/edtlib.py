@@ -966,7 +966,7 @@ def _merge_included_bindings(binding, binding_path):
     # Properties in 'binding' take precedence over properties from included
     # bindings.
 
-    _check_expected_props(binding, binding_path)
+    _check_binding(binding, binding_path)
 
     if "inherits" in binding:
         for inherited in binding.pop("inherits"):
@@ -977,13 +977,20 @@ def _merge_included_bindings(binding, binding_path):
     return binding
 
 
-def _check_expected_props(binding, binding_path):
-    # Checks that the top-level YAML node 'node' has the expected properties.
-    # Prints warnings and substitutes defaults otherwise.
+def _check_binding(binding, binding_path):
+    # Does sanity checking on 'binding'
 
     for prop in "title", "version", "description":
         if prop not in binding:
             _err("'{}' lacks '{}' property".format(binding_path, prop))
+
+    categories = {"required", "optional"}
+    if "properties" in binding:
+        for prop, keys in binding["properties"].items():
+            if "category" in keys and keys["category"] not in categories:
+                _err("unrecognized 'category: {}' for '{}' in {}, expected "
+                     "one of {}".format(keys["category"], prop, binding_path,
+                                        ", ".join(categories)))
 
 
 def _merge_props(to_dict, from_dict, parent, binding_path):
@@ -1022,9 +1029,6 @@ def _bad_overwrite(to_dict, from_dict, prop):
 
     # Allow the category to be changed from 'optional' to 'required'
     # without a warning
-    #
-    # TODO: The category is never checked otherwise, and wasn't in
-    # extract_dts_includes.py either
     if prop == "category" and to_dict["category"] == "required" and \
                               from_dict["category"] == "optional":
         return False
