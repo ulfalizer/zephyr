@@ -955,63 +955,63 @@ def _load_binding(path):
     # lists/dictionaries/strings/etc. representing the file).
 
     with open(path, encoding="utf-8") as f:
-        # TODO: Nicer way to deal with this?
-        return _merge_binding(yaml.load(f, Loader=yaml.Loader), path)
+        return _merge_included_bindings(yaml.load(f, Loader=yaml.Loader), path)
 
 
-def _merge_binding(yaml_top, binding_path):
-    # Recursively merges yaml_top into the bindings in the 'inherits:' section
-    # of the binding. !include's have already been processed at this point, and
-    # leave the data for the !include'd file(s) in the 'inherits:' section.
+def _merge_included_bindings(binding, binding_path):
+    # Merges any bindings in the 'inherits:' section of 'binding'. !includes
+    # have already been processed at this point, and leave the data for the
+    # included binding(s) in 'inherits:'.
     #
-    # Properties from the !include'ing file override properties from the
-    # !include'd file, which is why this logic might seem "backwards".
+    # Properties in 'binding' take precedence over properties from included
+    # bindings.
 
-    _check_expected_props(yaml_top, binding_path)
+    _check_expected_props(binding, binding_path)
 
-    if 'inherits' in yaml_top:
-        for inherited in yaml_top.pop('inherits'):
-            inherited = _merge_binding(inherited, binding_path)
-            _merge_props(inherited, yaml_top, None, binding_path)
-            yaml_top = inherited
+    if "inherits" in binding:
+        for inherited in binding.pop("inherits"):
+            _merge_props(
+                binding, _merge_included_bindings(inherited, binding_path),
+                None, binding_path)
 
-    return yaml_top
+    return binding
 
 
-def _check_expected_props(yaml_top, binding_path):
+def _check_expected_props(binding, binding_path):
     # Checks that the top-level YAML node 'node' has the expected properties.
     # Prints warnings and substitutes defaults otherwise.
 
     for prop in "title", "version", "description":
-        if prop not in yaml_top:
+        if prop not in binding:
             _err("'{}' lacks '{}' property".format(binding_path, prop))
 
 
-def _merge_props(to_dict, from_dict, parent_prop, binding_path):
-    # Recursively merges 'from_dict' into 'to_dict', to implement !include.
+def _merge_props(to_dict, from_dict, parent, binding_path):
+    # Recursively merges 'from_dict' into 'to_dict', to implement !include. If
+    # a key exists in both 'from_dict' and 'to_dict', then the value in
+    # 'to_dict' takes precedence.
     #
-    # binding_path is the path of the top-level binding, and parent_prop the
-    # name of the dictionary containing 'prop'. These are used to generate
-    # warnings for sketchy property overwrites.
+    # 'parent' is the name of the parent key containing 'to_dict' and
+    # 'from_dict', and 'binding_path' is the path to the top-level binding.
+    # These are used to generate errors for sketchy property overwrites.
 
     for prop in from_dict:
-        if isinstance(from_dict[prop], dict) and \
-           isinstance(to_dict.get(prop), dict):
+        if isinstance(to_dict.get(prop), dict) and \
+           isinstance(from_dict[prop], dict):
             _merge_props(to_dict[prop], from_dict[prop], prop, binding_path)
         else:
             if _bad_overwrite(to_dict, from_dict, prop):
                 _err("{} (in '{}'): '{}' from !include'd file overwritten "
                      "('{}' replaced with '{}')".format(
-                         binding_path, parent_prop, prop, from_dict[prop],
+                         binding_path, parent, prop, from_dict[prop],
                          to_dict[prop]))
 
             to_dict[prop] = from_dict[prop]
 
 
 def _bad_overwrite(to_dict, from_dict, prop):
-    # _merge_props() helper. Returns True if overwriting to_dict[prop] with
-    # from_dict[prop] seems bad. parent_prop is the name of the dictionary
-    # containing 'prop'.
+    # _merge_props() helper. Returns True in cases where it's bad that
+    # to_dict[prop] takes precedence over from_dict[prop].
 
     if prop not in to_dict or to_dict[prop] == from_dict[prop]:
         return False
@@ -1025,8 +1025,8 @@ def _bad_overwrite(to_dict, from_dict, prop):
     #
     # TODO: The category is never checked otherwise, and wasn't in
     # extract_dts_includes.py either
-    if prop == "category" and \
-       to_dict["category"] == "optional" and from_dict["category"] == "required":
+    if prop == "category" and to_dict["category"] == "required" and \
+                              from_dict["category"] == "optional":
         return False
 
     return True
