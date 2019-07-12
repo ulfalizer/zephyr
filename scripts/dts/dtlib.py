@@ -6,8 +6,6 @@ A library for extracting information from .dts (Device Tree) files. See the
 documentation for the DT and Node classes for more information.
 """
 
-# TODO: linux,phandle?
-
 import collections
 import errno
 import os
