@@ -159,11 +159,9 @@ def write_props(dev):
         if prop.name[0] == "#" or prop.name.endswith("-map"):
             continue
 
-        # skip properties that we handle elsewhere
-        if prop.name in {"reg", "interrupts", "pwms"} or prop.name.endswith("gpios"):
-            continue
-        # TODO: Add support for some of these properties elsewhere
-        if prop.name in {"clocks", "compatible"}:
+        # Skip properties that we handle elsewhere
+        if prop.name in {"reg", "interrupts", "pwms", "clocks", "compatible"} or \
+           prop.name.endswith("gpios"):
             continue
 
         ident = str2ident(prop.name)
