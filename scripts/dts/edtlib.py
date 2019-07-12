@@ -72,7 +72,7 @@ class EDT:
     """
     def __init__(self, dts, bindings_dir):
         """
-        EDT constructor. The top-level entry point to the library.
+        EDT constructor. This is the top-level entry point to the library.
 
         dts:
           Path to device tree .dts file
