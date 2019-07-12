@@ -45,6 +45,8 @@ from dtlib import DT, DTError, to_num, to_nums
 # - Avoid get_*() prefixes on functions. Name them after the thing they return
 #   instead. This often makes the code read more naturally in callers.
 #
+#   Also, consider using @property instead of get_*().
+#
 # - Don't expose dtlib stuff directly.
 #
 # - Add documentation for any new APIs you add.
