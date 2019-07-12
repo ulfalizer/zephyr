@@ -7,6 +7,9 @@
 # device tree (.dts) file. Information from binding files in YAML format is
 # used as well.
 #
+# Bindings are files that describe device tree nodes. Device tree nodes are
+# usually mapped to bindings via their 'compatible = "..."' property.
+#
 # See the docstring/comments at the top of edtlib.py for more information.
 #
 # Note: Do not access private (_-prefixed) identifiers from edtlib here (and
