@@ -980,8 +980,7 @@ def _check_expected_props(binding_path, yaml_top):
 
     for prop in "title", "version", "description":
         if prop not in yaml_top:
-            # TODO: Turn into error
-            _warn("'{}' lacks '{}' property".format(binding_path, prop))
+            _err("'{}' lacks '{}' property".format(binding_path, prop))
 
 
 def _merge_props(binding_path, parent_prop, to_dict, from_dict):
