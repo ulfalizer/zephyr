@@ -3,6 +3,17 @@
 # Copyright (c) 2019 Nordic Semiconductor ASA
 # SPDX-License-Identifier: Apache-2.0
 
+# This script uses edtlib to generate #defines and .conf file values from a
+# device tree (.dts) file. Information from binding files in YAML format is
+# used as well.
+#
+# See the docstring/comments at the top of edtlib.py for more information.
+#
+# Note: Do not access private (_-prefixed) identifiers from edtlib here (also
+# note that edtlib is not meant to expose the dtlib API directly). Instead,
+# think of what API you need, and add it as a public documented API in edtlib.
+# This will keep this script simple.
+
 import argparse
 
 import edtlib
