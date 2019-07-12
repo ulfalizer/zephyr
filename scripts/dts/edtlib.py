@@ -507,6 +507,13 @@ class Device:
         if not prop_type:
             _err("'{}' in {} lacks 'type'".format(name, self.binding_path))
 
+        # "Dummy" type for properties like '...-gpios', so that we can require
+        # all entries in 'properties:' to have a 'type: ...'. It might make
+        # sense to have gpios in 'properties:' for other reasons, e.g. to set
+        # 'category: required'.
+        if prop_type == "compound":
+            return
+
         val = self._prop_val(name, prop_type,
                              options.get("category") == "optional")
         if val is None:
