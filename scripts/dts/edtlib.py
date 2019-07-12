@@ -225,7 +225,8 @@ class EDT:
 
 class Device:
     """
-    Represents a device.
+    Represents a device. There's a one-to-one correspondence between device
+    tree node and Devices.
 
     These attributes are available on Device objects:
 
