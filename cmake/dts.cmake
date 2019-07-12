@@ -179,7 +179,7 @@ if(SUPPORTS_DTS)
   import_kconfig(DT_     ${GENERATED_DTS_BOARD_CONF})
 
   # Test the new extractor
-  set(CMD_NEW_EXTRACT ${PYTHON_EXECUTABLE} ${ZEPHYR_BASE}/scripts/dts/new_extract.py
+  set(CMD_NEW_EXTRACT ${PYTHON_EXECUTABLE} ${ZEPHYR_BASE}/scripts/dts/gen_defines.py
   --dts ${BOARD}.dts_compiled
   --bindings-dir ${DTS_ROOT_BINDINGS}
   --conf-out ${GENERATED_DTS_BOARD_CONF}-new
