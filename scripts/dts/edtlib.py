@@ -1338,20 +1338,20 @@ def _pass_thru(prefix, child, parent, child_spec, parent_spec):
 
 
 def _raw_unit_addr(node):
-    # TODO: document
+    # _map_interrupt() helper. Returns the unit address (derived from 'reg' and
+    # #address-cells) as a raw 'bytes'
 
-    # TODO: get this from the 'reg' property instead, since they're required to
-    # match?
+    if 'reg' not in node.props:
+        _err("{!r} lacks 'reg' property (needed for 'interrupt-map' unit "
+             "address lookup)".format(node))
 
-    if not node.unit_addr:
-        return b""
+    addr_len = 4*_address_cells(node)
 
-    try:
-        child_unit_addr = int(node.unit_addr, 16)
-    except ValueError:
-        _err(repr(node) + " has non-numeric unit address")
+    if len(node.props['reg'].value) < addr_len:
+        _err("{!r} has too short 'reg' property (while doing 'interrupt-map' "
+             "unit address lookup)".format(node))
 
-    return child_unit_addr.to_bytes(4*_address_cells(node), "big")
+    return node.props['reg'].value[:addr_len]
 
 
 def _and(b1, b2):
