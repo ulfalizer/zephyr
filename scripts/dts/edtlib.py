@@ -956,10 +956,10 @@ def _load_binding(path):
 
     with open(path, encoding="utf-8") as f:
         # TODO: Nicer way to deal with this?
-        return _merge_binding(path, yaml.load(f, Loader=yaml.Loader))
+        return _merge_binding(yaml.load(f, Loader=yaml.Loader), path)
 
 
-def _merge_binding(binding_path, yaml_top):
+def _merge_binding(yaml_top, binding_path):
     # Recursively merges yaml_top into the bindings in the 'inherits:' section
     # of the binding. !include's have already been processed at this point, and
     # leave the data for the !include'd file(s) in the 'inherits:' section.
@@ -967,18 +967,18 @@ def _merge_binding(binding_path, yaml_top):
     # Properties from the !include'ing file override properties from the
     # !include'd file, which is why this logic might seem "backwards".
 
-    _check_expected_props(binding_path, yaml_top)
+    _check_expected_props(yaml_top, binding_path)
 
     if 'inherits' in yaml_top:
         for inherited in yaml_top.pop('inherits'):
-            inherited = _merge_binding(binding_path, inherited)
-            _merge_props(binding_path, None, inherited, yaml_top)
+            inherited = _merge_binding(inherited, binding_path)
+            _merge_props(None, inherited, yaml_top, binding_path)
             yaml_top = inherited
 
     return yaml_top
 
 
-def _check_expected_props(binding_path, yaml_top):
+def _check_expected_props(yaml_top, binding_path):
     # Checks that the top-level YAML node 'node' has the expected properties.
     # Prints warnings and substitutes defaults otherwise.
 
@@ -987,7 +987,7 @@ def _check_expected_props(binding_path, yaml_top):
             _err("'{}' lacks '{}' property".format(binding_path, prop))
 
 
-def _merge_props(binding_path, parent_prop, to_dict, from_dict):
+def _merge_props(parent_prop, to_dict, from_dict, binding_path):
     # Recursively merges 'from_dict' into 'to_dict', to implement !include.
     #
     # binding_path is the path of the top-level binding, and parent_prop the
@@ -997,7 +997,7 @@ def _merge_props(binding_path, parent_prop, to_dict, from_dict):
     for prop in from_dict:
         if isinstance(from_dict[prop], dict) and \
            isinstance(to_dict.get(prop), dict):
-            _merge_props(binding_path, prop, to_dict[prop], from_dict[prop])
+            _merge_props(prop, to_dict[prop], from_dict[prop], binding_path)
         else:
             if _bad_overwrite(to_dict, from_dict, prop):
                 _err("{} (in '{}'): '{}' from !include'd file overwritten "
