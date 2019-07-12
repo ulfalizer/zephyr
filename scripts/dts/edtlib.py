@@ -996,7 +996,6 @@ def _merge_props(binding_path, parent_prop, to_dict, from_dict):
             _merge_props(binding_path, prop, to_dict[prop], from_dict[prop])
         else:
             if _bad_overwrite(to_dict, from_dict, prop):
-                # TODO: Turn into error
                 _err("{} (in '{}'): '{}' from !include'd file overwritten "
                      "('{}' replaced with '{}')".format(
                          binding_path, parent_prop, prop, from_dict[prop],
