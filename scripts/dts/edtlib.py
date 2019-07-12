@@ -2,9 +2,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Helper library for working with .dts files at a higher level compared to dtlib.
-Deals with devices, registers, bindings, etc.
+Library for working with .dts files and bindings at a higher level. Deals with
+things at the level of devices, registers, interrupts, compatibles, bindings,
+etc., as opposed to dtlib, which is just a low-level device tree parser.
+
+Each device tree node (dtlib.Node) gets a Device instance, which has all the
+information related to the device, derived from both the device tree and from
+the binding for the device.
+
+The top-level entry point of the library is the EDT class. EDT.__init__() takes
+a .dts file to parse and the path of a directory containing bindings.
 """
+
 import os
 import re
 import sys
@@ -12,6 +21,33 @@ import sys
 import yaml
 
 from dtlib import DT, DTError, to_num, to_nums
+
+# Implementation notes
+# --------------------
+#
+# A '_' prefix on an identifier in Python is a convention for marking it private.
+# Please do not access private things. Instead, think of what API you need, and
+# add it.
+#
+# This library is layered on top of dtlib, and is not meant to expose it to
+# clients. This keeps the header generation script simple.
+#
+# General biased advice:
+#
+# - Consider using @property for APIs that don't need parameters. It makes
+#   functions look like attributes, which is less awkward in clients, and makes
+#   it easy to switch back and forth between variables and functions.
+#
+# - Think about the data type of the thing you're exposing. Exposing something
+#   as e.g. a list or a dictionary is often nicer and more flexible than adding
+#   a function.
+#
+# - Avoid get_*() prefixes on functions. Name them after the thing they return
+#   instead. This often makes the code read more naturally in callers.
+#
+# - Don't expose dtlib stuff directly.
+#
+# - Add documentation for any new APIs you add.
 
 #
 # Public classes
