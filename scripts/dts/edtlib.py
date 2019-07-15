@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Library for working with .dts files and bindings at a higher level. Deals with
-things at the level of devices, registers, interrupts, compatibles, bindings,
-etc., as opposed to dtlib, which is just a low-level device tree parser.
+Library for working with .dts files and bindings at a higher level compared to
+dtlib. Deals with things at the level of devices, registers, interrupts,
+compatibles, bindings, etc., as opposed to dtlib, which is just a low-level
+device tree parser.
 
 Each device tree node (dtlib.Node) gets a Device instance, which has all the
 information related to the device, derived from both the device tree and from
