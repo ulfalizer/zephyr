@@ -72,7 +72,7 @@ def main():
             err("missing 'reg' property in zephyr,sram ({!r})"
                 .format(sram_dev))
 
-        out_comment("zephyr,sram ({})".format(sram_dev.path))
+        out_comment("/chosen/zephyr,sram ({})".format(sram_dev.path))
         reg = sram_dev.regs[0]
         out("SRAM_BASE_ADDRESS", hex(reg.addr))
         out("SRAM_SIZE", reg.size//1024)
@@ -82,7 +82,7 @@ def main():
         if not ccm_dev.regs:
             err("missing 'reg' property in zephyr,ccm ({!r})".format(ccm_dev))
 
-        out_comment("zephyr,ccm ({})".format(ccm_dev.path))
+        out_comment("/chosen/zephyr,ccm ({})".format(ccm_dev.path))
         reg = ccm_dev.regs[0]
         out("CCM_BASE_ADDRESS", hex(reg.addr))
         out("CCM_SIZE", reg.size//1024)
@@ -308,7 +308,7 @@ def write_flash(flash_dev):
     # Writes output for the node pointed at by the zephyr,flash property in
     # /chosen
 
-    out_comment("zephyr,flash ({})"
+    out_comment("/chosen/zephyr,flash ({})"
                 .format(flash_dev.path if flash_dev else "missing"))
 
     if not flash_dev:
@@ -341,7 +341,7 @@ def write_code_partition(code_dev):
     # Writes output for the node pointed at by the zephyr,code-partition
     # property in /chosen
 
-    out_comment("zephyr,code-partition ({})"
+    out_comment("/chosen/zephyr,code-partition ({})"
                 .format(code_dev.path if code_dev else "missing"))
 
     if not code_dev:
