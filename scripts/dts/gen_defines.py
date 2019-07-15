@@ -47,6 +47,8 @@ def main():
             out_comment("Binding (compatible = {}): {}".format(
                 dev.matching_compat, dev.binding_path),
                 blank_before=False)
+            out_comment("Binding description: " + dev.description,
+                        blank_before=False)
 
             write_regs(dev)
             write_irqs(dev)
@@ -576,8 +578,9 @@ def out(ident, val, aliases=()):
 
 
 def out_comment(s, blank_before=True):
-    # Writes a single-line comment to the header and configuration file.
-    # blank_before=True adds a blank line before the comment.
+    # Writes 's' as a comment to the header and configuration file. 's' is
+    # allowed to have multiple lines. blank_before=True adds a blank line
+    # before the comment.
 
     if blank_before:
         print(file=header_file)
@@ -585,7 +588,7 @@ def out_comment(s, blank_before=True):
 
     # Double-space in header for readability
     print("/*  " + s + "  */", file=header_file)
-    print("# " + s, file=conf_file)
+    print("\n".join("# " + line for line in s.splitlines()), file=conf_file)
 
 
 def escape(s):

@@ -288,8 +288,12 @@ class Device:
       The 'compatible' string for the binding that matched the device, or
       None if the device has no binding
 
+    description:
+      The description string from the binding file from the device, or None if
+      the device has no binding
+
     binding_path:
-      The path to to the device's binding file, or None if the device has no
+      The path to the binding file for the device, or None if the device has no
       binding
 
     compats:
@@ -461,6 +465,7 @@ class Device:
                     self.matching_compat = compat
                     self._binding, self.binding_path = \
                         self.edt._compat2binding[compat, bus]
+                    self.description = self._binding.get("description")
                     return
         else:
             # No 'compatible' property. See if the parent has a 'sub-node:' key
@@ -474,11 +479,13 @@ class Device:
                 # Binding found
                 self._binding = self.parent._binding["sub-node"]
                 self.binding_path = self.parent.binding_path
+                self.description = self.parent._binding.get("description")
                 self.matching_compat = self.parent.matching_compat
                 return
 
         # No binding found
-        self.matching_compat = self._binding = self.binding_path = None
+        self.matching_compat = self._binding = self.binding_path = \
+            self.description = None
 
     def _bus_from_parent_binding(self):
         # _init_binding() helper. Returns the bus specified by
