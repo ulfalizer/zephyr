@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 # Copyright (c) 2019 Nordic Semiconductor ASA
-# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2019 Linaro Limited
+# SPDX-License-Identifier: BSD-3-Clause
 
 # This script uses edtlib to generate a header file and a .conf file (both
 # containing the same values) from a device tree (.dts) file. Information from
