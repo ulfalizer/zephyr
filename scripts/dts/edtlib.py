@@ -1105,7 +1105,7 @@ def _bad_overwrite(to_dict, from_dict, prop):
     if prop in {"title", "version", "description"}:
         return False
 
-    # Allow the category to be changed from 'optional' to 'required'
+    # Allow a property to be made required when it previously was optional
     # without a warning
     if prop == "category" and to_dict["category"] == "required" and \
                               from_dict["category"] == "optional":
