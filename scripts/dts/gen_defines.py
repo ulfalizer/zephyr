@@ -43,7 +43,7 @@ def main():
 
     for dev in edt.devices:
         if dev.enabled and dev.matching_compat:
-            out_comment("Node: " + dev.path)
+            out_comment("Device tree node: " + dev.path)
             out_comment("Binding (compatible = {}): {}".format(
                 dev.matching_compat, dev.binding_path),
                 blank_before=False)
