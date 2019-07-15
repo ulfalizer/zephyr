@@ -555,8 +555,9 @@ class Device:
                 ("status" not in node.props or
                  node.props["status"].to_string() != "disabled"):
 
-                _err("'{}' appears in 'properties:' in {}, but not in {!r}"
-                     .format(name, self.binding_path, node))
+                _err("'{}' is marked as required in 'properties:' in {}, but "
+                     "does not appear in {!r}".format(
+                         name, self.binding_path, node))
 
             return None
 
