@@ -565,12 +565,12 @@ def out(ident, val, aliases=()):
     # header, these look like '#define <alias> <ident>'. For the configuration
     # file, the value is just repeated as '<alias>=<val>' for each alias.
 
-    print("#define DT_{} {}".format(ident, val), file=header_file)
+    print("#define DT_{:40} {}".format(ident, val), file=header_file)
     print("DT_{}={}".format(ident, val), file=conf_file)
 
     for alias in aliases:
         if alias != ident:
-            print("#define DT_{} DT_{}".format(alias, ident),
+            print("#define DT_{:40} DT_{}".format(alias, ident),
                   file=header_file)
             # For the configuration file, the value is just repeated for all
             # the aliases
