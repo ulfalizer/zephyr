@@ -1,5 +1,6 @@
 # Copyright (c) 2019 Nordic Semiconductor ASA
-# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2019 Linaro Limited
+# SPDX-License-Identifier: BSD-3-Clause
 
 """
 Library for working with .dts files and bindings at a higher level compared to
