@@ -1,5 +1,5 @@
 # Copyright (c) 2019, Nordic Semiconductor
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: BSD-3-Clause
 
 """
 A library for extracting information from .dts (Device Tree) files. See the
