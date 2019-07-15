@@ -3,9 +3,9 @@
 # Copyright (c) 2019 Nordic Semiconductor ASA
 # SPDX-License-Identifier: Apache-2.0
 
-# This script uses edtlib to generate #defines and .conf file values from a
-# device tree (.dts) file. Information from binding files in YAML format is
-# used as well.
+# This script uses edtlib to generate a header file and a .conf file (both
+# containing the same values) from a device tree (.dts) file. Information from
+# binding files in YAML format is used as well.
 #
 # Bindings are files that describe device tree nodes. Device tree nodes are
 # usually mapped to bindings via their 'compatible = "..."' property.
@@ -154,7 +154,7 @@ def write_props(dev):
 
     for prop in dev.props.values():
         # Skip #size-cell and other property starting with #. Also skip mapping
-        # properties like "gpio-map".
+        # properties like 'gpio-map'.
         if prop.name[0] == "#" or prop.name.endswith("-map"):
             continue
 
