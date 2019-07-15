@@ -1041,7 +1041,12 @@ def _check_binding(binding, binding_path):
 
     for prop in "title", "version", "description":
         if prop not in binding:
-            _err("'{}' lacks '{}' property".format(binding_path, prop))
+            _err("missing '{}' property in {}".format(prop, binding_path))
+
+    for prop in binding:
+        if prop not in {"title", "version", "description", "inherits",
+                        "properties", "#cells", "parent", "child", "sub-node"}:
+            _err("unknown property '{}' in {}".format(prop, binding_path))
 
     categories = {"required", "optional"}
     if "properties" in binding:
