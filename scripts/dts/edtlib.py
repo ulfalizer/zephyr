@@ -1025,6 +1025,8 @@ def _merge_included_bindings(binding, binding_path):
     # Properties in 'binding' take precedence over properties from included
     # bindings.
 
+    # Currently, we require that each !include'd file is a well-formed binding
+    # in itself
     _check_binding(binding, binding_path)
 
     if "inherits" in binding:
@@ -1048,13 +1050,24 @@ def _check_binding(binding, binding_path):
                         "properties", "#cells", "parent", "child", "sub-node"}:
             _err("unknown property '{}' in {}".format(prop, binding_path))
 
+    # Check properties
+
+    if "properties" not in binding:
+        return
+
     categories = {"required", "optional"}
-    if "properties" in binding:
-        for prop, keys in binding["properties"].items():
-            if "category" in keys and keys["category"] not in categories:
-                _err("unrecognized 'category: {}' for '{}' in {}, expected "
-                     "one of {}".format(keys["category"], prop, binding_path,
-                                        ", ".join(categories)))
+    for prop, keys in binding["properties"].items():
+        for key in keys:
+            if key not in {"description", "type", "category", "constraint",
+                           "enum"}:
+                _err("unknown setting '{}' for '{}' in 'properties' in {}"
+                     .format(key, prop, binding_path))
+
+        if "category" in keys and keys["category"] not in categories:
+            _err("unrecognized 'category: {}' for '{}' in 'properties' in {}, "
+                 "expected one of {}".format(
+                     keys["category"], prop, binding_path,
+                     ", ".join(categories)))
 
 
 def _merge_props(to_dict, from_dict, parent, binding_path):
