@@ -531,6 +531,7 @@ class Device:
         prop = Property()
         prop.dev = self
         prop.name = name
+        prop.description = options.get("description")
         prop.val = val
         enum = options.get("enum")
         if enum is None:
@@ -910,6 +911,10 @@ class Property:
 
     name:
       The name of the property
+
+    description:
+      The description string for the property as given in the binding, or None
+      if missing
 
     val:
       The value of the property, with the format determined by the 'type:'

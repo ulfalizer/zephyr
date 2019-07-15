@@ -164,6 +164,9 @@ def write_props(dev):
            prop.name.endswith("gpios"):
             continue
 
+        if prop.description is not None:
+            out_comment(prop.description, blank_before=False)
+
         ident = str2ident(prop.name)
 
         if isinstance(prop.val, bool):
