@@ -567,9 +567,8 @@ class Device:
                 ("status" not in node.props or
                  node.props["status"].to_string() != "disabled"):
 
-                _warn("'{}' is marked as required in 'properties:' in {}, but "
-                      "does not appear in {!r}".format(
-                         name, self.binding_path, node))
+                _err("{} not in {} in {}, req. by {}"
+                     .format(name, node.path, node.dt.filename, self.binding_path))
 
             return None
 
