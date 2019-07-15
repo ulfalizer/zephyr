@@ -58,6 +58,9 @@ from dtlib import DT, DTError, to_num, to_nums
 #   The convention here is that docstrings (quoted strings) are used for public
 #   APIs, and "doc comments" for internal functions.
 #
+#   @properties are documented in the class docstring, as if they were
+#   variables. See the existing @properties for a template.
+#
 # - Please use ""-quoted strings instead of ''-quoted strings, just to make
 #   things consistent (''-quoting is more common otherwise in Python)
 
