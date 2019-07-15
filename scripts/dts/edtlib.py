@@ -1093,13 +1093,13 @@ def _merge_props(to_dict, from_dict, parent, binding_path):
         if isinstance(to_dict.get(prop), dict) and \
            isinstance(from_dict[prop], dict):
             _merge_props(to_dict[prop], from_dict[prop], prop, binding_path)
-        else:
+        elif prop in to_dict:
             if _bad_overwrite(to_dict, from_dict, prop):
                 _err("{} (in '{}'): '{}' from !included file overwritten "
                      "('{}' replaced with '{}')".format(
                          binding_path, parent, prop, from_dict[prop],
                          to_dict[prop]))
-
+        else:
             to_dict[prop] = from_dict[prop]
 
 
