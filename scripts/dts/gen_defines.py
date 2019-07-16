@@ -19,6 +19,7 @@
 # edtlib. This will keep this script simple.
 
 import argparse
+import sys
 
 import edtlib
 
@@ -29,7 +30,10 @@ def main():
 
     args = parse_args()
 
-    edt = edtlib.EDT(args.dts, args.bindings_dir)
+    try:
+        edt = edtlib.EDT(args.dts, args.bindings_dir)
+    except edtlib.EDTError as e:
+        sys.exit("device tree error: " + str(e))
 
     conf_file = open(args.conf_out, "w", encoding="utf-8")
     header_file = open(args.header_out, "w", encoding="utf-8")
