@@ -24,7 +24,12 @@ properties:
       category: required
 
   interrupts:
-      category: required
+      # The interrupt multiplexer is currently specified in a common device
+      # tree file, but might not attached to anything for a particular board.
+      # See commit 948ef47cf4 ("dts: riscv32: Add rv32m1 zero-riscy core
+      # support"), where the .dtsi files specify 'interrupt' for either intmux0
+      # or intmux1.
+      category: optional
 
 "#cells":
   - irq
