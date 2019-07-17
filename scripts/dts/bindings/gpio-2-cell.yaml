@@ -7,7 +7,6 @@ properties:
     compatible:
         constraint: "gpio,two-cell"
         type: string-array
-        generation: define
 
 "#cells":
   - one

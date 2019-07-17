@@ -612,10 +612,7 @@ class Device:
             reg = Register()
             reg.dev = self
             reg.addr = _translate(to_num(raw_reg[:4*address_cells]), node)
-            if size_cells != 0:
-                reg.size = to_num(raw_reg[4*address_cells:])
-            else:
-                reg.size = None
+            reg.size = to_num(raw_reg[4*address_cells:])
 
             self.regs.append(reg)
 
@@ -765,9 +762,7 @@ class Register:
         if self.name is not None:
             fields.append("name: " + self.name)
         fields.append("addr: " + hex(self.addr))
-
-        if self.size:
-            fields.append("size: " + hex(self.size))
+        fields.append("size: " + hex(self.size))
 
         return "<Register, {}>".format(", ".join(fields))
 
@@ -1139,7 +1134,7 @@ def _translate(addr, node):
     # parent(s), by looking at 'ranges' properties. Returns the translated
     # address.
 
-    if "ranges" not in node.parent.props:
+    if not node.parent or "ranges" not in node.parent.props:
         # No translation
         return addr
 
@@ -1162,15 +1157,16 @@ def _translate(addr, node):
 
     for raw_range in _slice(node.parent, "ranges", 4*entry_cells):
         child_addr = to_num(raw_range[:4*child_address_cells])
-        child_len = to_num(
-            raw_range[4*(child_address_cells + parent_address_cells):])
+        raw_range = raw_range[4*child_address_cells:]
 
-        if child_addr <= addr <= child_addr + child_len:
+        parent_addr = to_num(raw_range[:4*parent_address_cells])
+        raw_range = raw_range[4*parent_address_cells:]
+
+        child_len = to_num(raw_range)
+
+        if child_addr <= addr < child_addr + child_len:
             # 'addr' is within range of a translation in 'ranges'. Recursively
             # translate it and return the result.
-            parent_addr = to_num(
-                raw_range[4*child_address_cells:
-                          4*(child_address_cells + parent_address_cells)])
             return _translate(parent_addr + addr - child_addr, node.parent)
 
     # 'addr' is not within range of any translation in 'ranges'

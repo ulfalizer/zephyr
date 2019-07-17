@@ -150,7 +150,7 @@ def write_regs(dev):
         out_dev(dev, reg_addr_ident(reg), hex(reg.addr),
                 name_alias=reg_addr_name_alias(reg))
 
-        if reg.size is not None:
+        if reg.size:
             out_dev(dev, reg_size_ident(reg), reg.size,
                     name_alias=reg_size_name_alias(reg))
 
@@ -337,7 +337,7 @@ def write_flash(flash_dev):
         reg = flash_dev.regs[0]
 
     out("FLASH_BASE_ADDRESS", hex(reg.addr))
-    if reg.size is not None:
+    if reg.size:
         out("FLASH_SIZE", reg.size//1024)
 
     if "erase-block-size" in flash_dev.props:

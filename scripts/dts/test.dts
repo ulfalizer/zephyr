@@ -1,6 +1,12 @@
+// Used by testedtlib.py
+
 /dts-v1/;
 
 / {
+	//
+	// Interrupts
+	//
+
 	interrupt-parent-test {
 		controller {
 			compatible = "interrupt,three-cell";
@@ -110,6 +116,11 @@
 			interrupts = <0x7 0xE>;
 		};
 	};
+
+	//
+	// GPIOS
+	//
+
 	gpio-test {
 		controller-1 {
 			compatible = "gpio,two-cell";
@@ -130,6 +141,47 @@
 			gpio-controller;
 		};
 	};
-};
 
-// TODO: Include full path in __repr__() for Devices?
+	//
+	// 'reg'
+	//
+
+	reg-zero-address-cells {
+		#address-cells = <0>;
+		#size-cells = <1>;
+
+		node {
+			reg = <1 2>;
+		};
+	};
+	reg-zero-size-cells {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		node {
+			reg = <1 2>;
+		};
+	};
+	// Use implied #size-cells = <1>
+	reg-ranges {
+		#address-cells = <2>;
+
+		parent {
+			#address-cells = <1>;
+			ranges = <1  0xA 0xB  1 /* 1    -> 0xA 0xB */
+				  2  0xC 0xD  2 /* 2..3 -> 0xC 0xD */
+				  4  0xE 0xF  1 /* 4    -> 0xE 0xF */
+				 >;
+
+			node {
+				reg = <5 1 /* Matches no range */
+				       4 1 /* Matches third range */
+				       3 1 /* Matches second range */
+				       2 1 /* Matches second range */
+				       1 1 /* Matches first range */
+				       0 1 /* Matches no range */
+				       >;
+			};
+		};
+	};
+};
