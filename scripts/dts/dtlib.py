@@ -13,6 +13,8 @@ import re
 import sys
 import textwrap
 
+# NOTE: dtlib.py is the test suite for this library. It can be run directly.
+
 
 class DT:
     """

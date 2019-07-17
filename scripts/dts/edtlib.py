@@ -27,6 +27,9 @@ import yaml
 
 from dtlib import DT, DTError, to_num, to_nums
 
+# NOTE: testedtlib.py is the test suite for this library. It can be run
+# directly.
+
 # Implementation notes
 # --------------------
 #
