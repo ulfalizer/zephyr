@@ -290,7 +290,8 @@ class Device:
 
     description:
       The description string from the binding file from the device, or None if
-      the device has no binding
+      the device has no binding. Trailing whitespace (including newlines) is
+      removed.
 
     binding_path:
       The path to the binding file for the device, or None if the device has no
@@ -465,7 +466,11 @@ class Device:
                     self.matching_compat = compat
                     self._binding, self.binding_path = \
                         self.edt._compat2binding[compat, bus]
+
                     self.description = self._binding.get("description")
+                    if self.description:
+                        self.description = self.description.rstrip()
+
                     return
         else:
             # No 'compatible' property. See if the parent has a 'sub-node:' key
