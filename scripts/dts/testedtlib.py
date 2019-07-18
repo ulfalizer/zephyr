@@ -62,5 +62,15 @@ verify_streq(edt.get_dev("/reg-ranges/parent/node").regs,
 verify_streq(edt.get_dev("/reg-nested-ranges/grandparent/parent/node").regs,
              "[<Register, addr: 0x30000000200000001, size: 0x0>]")
 
+#
+# Test !include in bindings
+#
+
+verify_streq(edt.get_dev("/binding-include").description,
+             "Parent binding")
+
+verify_streq(edt.get_dev("/binding-include").props,
+             "{'compatible': <Property, name: compatible, value: ['binding-include-test']>, 'foo': <Property, name: foo, value: 0>, 'bar': <Property, name: bar, value: 1>, 'baz': <Property, name: baz, value: 2>}")
+
 
 print("all tests passed")

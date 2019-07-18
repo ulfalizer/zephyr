@@ -1,0 +1,12 @@
+title: Child binding
+version: 1
+
+description: Child binding
+
+inherits:
+    !include grandchild.yaml
+
+properties:
+    bar:
+        category: "required"
+        type: int

@@ -203,4 +203,15 @@
 			};
 		};
 	};
+
+    //
+    // !include in bindings
+    //
+
+    binding-include {
+        compatible = "binding-include-test";
+        foo = <0>;
+        bar = <1>;
+        baz = <2>;
+    };
 };

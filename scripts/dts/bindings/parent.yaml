@@ -1,0 +1,17 @@
+title: Parent binding
+version: 1
+
+description: Parent binding
+
+inherits:
+    !include child.yaml
+
+properties:
+    compatible:
+        constraint: "binding-include-test"
+        type: string-array
+
+    foo:
+        # Changed from "optional" in grandchild.yaml
+        category: "required"
+        # Type set in grandchild

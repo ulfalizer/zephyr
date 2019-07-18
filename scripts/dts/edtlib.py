@@ -935,10 +935,11 @@ class Property:
     """
     def __repr__(self):
         fields = ["name: " + self.name,
-                  "value: " + self.val]
+                  # repr() to deal with lists
+                  "value: " + repr(self.val)]
 
-        if self.enum_val is not None:
-            fields.append("enum index: {}".format(self.enum_val))
+        if self.enum_index is not None:
+            fields.append("enum index: {}".format(self.enum_index))
 
         return "<Property, {}>".format(", ".join(fields))
 

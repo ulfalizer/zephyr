@@ -1,0 +1,13 @@
+title: Grandchild binding
+version: 1
+
+description: Grandchild binding
+
+properties:
+    foo:
+        category: "optional"
+        type: int
+
+    baz:
+        category: "required"
+        type: int
