@@ -1118,11 +1118,11 @@ def _bad_overwrite(to_dict, from_dict, prop):
     # _merge_props() helper. Returns True in cases where it's bad that
     # to_dict[prop] takes precedence over from_dict[prop].
 
-    if prop not in to_dict or to_dict[prop] == from_dict[prop]:
-        return False
-
     # These are overriden deliberately
     if prop in {"title", "version", "description"}:
+        return False
+
+    if to_dict[prop] == from_dict[prop]:
         return False
 
     # Allow a property to be made required when it previously was optional
