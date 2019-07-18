@@ -209,7 +209,13 @@ class EDT:
                             .format(filename, ", ".join(paths)))
 
         with open(paths[0], encoding="utf-8") as f:
-            return yaml.load(f, Loader=yaml.Loader)
+            binding = yaml.load(f, Loader=yaml.Loader)
+
+        # Currently, we require that each !include'd file is a well-formed
+        # binding in itself
+        _check_binding(binding, paths[0])
+
+        return binding
 
     def _init_devices(self):
         # Creates a list of devices (Device objects) from the DT nodes, in
@@ -1047,10 +1053,6 @@ def _merge_included_bindings(binding, binding_path):
     # Properties in 'binding' take precedence over properties from included
     # bindings.
 
-    # Currently, we require that each !include'd file is a well-formed binding
-    # in itself
-    _check_binding(binding, binding_path)
-
     if "inherits" in binding:
         for inherited in binding.pop("inherits"):
             _merge_props(
@@ -1058,43 +1060,6 @@ def _merge_included_bindings(binding, binding_path):
                 None, binding_path)
 
     return binding
-
-
-def _check_binding(binding, binding_path):
-    # Does sanity checking on 'binding'
-
-    for prop in "title", "version", "description":
-        if prop not in binding:
-            _err("missing '{}' property in {}".format(prop, binding_path))
-
-    ok_top = {"title", "version", "description", "inherits",
-              "properties", "#cells", "parent", "child", "sub-node"}
-
-    for prop in binding:
-        if prop not in ok_top:
-            _err("unknown key '{}' in {}, expected one of {}"
-                 .format(prop, binding_path, ", ".join(ok_top)))
-
-    # Check properties
-
-    if "properties" not in binding:
-        return
-
-    ok_prop_keys = {"description", "type", "category", "constraint", "enum"}
-    ok_categories = {"required", "optional"}
-
-    for prop, keys in binding["properties"].items():
-        for key in keys:
-            if key not in ok_prop_keys:
-                _err("unknown setting '{}' in 'properties: {}: ...' in {}, "
-                     "expected one of {}".format(
-                         key, prop, binding_path, ", ".join(ok_prop_keys)))
-
-        if "category" in keys and keys["category"] not in ok_categories:
-            _err("unrecognized category '{}' for '{}' in 'properties' in {}, "
-                 "expected one of {}".format(
-                     keys["category"], prop, binding_path,
-                     ", ".join(ok_categories)))
 
 
 def _merge_props(to_dict, from_dict, parent, binding_path):
@@ -1137,6 +1102,43 @@ def _bad_overwrite(to_dict, from_dict, prop):
         return False
 
     return True
+
+
+def _check_binding(binding, binding_path):
+    # Does sanity checking on 'binding'
+
+    for prop in "title", "version", "description":
+        if prop not in binding:
+            _err("missing '{}' property in {}".format(prop, binding_path))
+
+    ok_top = {"title", "version", "description", "inherits",
+              "properties", "#cells", "parent", "child", "sub-node"}
+
+    for prop in binding:
+        if prop not in ok_top:
+            _err("unknown key '{}' in {}, expected one of {}"
+                 .format(prop, binding_path, ", ".join(ok_top)))
+
+    # Check properties
+
+    if "properties" not in binding:
+        return
+
+    ok_prop_keys = {"description", "type", "category", "constraint", "enum"}
+    ok_categories = {"required", "optional"}
+
+    for prop, keys in binding["properties"].items():
+        for key in keys:
+            if key not in ok_prop_keys:
+                _err("unknown setting '{}' in 'properties: {}: ...' in {}, "
+                     "expected one of {}".format(
+                         key, prop, binding_path, ", ".join(ok_prop_keys)))
+
+        if "category" in keys and keys["category"] not in ok_categories:
+            _err("unrecognized category '{}' for '{}' in 'properties' in {}, "
+                 "expected one of {}".format(
+                     keys["category"], prop, binding_path,
+                     ", ".join(ok_categories)))
 
 
 def _translate(addr, node):
