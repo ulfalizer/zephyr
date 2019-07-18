@@ -103,8 +103,8 @@
 			    6 6  6 6  &{/interrupt-map-bitops-test/controller}  2 1
 			>;
 			interrupt-map-mask = <0xE 0x7 0xE 0x7>;
-			// Not specified in the DT spec., but shows up due to common code
-			// with GPIO. Might as well test it here.
+			// Not specified in the DT spec., but shows up due to
+			// common code with GPIO. Might as well test it here.
 			interrupt-map-pass-thru = <1 2 3 3>;
 		};
 		// Child unit specifier: 00000007 0000000E 00000007 0000000E
