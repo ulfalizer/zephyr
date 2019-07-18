@@ -78,10 +78,21 @@ verify_streq(edt.get_dev("/binding-include").props,
              "{'compatible': <Property, name: compatible, value: ['binding-include-test']>, 'foo': <Property, name: foo, value: 0>, 'bar': <Property, name: bar, value: 1>, 'baz': <Property, name: baz, value: 2>}")
 
 #
+# Test 'sub-node:' in binding
+#
+
+verify_streq(edt.get_dev("/parent-with-sub-node/node").description,
+             "sub-node test")
+
+verify_streq(edt.get_dev("/parent-with-sub-node/node").props,
+             "{'foo': <Property, name: foo, value: 1>, 'bar': <Property, name: bar, value: 2>}")
+
+#
 # Test Device.property (derived from DT and 'properties:' in the binding)
 #
 
 verify_streq(edt.get_dev("/props").props,
              r"{'compatible': <Property, name: compatible, value: ['props']>, 'int': <Property, name: int, value: 1>, 'array': <Property, name: array, value: [1, 2, 3]>, 'uint8-array': <Property, name: uint8-array, value: b'\x124'>, 'string': <Property, name: string, value: 'foo'>, 'string-array': <Property, name: string-array, value: ['foo', 'bar', 'baz']>}")
+
 
 print("all tests passed")

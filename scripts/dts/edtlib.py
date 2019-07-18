@@ -13,7 +13,9 @@ information related to the device, derived from both the device tree and from
 the binding for the device.
 
 Bindings are files that describe device tree nodes. Device tree nodes are
-usually mapped to bindings via their 'compatible = "..."' property.
+usually mapped to bindings via their 'compatible = "..."' property, but binding
+data can also come from a 'sub-node:' key in the binding for the parent device
+tree node.
 
 The top-level entry point of the library is the EDT class. EDT.__init__() takes
 a .dts file to parse and the path of a directory containing bindings.

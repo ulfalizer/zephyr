@@ -1,0 +1,19 @@
+title: sub-node test
+version: 1
+
+description: sub-node test
+
+properties:
+    compatible:
+        constraint: "parent-with-sub-node"
+        type: string-array
+
+sub-node:
+    properties:
+        foo:
+            required: true
+            type: int
+
+        bar:
+            required: True
+            type: int

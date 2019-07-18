@@ -230,4 +230,17 @@
 		// Device.props
 		not-speced = <0>;
 	};
+
+	//
+	// Parent with 'sub-node:' in binding
+	//
+
+	parent-with-sub-node {
+		compatible = "parent-with-sub-node";
+		node {
+			foo = <1>;
+			bar = <2>;
+			not-speced = <0>;
+		};
+	};
 };
