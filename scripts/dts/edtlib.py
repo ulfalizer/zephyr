@@ -1046,9 +1046,9 @@ def _load_binding(path):
 
 
 def _merge_included_bindings(binding, binding_path):
-    # Merges any bindings in the 'inherits:' section of 'binding' into
-    # 'binding'. !includes have already been processed at this point, and leave
-    # the data for the included binding(s) in 'inherits:'.
+    # Merges any bindings in the 'inherits:' section of 'binding' into the top
+    # level of 'binding'. !includes have already been processed at this point,
+    # and leave the data for the included binding(s) in 'inherits:'.
     #
     # Properties in 'binding' take precedence over properties from included
     # bindings.
