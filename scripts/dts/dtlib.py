@@ -396,7 +396,7 @@ class DT:
         #   'Property' instance being assigned
 
         # Remove any old value, path/phandle references, and in-value labels,
-        # in case the property value is being overriden
+        # in case the property value is being overridden
         prop.value = b""
         prop._markers = []
 

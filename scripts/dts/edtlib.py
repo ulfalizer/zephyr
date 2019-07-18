@@ -1088,7 +1088,7 @@ def _bad_overwrite(to_dict, from_dict, prop):
     # _merge_props() helper. Returns True in cases where it's bad that
     # to_dict[prop] takes precedence over from_dict[prop].
 
-    # These are overriden deliberately
+    # These are overridden deliberately
     if prop in {"title", "version", "description"}:
         return False
 
