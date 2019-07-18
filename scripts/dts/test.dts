@@ -129,7 +129,7 @@
 		};
 		node {
 			gpios = <&{/gpio-test/controller-0} 1
-			         &{/gpio-test/controller-1} 2 3>;
+				 &{/gpio-test/controller-1} 2 3>;
 			foo-gpios = <&{/gpio-test/controller-1} 4 5>;
 			bar-gpios = <&{/gpio-test/controller-1} 6 7>;
 		};
