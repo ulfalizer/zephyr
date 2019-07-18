@@ -436,8 +436,8 @@ class Device:
     def __init__(self, edt, node):
         "Private constructor. Not meant to be called by clients."
 
-        # Interrupts and GPIOs are initialized separately, because
-        # they depend on all Devices existing
+        # Interrupts, GPIOs, PWMs, and clocks are initialized separately,
+        # because they depend on all Devices existing
 
         self.edt = edt
         self._node = node
