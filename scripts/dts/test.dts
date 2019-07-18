@@ -184,4 +184,23 @@
 			};
 		};
 	};
+	// Build up <3 2 1> address with nested 'ranges'
+	reg-nested-ranges {
+		#address-cells = <3>;
+
+		grandparent {
+			#address-cells = <2>;
+			#size-cells = <2>;
+			ranges = <0 0  3 0 0  2 2>;
+
+			parent {
+				#address-cells = <1>;
+				ranges = <0  2 0  2>;
+
+				node {
+					reg = <1 0>;
+				};
+			};
+		};
+	};
 };
