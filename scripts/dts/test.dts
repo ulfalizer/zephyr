@@ -204,14 +204,30 @@
 		};
 	};
 
-    //
-    // !include in bindings
-    //
+	//
+	// !include in bindings
+	//
 
-    binding-include {
-        compatible = "binding-include-test";
-        foo = <0>;
-        bar = <1>;
-        baz = <2>;
-    };
+	binding-include {
+		compatible = "binding-include-test";
+		foo = <0>;
+		bar = <1>;
+		baz = <2>;
+	};
+
+	//
+	// For testing Device.props (derived from 'properties:' in the binding)
+	//
+
+	props {
+		compatible = "props";
+		int = <1>;
+		array = <1 2 3>;
+		uint8-array = [ 12 34 ];
+		string = "foo";
+		string-array = "foo", "bar", "baz";
+		// Does not appear in the binding, so won't create an entry in
+		// Device.props
+		not-speced = <0>;
+	};
 };

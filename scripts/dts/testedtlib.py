@@ -3,6 +3,11 @@
 # Copyright (c) 2019 Nordic Semiconductor ASA
 # SPDX-License-Identifier: Apache-2.0
 
+# Test suite for edtlib.py. Mostly uses string comparisons via the various
+# __repr__() methods.
+#
+# test.dts is the test file, and test-bindings/ has bindings.
+
 import edtlib
 
 
@@ -72,5 +77,11 @@ verify_streq(edt.get_dev("/binding-include").description,
 verify_streq(edt.get_dev("/binding-include").props,
              "{'compatible': <Property, name: compatible, value: ['binding-include-test']>, 'foo': <Property, name: foo, value: 0>, 'bar': <Property, name: bar, value: 1>, 'baz': <Property, name: baz, value: 2>}")
 
+#
+# Test Device.property (derived from DT and 'properties:' in the binding)
+#
+
+verify_streq(edt.get_dev("/props").props,
+             r"{'compatible': <Property, name: compatible, value: ['props']>, 'int': <Property, name: int, value: 1>, 'array': <Property, name: array, value: [1, 2, 3]>, 'uint8-array': <Property, name: uint8-array, value: b'\x124'>, 'string': <Property, name: string, value: 'foo'>, 'string-array': <Property, name: string-array, value: ['foo', 'bar', 'baz']>}")
 
 print("all tests passed")
