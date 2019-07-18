@@ -13,5 +13,5 @@ properties:
 
     foo:
         # Changed from "optional" in grandchild.yaml
-        category: "required"
+        category: required
         # Type set in grandchild

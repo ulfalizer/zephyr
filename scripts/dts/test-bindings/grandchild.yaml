@@ -5,9 +5,9 @@ description: Grandchild binding
 
 properties:
     foo:
-        category: "optional"
+        category: optional
         type: int
 
     baz:
-        category: "required"
+        category: required
         type: int

@@ -1067,29 +1067,34 @@ def _check_binding(binding, binding_path):
         if prop not in binding:
             _err("missing '{}' property in {}".format(prop, binding_path))
 
+    ok_top = {"title", "version", "description", "inherits",
+              "properties", "#cells", "parent", "child", "sub-node"}
+
     for prop in binding:
-        if prop not in {"title", "version", "description", "inherits",
-                        "properties", "#cells", "parent", "child", "sub-node"}:
-            _err("unknown property '{}' in {}".format(prop, binding_path))
+        if prop not in ok_top:
+            _err("unknown key '{}' in {}, expected one of {}"
+                 .format(prop, binding_path, ", ".join(ok_top)))
 
     # Check properties
 
     if "properties" not in binding:
         return
 
-    categories = {"required", "optional"}
+    ok_prop_keys = {"description", "type", "category", "constraint", "enum"}
+    ok_categories = {"required", "optional"}
+
     for prop, keys in binding["properties"].items():
         for key in keys:
-            if key not in {"description", "type", "category", "constraint",
-                           "enum"}:
-                _err("unknown setting '{}' for '{}' in 'properties' in {}"
-                     .format(key, prop, binding_path))
+            if key not in ok_prop_keys:
+                _err("unknown setting '{}' in 'properties: {}: ...' in {}, "
+                     "expected one of {}".format(
+                         key, prop, binding_path, ", ".join(ok_prop_keys)))
 
-        if "category" in keys and keys["category"] not in categories:
-            _err("unrecognized 'category: {}' for '{}' in 'properties' in {}, "
+        if "category" in keys and keys["category"] not in ok_categories:
+            _err("unrecognized category '{}' for '{}' in 'properties' in {}, "
                  "expected one of {}".format(
                      keys["category"], prop, binding_path,
-                     ", ".join(categories)))
+                     ", ".join(ok_categories)))
 
 
 def _merge_props(to_dict, from_dict, parent, binding_path):

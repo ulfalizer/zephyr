@@ -8,5 +8,5 @@ inherits:
 
 properties:
     bar:
-        category: "required"
+        category: required
         type: int
