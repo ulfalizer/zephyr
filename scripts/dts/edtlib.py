@@ -209,13 +209,7 @@ class EDT:
                             .format(filename, ", ".join(paths)))
 
         with open(paths[0], encoding="utf-8") as f:
-            binding = yaml.load(f, Loader=yaml.Loader)
-
-        # Currently, we require that each !include'd file is a well-formed
-        # binding in itself
-        _check_binding(binding, paths[0])
-
-        return binding
+            return yaml.load(f, Loader=yaml.Loader)
 
     def _init_devices(self):
         # Creates a list of devices (Device objects) from the DT nodes, in
@@ -1069,6 +1063,10 @@ def _merge_included_bindings(binding, binding_path):
     # Properties in 'binding' take precedence over properties from included
     # bindings.
 
+    # Currently, we require that each !include'd file is a well-formed
+    # binding in itself
+    _check_binding(binding, binding_path)
+
     if "inherits" in binding:
         for inherited in binding.pop("inherits"):
             _merge_props(
@@ -1126,6 +1124,11 @@ def _check_binding(binding, binding_path):
     for prop in "title", "version", "description":
         if prop not in binding:
             _err("missing '{}' property in {}".format(prop, binding_path))
+
+    for prop in "title", "description":
+        if not isinstance(binding[prop], str) or not binding[prop]:
+            _err("missing, malformed, or empty '{}' in {}"
+                 .format(prop, binding_path))
 
     ok_top = {"title", "version", "description", "inherits",
               "properties", "#cells", "parent", "child", "sub-node"}

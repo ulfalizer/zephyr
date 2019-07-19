@@ -1,7 +1,7 @@
 title: Interrupt controller with one cell
 version: 1
 
-description:
+description: Interrupt controller with one cell
 
 properties:
     compatible:
