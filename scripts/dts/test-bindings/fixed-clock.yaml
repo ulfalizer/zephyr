@@ -1,0 +1,12 @@
+title: Fixed clock
+version: 1
+
+description: Fixed clock
+
+properties:
+    compatible:
+        constraint: "fixed-clock"
+        type: string-array
+
+    clock-frequency:
+        type: int

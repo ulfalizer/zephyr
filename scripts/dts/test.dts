@@ -143,6 +143,33 @@
 	};
 
 	//
+	// Clocks
+	//
+
+	clock-test {
+		fixed-clock {
+			// 'fixed-clock' is currently special-cased in the code
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <123>;
+		};
+		clock-1 {
+			compatible = "clock-one-cell";
+			#clock-cells = <1>;
+		};
+		clock-2 {
+			compatible = "clock-two-cell";
+			#clock-cells = <2>;
+		};
+		node {
+			clocks = <&{/clock-test/fixed-clock}
+				  &{/clock-test/clock-1} 1
+				  &{/clock-test/clock-2} 1 2>;
+			clock-names = "fixed", "one-cell", "two-cell";
+		};
+	};
+
+	//
 	// 'reg'
 	//
 

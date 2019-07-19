@@ -687,6 +687,11 @@ class Device:
             clock.controller = controller
             clock.specifier = self._named_cells(controller, spec, "clocks")
             if "fixed-clock" in controller.compats:
+                if "clock-frequency" not in controller.props:
+                    _err("{!r} is a 'fixed-clock', but either lacks a "
+                         "'clock-frequency' property or does not have "
+                         "it specified in its binding".format(controller))
+
                 clock.frequency = controller.props["clock-frequency"].val
             else:
                 clock.frequency = None
@@ -869,7 +874,9 @@ class Clock:
       The Device instance for the controller of the clock.
 
     frequency:
-      The frequency of the clock, None if its not determinable
+      The frequency of the clock for fixed clocks ('fixed-clock' in
+      'compatible'), as an integer. Derived from the 'clock-frequency'
+      property. None if the clock is not a fixed clock.
 
     specifier:
       A dictionary that maps names from the #cells portion of the binding to
@@ -880,6 +887,9 @@ class Clock:
 
         if self.name is not None:
             fields.append("name: " + self.name)
+
+        if self.frequency is not None:
+            fields.append("frequency: {}".format(self.frequency))
 
         fields.append("target: {}".format(self.controller))
         fields.append("specifier: {}".format(self.specifier))

@@ -1,0 +1,12 @@
+title: Clock source with one cell
+version: 1
+
+description: Clock source with one cell
+
+properties:
+    compatible:
+        constraint: "clock-one-cell"
+        type: string-array
+
+"#cells":
+  - one

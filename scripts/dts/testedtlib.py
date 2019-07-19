@@ -52,6 +52,13 @@ verify_streq(edt.get_dev("/gpio-test/node").gpios,
              "{'': [<GPIO, name: , target: <Device /gpio-test/controller-0 in 'test.dts', binding test-bindings/gpio-1-cell.yaml>, specifier: {'one': 1}>, <GPIO, name: , target: <Device /gpio-test/controller-1 in 'test.dts', binding test-bindings/gpio-2-cell.yaml>, specifier: {'one': 2, 'two': 3}>], 'foo': [<GPIO, name: foo, target: <Device /gpio-test/controller-1 in 'test.dts', binding test-bindings/gpio-2-cell.yaml>, specifier: {'one': 4, 'two': 5}>], 'bar': [<GPIO, name: bar, target: <Device /gpio-test/controller-1 in 'test.dts', binding test-bindings/gpio-2-cell.yaml>, specifier: {'one': 6, 'two': 7}>]}")
 
 #
+# Test clocks
+#
+
+verify_streq(edt.get_dev("/clock-test/node").clocks,
+             "[<Clock, name: fixed, frequency: 123, target: <Device /clock-test/fixed-clock in 'test.dts', binding test-bindings/fixed-clock.yaml>, specifier: {}>, <Clock, name: one-cell, target: <Device /clock-test/clock-1 in 'test.dts', binding test-bindings/clock-1-cell.yaml>, specifier: {'one': 1}>, <Clock, name: two-cell, target: <Device /clock-test/clock-2 in 'test.dts', binding test-bindings/clock-2-cell.yaml>, specifier: {'one': 1, 'two': 2}>]")
+
+#
 # Test 'reg'
 #
 
