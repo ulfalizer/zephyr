@@ -1156,6 +1156,10 @@ def _check_binding(binding, binding_path):
                      keys["category"], prop, binding_path,
                      ", ".join(ok_categories)))
 
+        if "description" in keys and not isinstance(keys["description"], str):
+            _err("missing, malformed, or empty 'description' for '{}' in "
+                 "'properties' in {}".format(prop, binding_path))
+
 
 def _translate(addr, node):
     # Recursively translates 'addr' on 'node' to the address space(s) of its
