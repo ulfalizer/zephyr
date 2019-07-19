@@ -170,6 +170,26 @@
 	};
 
 	//
+	// PWMs
+	//
+
+	pwm-test {
+		pwm-0 {
+			compatible = "pwm-zero-cell";
+			#pwm-cells = <0>;
+		};
+		pwm-1 {
+			compatible = "pwm-one-cell";
+			#pwm-cells = <1>;
+		};
+		node {
+			pwms = <&{/pwm-test/pwm-0}
+				&{/pwm-test/pwm-1} 1>;
+			pwm-names = "zero-cell", "one-cell";
+		};
+	};
+
+	//
 	// 'reg'
 	//
 

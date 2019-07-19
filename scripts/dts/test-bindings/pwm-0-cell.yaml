@@ -1,0 +1,9 @@
+title: PWM source with zero cells
+version: 1
+
+description: PWM source with zero cells
+
+properties:
+    compatible:
+        constraint: "pwm-zero-cell"
+        type: string-array

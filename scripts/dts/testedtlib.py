@@ -45,7 +45,7 @@ verify_streq(edt.get_dev("/interrupt-map-bitops-test/node@70000000E").interrupts
              "[<Interrupt, target: <Device /interrupt-map-bitops-test/controller in 'test.dts', binding test-bindings/interrupt-2-cell.yaml>, specifier: {'one': 3, 'two': 2}>]")
 
 #
-# Test GPIOS
+# Test GPIOs
 #
 
 verify_streq(edt.get_dev("/gpio-test/node").gpios,
@@ -57,6 +57,13 @@ verify_streq(edt.get_dev("/gpio-test/node").gpios,
 
 verify_streq(edt.get_dev("/clock-test/node").clocks,
              "[<Clock, name: fixed, frequency: 123, target: <Device /clock-test/fixed-clock in 'test.dts', binding test-bindings/fixed-clock.yaml>, specifier: {}>, <Clock, name: one-cell, target: <Device /clock-test/clock-1 in 'test.dts', binding test-bindings/clock-1-cell.yaml>, specifier: {'one': 1}>, <Clock, name: two-cell, target: <Device /clock-test/clock-2 in 'test.dts', binding test-bindings/clock-2-cell.yaml>, specifier: {'one': 1, 'two': 2}>]")
+
+#
+# Test PWMs
+#
+
+verify_streq(edt.get_dev("/pwm-test/node").pwms,
+             "[<PWM, name: zero-cell, target: <Device /pwm-test/pwm-0 in 'test.dts', binding test-bindings/pwm-0-cell.yaml>, specifier: {}>, <PWM, name: one-cell, target: <Device /pwm-test/pwm-1 in 'test.dts', binding test-bindings/pwm-1-cell.yaml>, specifier: {'one': 1}>]")
 
 #
 # Test 'reg'
