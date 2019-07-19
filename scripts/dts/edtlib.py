@@ -495,7 +495,11 @@ class Device:
                 # Binding found
                 self._binding = self.parent._binding["sub-node"]
                 self.binding_path = self.parent.binding_path
+
                 self.description = self.parent._binding.get("description")
+                if self.description:
+                    self.description = self.description.rstrip()
+
                 self.matching_compat = self.parent.matching_compat
                 return
 
@@ -555,6 +559,8 @@ class Device:
         prop.dev = self
         prop.name = name
         prop.description = options.get("description")
+        if prop.description:
+            prop.description = prop.description.rstrip()
         prop.val = val
         enum = options.get("enum")
         if enum is None:
@@ -930,8 +936,8 @@ class Property:
       The name of the property
 
     description:
-      The description string for the property as given in the binding, or None
-      if missing
+      The description string from the property as given in the binding, or None
+      if missing. Trailing whitespace (including newlines) is removed.
 
     val:
       The value of the property, with the format determined by the 'type:'
