@@ -235,10 +235,6 @@ class EDT:
             dev._init_pwms()
             dev._init_clocks()
 
-        # TODO: Remove this sorting later? It's there to make it easy to
-        # compare output against extract_dts_include.py.
-        self.devices.sort(key=lambda dev: dev.name)
-
     def __repr__(self):
         return "<EDT for '{}', binding directory '{}'>".format(
             self.dts_path, self.bindings_dir)

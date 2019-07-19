@@ -1265,9 +1265,7 @@ class Node:
               ...
         """
         yield self
-        # TODO: Get rid of this sorting later. It's just here to make it easier
-        # to compare against the output from the old scripts.
-        for node in sorted(self.nodes.values(), key=lambda node: node.name):
+        for node in self.nodes.values():
             yield from node.node_iter()
 
     def __str__(self):
