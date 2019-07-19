@@ -5,7 +5,7 @@ description: GPIO controller with one cell
 
 properties:
     compatible:
-        constraint: "gpio,one-cell"
+        constraint: "gpio-one-cell"
         type: string-array
 
 "#cells":

@@ -9,7 +9,7 @@
 
 	interrupt-parent-test {
 		controller {
-			compatible = "interrupt,three-cell";
+			compatible = "interrupt-three-cell";
 			#interrupt-cells = <3>;
 			interrupt-controller;
 		};
@@ -21,17 +21,17 @@
 	};
 	interrupts-extended-test {
 		controller-0 {
-			compatible = "interrupt,one-cell";
+			compatible = "interrupt-one-cell";
 			#interrupt-cells = <1>;
 			interrupt-controller;
 		};
 		controller-1 {
-			compatible = "interrupt,two-cell";
+			compatible = "interrupt-two-cell";
 			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 		controller-2 {
-			compatible = "interrupt,three-cell";
+			compatible = "interrupt-three-cell";
 			#interrupt-cells = <3>;
 			interrupt-controller;
 		};
@@ -47,19 +47,19 @@
 		#size-cells = <0>;
 
 		controller-0 {
-			compatible = "interrupt,one-cell";
+			compatible = "interrupt-one-cell";
 			#address-cells = <1>;
 			#interrupt-cells = <1>;
 			interrupt-controller;
 		};
 		controller-1 {
-			compatible = "interrupt,two-cell";
+			compatible = "interrupt-two-cell";
 			#address-cells = <2>;
 			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 		controller-2 {
-			compatible = "interrupt,three-cell";
+			compatible = "interrupt-three-cell";
 			#address-cells = <3>;
 			#interrupt-cells = <3>;
 			interrupt-controller;
@@ -92,7 +92,7 @@
 		#size-cells = <0>;
 
 		controller {
-			compatible = "interrupt,two-cell";
+			compatible = "interrupt-two-cell";
 			#address-cells = <0>;
 			#interrupt-cells = <2>;
 			interrupt-controller;
@@ -123,7 +123,7 @@
 
 	gpio-test {
 		controller-1 {
-			compatible = "gpio,two-cell";
+			compatible = "gpio-two-cell";
 			#gpio-cells = <2>;
 			gpio-controller;
 		};
@@ -136,7 +136,7 @@
 		// Putting this controller last gives us some coverage for ordering
 		// issues during initialization
 		controller-0 {
-			compatible = "gpio,one-cell";
+			compatible = "gpio-one-cell";
 			#gpio-cells = <1>;
 			gpio-controller;
 		};

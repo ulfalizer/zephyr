@@ -5,7 +5,7 @@ description:
 
 properties:
     compatible:
-        constraint: "interrupt,two-cell"
+        constraint: "interrupt-two-cell"
         type: string-array
 
 "#cells":
