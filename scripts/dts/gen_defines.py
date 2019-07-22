@@ -94,6 +94,16 @@ def main():
         out("CCM_BASE_ADDRESS", hex(reg.addr))
         out("CCM_SIZE", reg.size//1024)
 
+    dtcm_dev = edt.chosen_dev("zephyr,dtcm")
+    if dtcm_dev:
+        if not dtcm_dev.regs:
+            err("missing 'reg' property in zephyr,dtcm ({!r})".format(dtcm_dev))
+
+        out_comment("/chosen/zephyr,dtcm ({})".format(dtcm_dev.path))
+        reg = dtcm_dev.regs[0]
+        out("DTCM_BASE_ADDRESS", hex(reg.addr))
+        out("DTCM_SIZE", reg.size//1024)
+
     # NOTE: These defines aren't used by the code and just used by
     # the kconfig build system, we can remove them in the future
     # if we provide a function in kconfigfunctions.py to get
