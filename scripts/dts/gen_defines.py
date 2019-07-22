@@ -515,10 +515,12 @@ def write_clocks(dev):
 
         for spec, val in clock.specifier.items():
             if clock_i == 0:
-                clk_name_alias = "CLOCK_{}".format(str2ident(spec))
+                clk_name_alias = "CLOCK_" + str2ident(spec)
             else:
                 clk_name_alias = None
-            out_dev(dev, "CLOCK_{}_{}".format(str2ident(spec), clock_i), val, name_alias=clk_name_alias)
+
+            out_dev(dev, "CLOCK_{}_{}".format(str2ident(spec), clock_i), val,
+                    name_alias=clk_name_alias)
 
 
 def str2ident(s):
