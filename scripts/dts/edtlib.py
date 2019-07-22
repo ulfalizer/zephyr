@@ -620,7 +620,10 @@ class Device:
             reg = Register()
             reg.dev = self
             reg.addr = _translate(to_num(raw_reg[:4*address_cells]), node)
-            reg.size = to_num(raw_reg[4*address_cells:])
+            if size_cells:
+                reg.size = to_num(raw_reg[4*address_cells:])
+            else:
+                reg.size = None
 
             self.regs.append(reg)
 
