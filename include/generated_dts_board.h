@@ -12,6 +12,7 @@
 #define GENERATED_DTS_BOARD_H
 
 #include <generated_dts_board_unfixed.h>
+#include <generated_dts_board_unfixed.h.deprecated>
 
 /* The following definitions fixup the generated include */
 

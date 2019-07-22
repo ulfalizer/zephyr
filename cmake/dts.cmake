@@ -157,10 +157,10 @@ if(SUPPORTS_DTS)
   endif()
 
   set(CMD_EXTRACT_DTS_INCLUDES ${PYTHON_EXECUTABLE} ${ZEPHYR_BASE}/scripts/dts/extract_dts_includes.py
+    --deprecate-only
     --dts ${BOARD}.dts_compiled
     --yaml ${DTS_ROOT_BINDINGS}
-    --keyvalue ${GENERATED_DTS_BOARD_CONF}
-    --include ${GENERATED_DTS_BOARD_UNFIXED_H}
+    --include ${GENERATED_DTS_BOARD_UNFIXED_H}.deprecated
     --old-alias-names
     )
 
@@ -175,15 +175,12 @@ if(SUPPORTS_DTS)
     message(FATAL_ERROR "command failed with return code: ${ret}")
   endif()
 
-  import_kconfig(CONFIG_ ${GENERATED_DTS_BOARD_CONF})
-  import_kconfig(DT_     ${GENERATED_DTS_BOARD_CONF})
-
   # Test the new extractor
   set(CMD_NEW_EXTRACT ${PYTHON_EXECUTABLE} ${ZEPHYR_BASE}/scripts/dts/gen_defines.py
   --dts ${BOARD}.dts_compiled
   --bindings-dir ${DTS_ROOT_BINDINGS}
-  --conf-out ${GENERATED_DTS_BOARD_CONF}-new
-  --header-out ${GENERATED_DTS_BOARD_UNFIXED_H}-new
+  --conf-out ${GENERATED_DTS_BOARD_CONF}
+  --header-out ${GENERATED_DTS_BOARD_UNFIXED_H}
   )
 
   execute_process(
@@ -194,6 +191,9 @@ if(SUPPORTS_DTS)
   if(NOT "${ret}" STREQUAL "0")
     message(FATAL_ERROR "new extractor failed with return code: ${ret}")
   endif()
+
+  import_kconfig(CONFIG_ ${GENERATED_DTS_BOARD_CONF})
+  import_kconfig(DT_     ${GENERATED_DTS_BOARD_CONF})
 
 else()
   file(WRITE ${GENERATED_DTS_BOARD_UNFIXED_H} "/* WARNING. THIS FILE IS AUTO-GENERATED. DO NOT MODIFY! */")
