@@ -96,7 +96,7 @@ verify_streq(edt.get_dev("/binding-include").props,
 #
 
 verify_streq(edt.get_dev("/parent-with-sub-node/node").description,
-             "sub-node test")
+             "Sub-node test")
 
 verify_streq(edt.get_dev("/parent-with-sub-node/node").props,
              "{'foo': <Property, name: foo, value: 1>, 'bar': <Property, name: bar, value: 2>}")

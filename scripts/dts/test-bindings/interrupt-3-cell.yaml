@@ -1,6 +1,4 @@
 title: Interrupt controller with three cells
-version: 1
-
 description: Interrupt controller with three cells
 
 properties:

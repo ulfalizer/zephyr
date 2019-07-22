@@ -1,7 +1,5 @@
-title: sub-node test
-version: 1
-
-description: sub-node test
+title: Sub-node test
+description: Sub-node test
 
 properties:
     compatible:

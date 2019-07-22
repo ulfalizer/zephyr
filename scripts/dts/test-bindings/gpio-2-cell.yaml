@@ -1,6 +1,4 @@
 title: GPIO controller with two cells
-version: 1
-
 description: GPIO controller with two cells
 
 properties:

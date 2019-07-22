@@ -1100,7 +1100,7 @@ def _bad_overwrite(to_dict, from_dict, prop):
     # to_dict[prop] takes precedence over from_dict[prop].
 
     # These are overridden deliberately
-    if prop in {"title", "version", "description"}:
+    if prop in {"title", "description"}:
         return False
 
     if to_dict[prop] == from_dict[prop]:
@@ -1118,7 +1118,7 @@ def _bad_overwrite(to_dict, from_dict, prop):
 def _check_binding(binding, binding_path):
     # Does sanity checking on 'binding'
 
-    for prop in "title", "version", "description":
+    for prop in "title", "description":
         if prop not in binding:
             _err("missing '{}' property in {}".format(prop, binding_path))
 
@@ -1127,8 +1127,8 @@ def _check_binding(binding, binding_path):
             _err("missing, malformed, or empty '{}' in {}"
                  .format(prop, binding_path))
 
-    ok_top = {"title", "version", "description", "inherits",
-              "properties", "#cells", "parent", "child", "sub-node"}
+    ok_top = {"title", "description", "inherits", "properties", "#cells",
+              "parent", "child", "sub-node"}
 
     for prop in binding:
         if prop not in ok_top:
