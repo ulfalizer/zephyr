@@ -79,7 +79,7 @@ verify_streq(edt.get_dev("/reg-ranges/parent/node").regs,
              "[<Register, addr: 0x5, size: 0x1>, <Register, addr: 0xe0000000f, size: 0x1>, <Register, addr: 0xc0000000e, size: 0x1>, <Register, addr: 0xc0000000d, size: 0x1>, <Register, addr: 0xa0000000b, size: 0x1>, <Register, addr: 0x0, size: 0x1>]")
 
 verify_streq(edt.get_dev("/reg-nested-ranges/grandparent/parent/node").regs,
-             "[<Register, addr: 0x30000000200000001, size: 0x0>]")
+             "[<Register, addr: 0x30000000200000001, size: 0x1>]")
 
 #
 # Test !include in bindings

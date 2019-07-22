@@ -160,7 +160,7 @@ def write_regs(dev):
         out_dev(dev, reg_addr_ident(reg), hex(reg.addr),
                 name_alias=reg_addr_name_alias(reg))
 
-        if reg.size is not None:
+        if reg.size:
             out_dev(dev, reg_size_ident(reg), reg.size,
                     name_alias=reg_size_name_alias(reg))
 
