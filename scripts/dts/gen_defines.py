@@ -514,7 +514,11 @@ def write_clocks(dev):
             out_dev(dev, "CLOCKS_CLOCK_FREQUENCY", clock.frequency)
 
         for spec, val in clock.specifier.items():
-            out_dev(dev, "CLOCK_{}_{}".format(str2ident(spec), clock_i), val)
+            if clock_i == 0:
+                clk_name_alias = "CLOCK_{}".format(str2ident(spec))
+            else:
+                clk_name_alias = None
+            out_dev(dev, "CLOCK_{}_{}".format(str2ident(spec), clock_i), val, name_alias=clk_name_alias)
 
 
 def str2ident(s):
