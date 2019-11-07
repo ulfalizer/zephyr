@@ -1,0 +1,210 @@
+# File format
+# ###########
+#
+# "Subsystem title" (the quotes are needed if the title has more than one word):
+#     status:
+#         One of the following:
+#
+#         * maintained:
+#             Someone looks after the subsystem.
+#
+#         * odd fixes:
+#             The subsystem has a maintainer, but they don't have time to do
+#             much other than throw the odd patch in.
+#
+#         * orphaned:
+#             No current maintainer (but maybe you could take the role as you
+#             write your new code).
+#
+#         * obsolete:
+#             Old code. Something being marked obsolete generally means it has
+#             been replaced by a better subsystem that you should be using
+#             instead.
+#
+#     maintainers:
+#         List of GitHub handles for the people who maintain (or used to
+#         maintain) the subsystem. Usually, there's only one maintainer.
+#
+#     collaborators:
+#         Tier 2 sub-maintainer (TODO: needs a better description)
+#
+#     inform:
+#         List of GitHub handles for people to inform when a pull request that
+#         modifies the subsystem is sent.
+#
+#     labels:
+#         List of GitHub labels to add to pull requests that modify the
+#         subsystem.
+#
+#     files:
+#         List of paths and/or glob patterns giving the files in the subsystem,
+#         relative to the root directory.
+#
+#         If a path or glob pattern ends in a '/', it matches all files within
+#         the given directory or directories. Otherwise, an exact match is
+#         required.
+#
+#         Paths to directories should always have a trailing '/'.
+#
+#     files-regex:
+#         List of regular expressions applied to paths to determine if they
+#         belong to the subsystem. The regular expression may match anywhere
+#         within the path, but can be anchored with ^ and $ as usual.
+#
+#         Can be combined with a 'files' key.
+#
+#     files-exclude:
+#         Like 'files', but any matching files will be excluded from the
+#         subsystem.
+#
+#     files-regex-exclude:
+#         Like 'files-regex', but any matching files will be excluded from the
+#         subsystem.
+#
+#     description: >-
+#         Plain-English description. Describe what the system is about, from an
+#         outsider's perspective.
+#
+#
+# All subsystems must have a 'status' key and a 'files' and/or 'files-regex'
+# key. The other keys are optional.
+#
+#
+# Workflow
+# ########
+#
+# Ideally, any file in the tree will be covered by some subsystem.
+#
+# When a GitHub pull request is sent, this happens:
+#
+#     * Users mentioned in 'maintainers' and 'collaborators' are added as
+#       reviewers to the pull request
+#
+#     * The labels listed in 'labels' are automatically added to the pull
+#       request
+#
+#     * The bot posts this comment:
+#
+#         This PR affects the following subsystems:
+#         Subsystem Name 1:
+#           Status: ...
+#           Maintainers: <list of maintainers>
+#           Collaborators: <list of sub-maintainers>
+#           CC: <list of informed GitHub users, like @johndoe>
+#
+#     * An e-mail is sent to the addresses in 'inform'
+#
+# Changes to MAINTAINERS.yml need to be approved as follows:
+#
+#     * Changing the 'maintainers' for a subsystem needs approval from the
+#       technical steering committee
+#
+#     * Changing the 'collaborators' lines requires the maintainer and
+#       collaborators of that subsystem to agree (or vote on it)
+#
+# TODO: Explain get_maintainer.py
+
+"ARC arch":
+    status: maintained
+    maintainers:
+        - ruuddw
+    collaborators:
+        - vonhust
+    files:
+        - arch/arc/
+    labels:
+        - "area: ARC"
+
+"ARM arch":
+    status: maintained
+    maintainers:
+        - ioannisg
+    collaborators:
+        - MaureenHelm
+        - galak
+        - ioannisg
+    files:
+        - arch/arm/
+    labels:
+        - "area: ARM"
+
+Bluetooth:
+    status: maintained
+    maintainers:
+        - jhedberg
+    collaborators:
+        - joerchan
+        - Vudentz
+    files:
+        - subsys/bluetooth/
+        - drivers/bluetooth/
+        - tests/bluetooth/
+        - samples/bluetooth/
+        - include/drivers/bluetooth/
+        - include/bluetooth/
+        - doc/reference/bluetooth/
+        - doc/guides/bluetooth/
+    labels:
+        - "area: Bluetooth"
+
+"Bluetooth controller":
+    status: maintained
+    maintainers:
+        - cvinayak
+    collaborators:
+        - carlescufi
+        - thoh-ot
+    files:
+        - subsys/bluetooth/controller/
+
+"Bluetooth Mesh":
+    status: maintained
+    collaborators:
+        - trond-snekvik
+    files:
+        - subsys/bluetooth/mesh/
+    labels:
+        - "area: Bluetooth Mesh"
+
+Documentation:
+    status: maintained
+    maintainers:
+        - dbkinder
+    files-regex:
+        - \.rst$
+    labels:
+        - "area: Documentation"
+
+"Native POSIX and POSIX arch":
+    status: maintained
+    maintainers:
+        - aescolar
+    files:
+        - arch/posix/
+        - soc/posix/
+        - boards/posix/native_posix/
+        - dts/posix/
+        - include/arch/posix/
+        - scripts/valgrind.supp
+        - tests/boards/native_posix/
+        - drivers/*/*/*native_posix*
+    labels:
+        - "area: native port"
+    description: >-
+        POSIX architecture and SOC, native_posix board, and related drivers
+
+"Native POSIX flash driver":
+    status: maintained
+    collaborators:
+         - vanwinkeljan
+    files:
+         - drivers/flash/flash_native_posix.c
+
+"nRF52 BSIM":
+    status: maintained
+    maintainers:
+        - aescolar
+    files:
+        - boards/posix/nrf52_bsim/
+    labels:
+        - "platform: nrf52_bsim"
