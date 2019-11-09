@@ -203,8 +203,7 @@ class Maintainers:
                 if subsys._contains(path):
                     break
             else:
-                # We get here if we never hit the 'break'
-                print(path)
+                print(path)  # We get here if we never hit the 'break'
 
 
 class Subsystem:
