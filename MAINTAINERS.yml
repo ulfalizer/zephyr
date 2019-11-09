@@ -104,7 +104,9 @@
 #
 # TODO: Explain get_maintainer.py
 
-"ARC arch":
+# Subsystems are sorted by name
+
+ARC:
     status: maintained
     maintainers:
         - ruuddw
@@ -115,7 +117,7 @@
     labels:
         - "area: ARC"
 
-"ARM arch":
+ARM:
     status: maintained
     maintainers:
         - ioannisg
@@ -174,6 +176,20 @@ Documentation:
         - \.rst$
     labels:
         - "area: Documentation"
+
+Kconfig:
+    status: maintained
+    maintainers:
+        - ulfalizer
+    files:
+        - scripts/kconfig/
+    files-regex:
+        - Kconfig[\w.]*$
+    labels:
+        - "area: Kconfig"
+    description: >-
+        See https://docs.zephyrproject.org/latest/guides/kconfig/index.html and
+        https://docs.zephyrproject.org/latest/guides/porting/board_porting.html#default-board-configuration
 
 "Native POSIX and POSIX arch":
     status: maintained
