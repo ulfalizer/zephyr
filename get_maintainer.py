@@ -43,7 +43,16 @@ def _main():
     args = _parse_args()
 
     try:
-        maint = Maintainers(args.maintainers)
+        maints = Maintainers(args.maintainers)
+
+        if args.subsystem_to_list is not None:
+            maints._list_files(args.subsystem_to_list)
+            return
+
+        if args.list_orphaned:
+            maints._list_orphaned()
+            return
+
         if args.args_are_paths:
             for path in args.commit_ranges_or_paths:
                 if not os.path.exists(path):
@@ -51,13 +60,13 @@ def _main():
 
             subsystems = {
                 subsys for path in args.commit_ranges_or_paths
-                       for subsys in maint.path2subsystems(path)
+                       for subsys in maints.path2subsystems(path)
             }
         else:
             commit_ranges = args.commit_ranges_or_paths or ("HEAD~..",)
             subsystems = {
                 subsys for commit_range in commit_ranges
-                       for subsys in maint.commits2subsystems(commit_range)
+                       for subsys in maints.commits2subsystems(commit_range)
             }
     except (MaintainersError, GitError) as e:
         _serr(e)
@@ -88,9 +97,19 @@ def _parse_args():
                         help="Maintainers file to load (default: MAINTAINERS.yml)")
 
     parser.add_argument("-f", "--files",
-                        dest="args_are_paths",
                         action="store_true",
+                        dest="args_are_paths",
                         help="Interpret arguments as paths instead of commit ranges")
+
+    parser.add_argument("-l", "--list",
+                        dest="subsystem_to_list",
+                        metavar="SUBSYSTEM_NAME",
+                        help="List files in SUBSYSTEM_NAME")
+
+    parser.add_argument("-o", "--orphaned",
+                        action="store_true",
+                        dest="list_orphaned",
+                        help="List files that do appear in any subsystem")
 
     parser.add_argument("commit_ranges_or_paths",
                         nargs="*",
@@ -101,8 +120,16 @@ def _parse_args():
 
 class Maintainers:
     """
-    Represents the contents of a MAINTAINERS.yml file. The filename passed to
-    the constructor is available in the 'filename' attribute.
+    Represents the contents of a MAINTAINERS.yml file.
+
+    These attributes are available:
+
+    subsystems:
+        A dictionary that maps subsystem names to Subsystem instances,
+        for all subsystems defined in MAINTAINERS.yml
+
+    filename:
+        The maintainers filename passed to the constructor
     """
     def __init__(self, filename="MAINTAINERS.yml"):
         """
@@ -113,7 +140,7 @@ class Maintainers:
         """
         self.filename = filename
 
-        self.subsystems = []
+        self.subsystems = {}
         for subsys_name, subsys_dict in _load_maintainers(filename).items():
             subsys = Subsystem()
             subsys.name = subsys_name
@@ -126,14 +153,22 @@ class Maintainers:
             subsys._files_exclude = subsys_dict.get("files-exclude")
             subsys._files_regex = subsys_dict.get("files-regex")
             subsys._files_regex_exclude = subsys_dict.get("files-regex-exclude")
-            self.subsystems.append(subsys)
+            self.subsystems[subsys_name] = subsys
 
     def path2subsystems(self, path):
         """
         Returns a list of Subsystem instances for the subsystems that contain
         'path'
         """
-        return [subsys for subsys in self.subsystems if subsys._contains(path)]
+        if os.path.isdir(path):
+            # Make directory paths end in '/' so that '-f foo/bar' matches
+            # foo/bar/, which is handy for command-line use. Skip this check in
+            # _contains(), because the isdir() makes it twice as slow in cases
+            # where it's not needed.
+            path = path.rstrip("/") + "/"
+
+        return [subsys for subsys in self.subsystems.values()
+                if subsys._contains(path)]
 
     def commits2subsystems(self, commits):
         """
@@ -141,16 +176,35 @@ class Maintainers:
         files that are modified by the commit range in 'commits'. 'commits'
         could be e.g. "HEAD~..", to inspect the tip commit
         """
-        subsystems = set()
+        res = set()
         # Final '--' is to disallow a path for 'commits', so that
         # './get_maintainers.py some/file' errors out instead of doing nothing.
         # That makes forgetting -f easier to notice.
         for path in _git("diff", "--name-only", commits, "--").splitlines():
-            subsystems.update(self.path2subsystems(path))
-        return subsystems
+            res.update(self.path2subsystems(path))
+        return res
 
     def __repr__(self):
         return "<Maintainers for '{}'>".format(self.filename)
+
+    def _list_files(self, subsys_name):
+        subsys = self.subsystems.get(subsys_name)
+        if subsys is None:
+            _serr("'{}': no such subsystem defined in '{}'"
+                  .format(subsys_name, self.filename))
+
+        for path in _all_files():
+            if subsys._contains(path):
+                print(path)
+
+    def _list_orphaned(self):
+        for path in _all_files():
+            for subsys in self.subsystems.values():
+                if subsys._contains(path):
+                    break
+            else:
+                # We get here if we never hit the 'break'
+                print(path)
 
 
 class Subsystem:
@@ -179,10 +233,7 @@ class Subsystem:
         'description' key
     """
     def _contains(self, path):
-        if os.path.isdir(path):
-            # Make directory paths end in '/' so that '-f foo/bar' matches
-            # foo/bar/. Handy for command-line use.
-            path = path.rstrip("/") + "/"
+        # Returns True if the subsystem contains 'path', and False otherwise
 
         # Test exclusions first
 
@@ -345,6 +396,10 @@ def _git(*args):
             git_cmd_s, stdout.decode("utf-8"), stderr.decode("utf-8")))
 
     return stdout.decode("utf-8").rstrip()
+
+
+def _all_files():
+    return _git("ls-files").splitlines()
 
 
 def _err(msg):
