@@ -208,7 +208,7 @@ Documentation:
         - doc/
     files-regex:
         - \.rst$
-        - .*/doc/.*
+        - /doc/
     labels:
         - "area: Documentation"
 
