@@ -73,7 +73,7 @@ def _parse_args():
         "paths",
         metavar="PATH",
         nargs="*",
-        help="Paths to list subsystems for")
+        help="Path to list subsystems for")
     id_parser.set_defaults(cmd_fn=Maintainers._path_cmd)
 
     commits_parser = subparsers.add_parser(
@@ -83,7 +83,7 @@ def _parse_args():
         "commits",
         metavar="COMMIT_RANGE",
         nargs="*",
-        help="Commit range(s) to list subsystems for (default: HEAD~..)")
+        help="Commit range to list subsystems for (default: HEAD~..)")
     commits_parser.set_defaults(cmd_fn=Maintainers._commits_cmd)
 
     list_parser = subparsers.add_parser(
@@ -217,10 +217,20 @@ class Maintainers:
             if not os.path.exists(path):
                 _serr("'{}': no such file or directory".format(path))
 
-        _print_subsystems({
-            subsys for path in args.paths
-                   for subsys in self.path2subsystems(path)
-        })
+        res = set()
+        orphaned = []
+        for path in args.paths:
+            subsystems = self.path2subsystems(path)
+            res.update(subsystems)
+            if not subsystems:
+                orphaned.append(path)
+
+        _print_subsystems(res)
+        if orphaned:
+            if res:
+                print()
+            print("Orphaned paths (not in any subsystem):\n" +
+                  "\n".join(orphaned))
 
     def _commits_cmd(self, args):
         # 'commits' subcommand implementation
