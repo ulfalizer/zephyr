@@ -94,12 +94,18 @@ def _parse_args():
         metavar="SUBSYSTEM",
         nargs="?",
         help="Name of subsystem to list files in. If not specified, all "
-             "files that appear in some subsystem are listed.")
+             "non-orphaned files are listed (all files that do not appear in "
+             "any subsystems).")
     list_parser.set_defaults(cmd_fn=Maintainers._list_cmd)
 
     orphaned_parser = subparsers.add_parser(
         "orphaned",
         help="List orphaned files (files that do not appear in any subsystem)")
+    orphaned_parser.add_argument(
+        "path",
+        metavar="PATH",
+        nargs="?",
+        help="Limit to files under PATH")
     orphaned_parser.set_defaults(cmd_fn=Maintainers._orphaned_cmd)
 
     args = parser.parse_args()
@@ -246,10 +252,13 @@ class Maintainers:
                 if subsys._contains(path):
                     print(path)
 
-    def _orphaned_cmd(self, _):
+    def _orphaned_cmd(self, args):
         # 'orphaned' subcommand implementation
 
-        for path in _all_files():
+        if args.path is not None and not os.path.exists(args.path):
+            _serr("'{}': no such file or directory".format(args.path))
+
+        for path in _all_files(args.path):
             for subsys in self.subsystems.values():
                 if subsys._contains(path):
                     break
@@ -448,8 +457,11 @@ def _git(*args):
     return stdout.decode("utf-8").rstrip()
 
 
-def _all_files():
-    return _git("ls-files").splitlines()
+def _all_files(path=None):
+    cmd = ["ls-files"]
+    if path is not None:
+        cmd.append(path)
+    return _git(*cmd).splitlines()
 
 
 def _err(msg):
