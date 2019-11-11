@@ -233,7 +233,7 @@ Kconfig:
     files:
         - scripts/kconfig/
     files-regex:
-        - Kconfig[\w.]*$
+        - Kconfig[\w._-]*$
     labels:
         - "area: Kconfig"
     description: >-

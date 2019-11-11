@@ -4,15 +4,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Lists maintainers for commits or files. Similar in function to
+Lists maintainers for files or commits. Similar in function to
 scripts/get_maintainer.pl from Linux, but geared towards GitHub. The mapping is
 in MAINTAINERS.yml.
 
 The comment at the top of MAINTAINERS.yml in Zephyr documents the file format.
 
-Unless -f is passed, one or more commit ranges is expected. If run with no
-arguments, HEAD~.. is used (just the tip commit). Commit ranges are passed to
-'git diff --name-only' to get a list of changed files.
+See the help texts for the various subcommands for more information. They can
+be viewed with e.g.
+
+    ./get_maintainer.py files --help
 
 This executable doubles as a Python library. Identifiers not prefixed with '_'
 are part of the library API. The library documentation can be viewed with this
@@ -43,68 +44,69 @@ def _main():
     args = _parse_args()
 
     try:
-        maints = Maintainers(args.maintainers)
-
-        if args.subsystem_to_list is not None:
-            maints._list_files(args.subsystem_to_list)
-            return
-
-        if args.list_orphaned:
-            maints._list_orphaned()
-            return
-
-        if args.args_are_paths:
-            for path in args.commit_ranges_or_paths:
-                if not os.path.exists(path):
-                    _serr("'{}': no such file or directory".format(path))
-
-            subsystems = {
-                subsys for path in args.commit_ranges_or_paths
-                       for subsys in maints.path2subsystems(path)
-            }
-        else:
-            commit_ranges = args.commit_ranges_or_paths or ("HEAD~..",)
-            subsystems = {
-                subsys for commit_range in commit_ranges
-                       for subsys in maints.commits2subsystems(commit_range)
-            }
+        args.cmd_fn(Maintainers(args.maintainers), args)
     except (MaintainersError, GitError) as e:
         _serr(e)
 
 
-def _file_cmd(args, maints):
-    # 'file' subcommand implementation
+def _parse_args():
+    # Parses arguments when run as an executable
 
-    for path in args.paths:
-        if not os.path.exists(path):
-            _serr("'{}': no such file or directory".format(path))
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=__doc__)
 
-    _print_subsystems({
-        subsys for path in args.paths
-               for subsys in maints.path2subsystems(path)
-    })
+    parser.add_argument(
+        "-m", "--maintainers",
+        metavar="MAINTAINERS_FILE",
+        default="MAINTAINERS.yml",
+        help="Maintainers file to load (default: MAINTAINERS.yml)")
 
+    subparsers = parser.add_subparsers(
+        help="Available commands (each has a separate --help text)")
 
-def _commits_cmd(args, maints):
-    # 'commits' subcommand implementation
+    id_parser = subparsers.add_parser(
+        "file",
+        help="List subsystem(s) for paths")
+    id_parser.add_argument(
+        "paths",
+        metavar="PATH",
+        nargs="*",
+        help="Paths to list subsystems for")
+    id_parser.set_defaults(cmd_fn=Maintainers._file_cmd)
 
-    commits = args.commits or ("HEAD~..",)
-    _print_subsystems({
-        subsys for commits in args.commits
-               for subsys in maints.commits2subsystems(commits)
-    })
+    commits_parser = subparsers.add_parser(
+        "commits",
+        help="List subsystem(s) for commit range")
+    commits_parser.add_argument(
+        "commits",
+        metavar="COMMIT_RANGE",
+        nargs="*",
+        help="Commit range(s) to list subsystems for (default: HEAD~..)")
+    commits_parser.set_defaults(cmd_fn=Maintainers._commits_cmd)
 
+    list_parser = subparsers.add_parser(
+        "list",
+        help="List files in subsystem")
+    list_parser.add_argument(
+        "subsystem",
+        metavar="SUBSYSTEM",
+        nargs="?",
+        help="Name of subsystem to list files in. If not specified, all "
+             "files that appear in some subsystem are listed.")
+    list_parser.set_defaults(cmd_fn=Maintainers._list_cmd)
 
-def _list_cmd(args, maints):
-    # 'list' subcommand implementation
+    orphaned_parser = subparsers.add_parser(
+        "orphaned",
+        help="List files that do not appear in any subsystem")
+    orphaned_parser.set_defaults(cmd_fn=Maintainers._orphaned_cmd)
 
-    maints._list_files(args.subsystem)
+    args = parser.parse_args()
+    if not hasattr(args, "cmd_fn"):
+        # Called without a subcommand
+        sys.exit(parser.format_usage().rstrip())
 
-
-def _orphaned_cmd(_, maints):
-    # 'orphaned' subcommand implementation
-
-    maints._list_orphaned()
+    return args
 
 
 def _print_subsystems(subsystems):
@@ -121,38 +123,6 @@ def _print_subsystems(subsystems):
                             ", ".join(subsys.inform),
                             ", ".join(subsys.labels),
                             subsys.description or ""))
-
-
-def _parse_args():
-    # Parses arguments when run as an executable
-
-    parser = argparse.ArgumentParser(description=__doc__)
-
-    parser.add_argument("-m", "--maintainers",
-                        metavar="MAINTAINERS_FILE",
-                        default="MAINTAINERS.yml",
-                        help="Maintainers file to load (default: MAINTAINERS.yml)")
-
-    parser.add_argument("-f", "--files",
-                        action="store_true",
-                        dest="args_are_paths",
-                        help="Interpret arguments as paths instead of commit ranges")
-
-    parser.add_argument("-l", "--list",
-                        dest="subsystem_to_list",
-                        metavar="SUBSYSTEM_NAME",
-                        help="List files in SUBSYSTEM_NAME")
-
-    parser.add_argument("-o", "--orphaned",
-                        action="store_true",
-                        dest="list_orphaned",
-                        help="List files that do appear in any subsystem")
-
-    parser.add_argument("commit_ranges_or_paths",
-                        nargs="*",
-                        help="Commit ranges or (with -f) paths (default: HEAD~..)")
-
-    return parser.parse_args()
 
 
 class Maintainers:
@@ -224,17 +194,55 @@ class Maintainers:
     def __repr__(self):
         return "<Maintainers for '{}'>".format(self.filename)
 
-    def _list_files(self, subsys_name):
-        subsys = self.subsystems.get(subsys_name)
-        if subsys is None:
-            _serr("'{}': no such subsystem defined in '{}'"
-                  .format(subsys_name, self.filename))
+    #
+    # Command-line subcommands
+    #
 
-        for path in _all_files():
-            if subsys._contains(path):
-                print(path)
+    def _file_cmd(self, args):
+        # 'file' subcommand implementation
 
-    def _list_orphaned(self):
+        for path in args.paths:
+            if not os.path.exists(path):
+                _serr("'{}': no such file or directory".format(path))
+
+        _print_subsystems({
+            subsys for path in args.paths
+                   for subsys in self.path2subsystems(path)
+        })
+
+    def _commits_cmd(self, args):
+        # 'commits' subcommand implementation
+
+        commits = args.commits or ("HEAD~..",)
+        _print_subsystems({
+            subsys for commits in args.commits
+                   for subsys in self.commits2subsystems(commits)
+        })
+
+    def _list_cmd(self, args):
+        # 'list' subcommand implementation
+
+        if args.subsystem is None:
+            # List all files that appear in some subsystem
+            for path in _all_files():
+                for subsys in self.subsystems.values():
+                    if subsys._contains(path):
+                        print(path)
+                        break
+        else:
+            # List all files that appear in the given subsystem
+            subsys = self.subsystems.get(args.subsystem)
+            if subsys is None:
+                _serr("'{}': no such subsystem defined in '{}'"
+                      .format(args.subsystem, self.filename))
+
+            for path in _all_files():
+                if subsys._contains(path):
+                    print(path)
+
+    def _orphaned_cmd(self, _):
+        # 'orphaned' subcommand implementation
+
         for path in _all_files():
             for subsys in self.subsystems.values():
                 if subsys._contains(path):
