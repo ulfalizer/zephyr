@@ -13,7 +13,7 @@ The comment at the top of MAINTAINERS.yml in Zephyr documents the file format.
 See the help texts for the various subcommands for more information. They can
 be viewed with e.g.
 
-    ./get_maintainer.py files --help
+    ./get_maintainer.py path --help
 
 This executable doubles as a Python library. Identifiers not prefixed with '_'
 are part of the library API. The library documentation can be viewed with this
@@ -24,6 +24,7 @@ command:
 
 import argparse
 import glob
+import operator
 import os
 import re
 import shlex
@@ -66,14 +67,14 @@ def _parse_args():
         help="Available commands (each has a separate --help text)")
 
     id_parser = subparsers.add_parser(
-        "file",
+        "path",
         help="List subsystem(s) for paths")
     id_parser.add_argument(
         "paths",
         metavar="PATH",
         nargs="*",
         help="Paths to list subsystems for")
-    id_parser.set_defaults(cmd_fn=Maintainers._file_cmd)
+    id_parser.set_defaults(cmd_fn=Maintainers._path_cmd)
 
     commits_parser = subparsers.add_parser(
         "commits",
@@ -98,7 +99,7 @@ def _parse_args():
 
     orphaned_parser = subparsers.add_parser(
         "orphaned",
-        help="List files that do not appear in any subsystem")
+        help="List orphaned files (files that do not appear in any subsystem)")
     orphaned_parser.set_defaults(cmd_fn=Maintainers._orphaned_cmd)
 
     args = parser.parse_args()
@@ -110,7 +111,12 @@ def _parse_args():
 
 
 def _print_subsystems(subsystems):
-    for subsys in subsystems:
+    first = True
+    for subsys in sorted(subsystems, key=operator.attrgetter("name")):
+        if not first:
+            print()
+        first = False
+
         print("""\
 {}
 \tmaintainers: {}
@@ -179,7 +185,7 @@ class Maintainers:
 
     def commits2subsystems(self, commits):
         """
-        Returns a list of Subsystem instances for the subsystems that contain
+        Returns a set() of Subsystem instances for the subsystems that contain
         files that are modified by the commit range in 'commits'. 'commits'
         could be e.g. "HEAD~..", to inspect the tip commit
         """
@@ -198,8 +204,8 @@ class Maintainers:
     # Command-line subcommands
     #
 
-    def _file_cmd(self, args):
-        # 'file' subcommand implementation
+    def _path_cmd(self, args):
+        # 'path' subcommand implementation
 
         for path in args.paths:
             if not os.path.exists(path):
