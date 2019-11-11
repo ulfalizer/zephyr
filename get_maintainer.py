@@ -71,6 +71,43 @@ def _main():
     except (MaintainersError, GitError) as e:
         _serr(e)
 
+
+def _file_cmd(args, maints):
+    # 'file' subcommand implementation
+
+    for path in args.paths:
+        if not os.path.exists(path):
+            _serr("'{}': no such file or directory".format(path))
+
+    _print_subsystems({
+        subsys for path in args.paths
+               for subsys in maints.path2subsystems(path)
+    })
+
+
+def _commits_cmd(args, maints):
+    # 'commits' subcommand implementation
+
+    commits = args.commits or ("HEAD~..",)
+    _print_subsystems({
+        subsys for commits in args.commits
+               for subsys in maints.commits2subsystems(commits)
+    })
+
+
+def _list_cmd(args, maints):
+    # 'list' subcommand implementation
+
+    maints._list_files(args.subsystem)
+
+
+def _orphaned_cmd(_, maints):
+    # 'orphaned' subcommand implementation
+
+    maints._list_orphaned()
+
+
+def _print_subsystems(subsystems):
     for subsys in subsystems:
         print("""\
 {}

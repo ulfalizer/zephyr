@@ -107,7 +107,7 @@
 
 # Subsystems are sorted by name
 
-ARC:
+"ARC arch":
     # Provisional entry, to be corrected
     status: maintained
     maintainers:
@@ -119,7 +119,7 @@ ARC:
     labels:
         - "area: ARC"
 
-ARM:
+"ARM arch":
     # Provisional entry, to be corrected
     status: maintained
     maintainers:
@@ -366,7 +366,7 @@ West:
     labels:
         - "area: West"
 
-x86:
+"x86 arch":
     # Provisional entry, to be corrected
     status: maintained
     maintainers:
