@@ -137,11 +137,11 @@ config ARC_HAS_STACK_CHECKING
 	  overflow or underflow is detected.
 
 config ARC_CONNECT
-	bool "ARC has ARC connect"
+	bool
 	select SCHED_IPI_SUPPORTED
 	help
-	  ARC is configured with ARC CONNECT which is a hardware for connecting
-	  multi cores.
+	  If enabled, ARC is configured with ARC CONNECT, which is hardware for
+	  connecting multi cores.
 
 config ARC_STACK_CHECKING
 	bool

@@ -30,9 +30,6 @@ config CODE_DENSITY
 config ARCV2_TIMER_IRQ_PRIORITY
 	default 1
 
-config ARC_CONNECT
-	default y
-
 config MP_NUM_CPUS
 	default 4
 
