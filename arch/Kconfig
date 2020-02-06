@@ -13,6 +13,9 @@ source "$(ARCH_DIR)/$(ARCH)/Kconfig"
 
 # Architecture symbols. Should be 'select'ed by low-level symbols like
 # SOC_SERIES_* or (lacking that) SOC_*.
+#
+# If you add/remove an architecture symbol, update the check in CMakeLists.txt
+# as well (search for e.g. 'CONFIG_ARC').
 
 config ARC
 	bool
